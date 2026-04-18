@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo Cáo Thống Kê</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1">ERP - BÁO CÁO KINH DOANH</span>
+            <a href="/admin/don-hang" class="btn btn-sm btn-outline-light">📝 Về Quản lý đơn</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="mb-4 fw-bold">Dashboard Thống Kê</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="card-title text-uppercase fw-bold text-white-50">TỔNG DOANH THU</h6>
+                        <h3 class="card-text fw-bold">{{ doanh_thu }} đ</h3>
+                        <small>(Đã thu từ đơn Hoàn thành)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-success border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="card-title text-uppercase fw-bold text-white-50">LỢI NHUẬN THUẦN</h6>
+                        <h3 class="card-text fw-bold">{{ tien_loi }} đ</h3>
+                        <small>(Doanh thu trừ giá nhập)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card text-white bg-danger border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="card-title text-uppercase fw-bold text-white-50">THUẾ VAT TẠM TÍNH (10%)</h6>
+                        <h3 class="card-text fw-bold">{{ thue_vat }} đ</h3>
+                        <small>(Cần nộp nhà nước)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card text-dark bg-warning border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="card-title text-uppercase fw-bold text-black-50">ĐƠN CHỜ XỬ LÝ</h6>
+                        <h3 class="card-text fw-bold">{{ so_don_moi }} Đơn</h3>
+                        <a href="/admin/don-hang" class="btn btn-dark btn-sm mt-2 w-100">Xử lý ngay</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-5 border-0 shadow-sm">
+            <i class="fas fa-info-circle me-2"></i> <strong>Lưu ý hệ thống:</strong> Doanh thu và Tiền lời chỉ được cộng vào Dashboard khi bạn chuyển trạng thái đơn hàng sang <b>"Hoàn thành"</b>.
+        </div>
+    </div>
+</body>
+</html>

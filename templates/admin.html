@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Trị Hệ Thống</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container-fluid px-4">
+        <span class="navbar-brand mb-0 h1 text-warning">🛡️ QUẢN TRỊ VIÊN: {{ khach_ten }}</span>
+        <div>
+            <a href="/" class="btn btn-sm btn-light fw-bold me-2">🏠 Ra Trang Chủ Mua Sắm</a>
+            <a href="/dang-xuat" class="btn btn-sm btn-outline-danger">Thoát hệ thống</a>
+        </div>
+    </div>
+</nav>
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1">HỆ THỐNG QUẢN TRỊ (ERP)</span>
+            <a href="/" class="btn btn-sm btn-outline-light" target="_blank">👀 Xem Web Khách Hàng</a>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold">Kho Sản Phẩm</h3>
+            <a href="/admin/don-hang" class="btn btn-sm btn-warning fw-bold mx-2">📝 Quản lý Đơn</a>
+            <a href="/admin/thong-ke" class="btn btn-sm btn-info fw-bold">📊 Thống kê</a>
+            <a href="/admin/khach-hang" class="btn btn-info fw-bold mx-2">👥 Quản lý Khách</a>
+            <a href="/admin/don-hang" class="btn btn-warning">Xem Đơn Hàng Mới</a>
+            <a href="/them" class="btn btn-success">+ Thêm Sản Phẩm Mới</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover table-bordered mb-0 align-middle">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th>ID</th>
+                            <th>Ảnh</th>
+                            <th>Tên Sản Phẩm</th>
+                            <th>Phân Loại</th>
+                            <th>Hãng SX</th>
+                            <th>Tồn Kho</th>
+                            <th>Giá Nhập</th>
+                            <th>Giá Bán</th>
+                            <th>Tiền Lời/SP</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sp in san_phams %}
+                        <tr class="text-center">
+                            <td>{{ sp.id }}</td>
+                            <td><img src="{{ sp.hinh_anh }}" alt="Ảnh"
+                                    style="width: 50px; height: 50px; object-fit: cover;" class="rounded"></td>
+                            <td class="text-start fw-bold">{{ sp.ten }}</td>
+                            <td><span class="badge bg-secondary">{{ sp.the_loai }}</span></td>
+                            <td>{{ sp.hang_sx }}</td>
+
+                            {% if sp.so_luong <= 5 %} <td class="text-danger fw-bold">{{ sp.so_luong }} (Sắp hết)</td>
+                                {% else %}
+                                <td class="text-success fw-bold">{{ sp.so_luong }}</td>
+                                {% endif %}
+
+                                <td>{{ sp.gia_nhap }} đ</td>
+                                <td class="text-primary fw-bold">{{ sp.gia_ban }} đ</td>
+
+                                <td class="text-success fw-bold">
+                                    {{ sp.gia_ban - sp.gia_nhap }} đ
+                                </td>
+
+                                <td>
+                                    <a href="/sua/{{ sp.id }}" class="btn btn-primary btn-sm">Sửa</a>
+                                    <form action="/xoa/{{ sp.id }}" method="POST" class="d-inline"
+                                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                                    </form>
+                                </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head><meta charset="UTF-8"><title>Sửa Sản Phẩm</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow-sm mx-auto" style="max-width: 800px;">
+            <div class="card-header bg-primary text-white"><h4>✏️ Sửa Sản Phẩm: {{ sp.ten }}</h4></div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><label>Tên SP</label><input type="text" name="ten" class="form-control" value="{{ sp.ten }}"></div>
+                        <div class="col-md-6 mb-3"><label>Hãng</label><input type="text" name="hang_sx" class="form-control" value="{{ sp.hang_sx }}"></div>
+                        <div class="col-md-6 mb-3">
+                            <label>Phân Loại</label>
+                            <select name="the_loai" class="form-select">
+                                {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if dm.ten_danh_muc == sp.the_loai %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3"><label>Số lượng</label><input type="number" name="so_luong" class="form-control" value="{{ sp.so_luong }}"></div>
+                        <div class="col-md-6 mb-3"><label>Giá nhập</label><input type="number" name="gia_nhap" class="form-control" value="{{ sp.gia_nhap }}"></div>
+                        <div class="col-md-6 mb-3"><label>Giá bán</label><input type="number" name="gia_ban" class="form-control" value="{{ sp.gia_ban }}"></div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <label class="fw-bold">Kiểu hàng</label>
+                            <select name="kieu_hang" class="form-select border-warning">
+                                <option value="Co san" {% if sp.kieu_hang == 'Co san' %}selected{% endif %}>Hàng có sẵn</option>
+                                <option value="Pre-order" {% if sp.kieu_hang == 'Pre-order' %}selected{% endif %}>Hàng Pre-order (Đặt trước)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3"><label>Tiền cọc (Nếu Pre-order)</label><input type="number" name="tien_coc" class="form-control" value="{{ sp.tien_coc }}"></div>
+                        <div class="col-md-6 mb-3"><label>Ngày ra mắt (Nếu Pre-order)</label><input type="date" name="ngay_phat_hanh" class="form-control" value="{{ sp.ngay_phat_hanh }}"></div>
+
+                        <div class="col-12 mb-3"><label>Mô tả</label><textarea name="mo_ta" class="form-control" rows="3">{{ sp.mo_ta }}</textarea></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Cập Nhật</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

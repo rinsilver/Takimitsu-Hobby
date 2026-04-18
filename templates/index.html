@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Wolves Clone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Hiệu ứng nổi lên khi di chuột vào sản phẩm */
+        .product-card {
+            transition: transform 0.3s;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-img {
+            height: 300px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5 shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">WOLVES CLONE</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link text-white" href="/">Trang chủ</a></li>
+                    
+                    {% if is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link text-warning fw-bold" href="/admin">
+                                <i class="fas fa-user-shield me-1"></i> Chào, Sếp Admin
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-sm btn-outline-warning ms-2" href="/admin">Vào Quản Trị</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link text-white ms-2" href="/dang-xuat">Thoát</a></li>
+                        
+                    {% elif is_khach %}
+                        <li class="nav-item">
+                            <a class="nav-link text-info fw-bold" href="#">
+                                <i class="fas fa-user me-1"></i> Chào, {{ khach_ten }}
+                            </a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link text-white ms-2" href="/dang-xuat">Đăng xuất</a></li>
+                        
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link text-white" href="/dang-nhap">Đăng nhập</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="/dang-ky">Đăng ký</a></li>
+                    {% endif %}
+                    
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-primary btn-sm position-relative" href="/gio-hang">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ so_luong_gio_hang }}
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card mb-4 border-0 shadow-sm" style="background: #fdfdfd;">
+            <div class="card-body">
+                <form method="GET" action="/" class="row g-2 align-items-center">
+                    <div class="col-md-4"><input type="text" name="tim_kiem" class="form-control" placeholder="🔎 Tìm tên..." value="{{ tu_khoa }}"></div>
+                    <div class="col-md-3">
+                        <select name="the_loai" class="form-select">
+                            <option value="">-- Tất cả danh mục --</option>
+                            {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if dm.ten_danh_muc == the_loai_chon %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="kieu_hang" class="form-select">
+                            <option value="">-- Tất cả hàng --</option>
+                            <option value="Co san" {% if kieu_hang_chon == 'Co san' %}selected{% endif %}>🟢 Hàng có sẵn</option>
+                            <option value="Pre-order" {% if kieu_hang_chon == 'Pre-order' %}selected{% endif %}>⏳ Hàng Pre-order</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-dark w-100 fw-bold">Lọc</button></div>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            {% for sp in san_phams %}
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    <a href="/san-pham/{{ sp.id }}">
+                        <img src="{{ sp.hinh_anh }}" class="card-img-top product-img" alt="{{ sp.ten }}">
+                    </a>
+                    <div class="card-body text-center">
+                        <h5 class="card-title fs-6">{{ sp.ten }}</h5>
+                        <p class="text-danger fw-bold">{{ sp.gia_ban }} đ</p>
+                        <a href="/san-pham/{{ sp.id }}" class="btn btn-outline-dark btn-sm w-100">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center text-muted mt-5">
+                <p>Hiện chưa có sản phẩm nào trong cửa hàng. Hãy vào Admin để thêm nhé!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+
+</html>

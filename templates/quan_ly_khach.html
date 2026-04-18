@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head><meta charset="UTF-8"><title>CRM - Quản Lý Khách Hàng</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1">ERP - DANH SÁCH KHÁCH HÀNG</span>
+            <div>
+                <a href="/admin/don-hang" class="btn btn-sm btn-warning fw-bold me-2">📦 Xem Đơn Hàng</a>
+                <a href="/admin" class="btn btn-sm btn-outline-light">🔙 Về Kho Hàng</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white fw-bold">Thêm Khách Hàng Mới</div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <input type="text" name="tai_khoan" class="form-control mb-2" placeholder="Tên đăng nhập (Viết liền)" required>
+                            <input type="text" name="mat_khau" class="form-control mb-2" placeholder="Mật khẩu" required>
+                            <input type="text" name="ho_ten" class="form-control mb-2" placeholder="Họ và tên khách" required>
+                            <input type="text" name="sdt" class="form-control mb-2" placeholder="Số điện thoại" required>
+                            <textarea name="dia_chi" class="form-control mb-3" rows="2" placeholder="Địa chỉ giao hàng" required></textarea>
+                            <button type="submit" class="btn btn-success w-100 fw-bold">TẠO TÀI KHOẢN</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0 table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr><th>ID</th><th>Tài khoản</th><th>Họ Tên</th><th>Số điện thoại</th><th>Địa chỉ</th><th>Thao tác</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for kh in khach_hangs %}
+                                <tr>
+                                    <td class="fw-bold">#{{ kh.id }}</td>
+                                    <td><span class="badge bg-secondary">{{ kh.tai_khoan }}</span></td>
+                                    <td class="fw-bold">{{ kh.ho_ten }}</td>
+                                    <td>{{ kh.sdt }}</td>
+                                    <td>{{ kh.dia_chi }}</td>
+                                    <td>
+                                        <form action="/admin/xoa-khach/{{ kh.id }}" method="POST" onsubmit="return confirm('Xóa khách hàng này?');">
+                                            <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="6" class="text-center py-4">Chưa có khách hàng nào đăng ký!</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
