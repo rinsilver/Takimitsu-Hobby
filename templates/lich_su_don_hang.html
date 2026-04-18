@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch Sử Đơn Hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold">📦 Đơn hàng của bạn</h2>
+            <a href="/" class="btn btn-dark">Quay lại mua sắm</a>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dh in ds_don_hang %}
+                        <tr>
+                            <td class="fw-bold">#{{ dh.id }}</td>
+                            <td class="text-muted">{{ dh.ngay_dat }}</td>
+                            <td class="text-danger fw-bold">{{ dh.tong_tien }} đ</td>
+                            <td>
+                                {% if dh.trang_thai == 'Chờ xử lý' %}
+                                    <span class="badge bg-warning text-dark">⏳ {{ dh.trang_thai }}</span>
+                                {% elif dh.trang_thai == 'Hoàn thành' %}
+                                    <span class="badge bg-success">✅ {{ dh.trang_thai }}</span>
+                                {% else %}
+                                    <span class="badge bg-primary">{{ dh.trang_thai }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">Bạn chưa có đơn hàng nào.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

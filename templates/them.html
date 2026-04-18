@@ -28,10 +28,14 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Phân Loại (Động)</label>
-                            <select name="the_loai" class="form-select">
+                            <select name="the_loai" class="form-select" required>
+                                <option value="">-- Chọn phân loại --</option>
                                 {% for dm in danh_mucs %}
                                 <option value="{{ dm.ten_danh_muc }}">{{ dm.ten_danh_muc }}</option>
                                 {% endfor %}
+                                {% if not danh_mucs %}
+                                <option value="Chưa phân loại">Chưa có dữ liệu (Hãy thêm danh mục trước)</option>
+                                {% endif %}
                             </select>
                         </div>
 
