@@ -99,6 +99,26 @@
                             }
                         </script>
 
+                        <div class="row bg-warning bg-opacity-10 p-3 rounded border border-warning mb-3">
+                            <h6 class="fw-bold text-dark"><i class="fas fa-wallet"></i> Quản lý dòng tiền nhập (Bí mật)
+                            </h6>
+                            <div class="col-md-4 mb-2">
+                                <label class="small fw-bold">Tiền sếp đã trả cho nguồn</label>
+                                <input type="number" name="tien_da_tra_nguon" class="form-control" value="0">
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="small fw-bold">Trạng thái thanh toán</label>
+                                <select name="trang_thai_nhap" class="form-select">
+                                    <option value="Còn nợ">Còn nợ nguồn</option>
+                                    <option value="Đã thanh toán">Đã thanh toán xong</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="small fw-bold">Ngày hàng về dự kiến</label>
+                                <input type="text" name="ngay_ve" class="form-control" placeholder="VD: Tháng 6/2026">
+                            </div>
+                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Ảnh đại diện (Chọn 1) *</label>
                             <input type="file" name="hinh_anh" class="form-control" required accept="image/*">
