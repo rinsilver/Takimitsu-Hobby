@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>{{ sp.ten }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body class="bg-light">
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5 shadow">
@@ -14,35 +16,36 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link text-white" href="/">Trang chủ</a></li>
-                    
+
                     {% if is_admin %}
-                        <li class="nav-item">
-                            <a class="nav-link text-warning fw-bold" href="/admin">
-                                <i class="fas fa-user-shield me-1"></i> Chào, Sếp Admin
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-sm btn-outline-warning ms-2" href="/admin">Vào Quản Trị</a>
-                        </li>
-                        <li class="nav-item"><a class="nav-link text-white ms-2" href="/dang-xuat">Thoát</a></li>
-                        
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="/admin">
+                            <i class="fas fa-user-shield me-1"></i> Chào, Sếp Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-sm btn-outline-warning ms-2" href="/admin">Vào Quản Trị</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link text-white ms-2" href="/dang-xuat">Thoát</a></li>
+
                     {% elif is_khach %}
-                        <li class="nav-item">
-                            <a class="nav-link text-info fw-bold" href="#">
-                                <i class="fas fa-user me-1"></i> Chào, {{ khach_ten }}
-                            </a>
-                        </li>
-                        <li class="nav-item"><a class="nav-link text-white ms-2" href="/dang-xuat">Đăng xuất</a></li>
-                        
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="#">
+                            <i class="fas fa-user me-1"></i> Chào, {{ khach_ten }}
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link text-white ms-2" href="/dang-xuat">Đăng xuất</a></li>
+
                     {% else %}
-                        <li class="nav-item"><a class="nav-link text-white" href="/dang-nhap">Đăng nhập</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="/dang-ky">Đăng ký</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="/dang-nhap">Đăng nhập</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="/dang-ky">Đăng ký</a></li>
                     {% endif %}
-                    
+
                     <li class="nav-item ms-3">
                         <a class="btn btn-primary btn-sm position-relative" href="/gio-hang">
                             <i class="fas fa-shopping-cart"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                 {{ so_luong_gio_hang }}
                             </span>
                         </a>
@@ -53,38 +56,44 @@
     </nav>
 
     <div class="container mb-5">
-        <a href="/" class="btn btn-outline-dark mb-4 fw-bold"><i class="fas fa-arrow-left me-2"></i> Quay lại trang chủ</a>
+        <a href="/" class="btn btn-outline-dark mb-4 fw-bold"><i class="fas fa-arrow-left me-2"></i> Quay lại trang
+            chủ</a>
 
         <div class="row bg-white p-5 rounded-4 shadow-sm">
             <div class="col-md-6 mb-4">
-                <img id="mainImage" src="{{ sp.hinh_anh }}" class="img-fluid rounded w-100 shadow-sm mb-3" style="height: 500px; object-fit: cover;">
+                <img id="mainImage" src="{{ sp.hinh_anh }}" class="img-fluid rounded w-100 shadow-sm mb-3"
+                    style="height: 500px; object-fit: cover;">
                 <div class="d-flex gap-2 overflow-auto justify-content-center p-2 rounded bg-light">
-                    <img src="{{ sp.hinh_anh }}" onclick="document.getElementById('mainImage').src=this.src" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
+                    <img src="{{ sp.hinh_anh }}" onclick="document.getElementById('mainImage').src=this.src"
+                        style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
                     {% for anh in anh_phu %}
-                        <img src="{{ anh.du_ong_dan }}" onclick="document.getElementById('mainImage').src=this.src" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
+                    <img src="{{ anh.du_ong_dan }}" onclick="document.getElementById('mainImage').src=this.src"
+                        style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
                     {% endfor %}
                 </div>
             </div>
-            
+
             <div class="col-md-6">
                 <h1 class="fw-bold text-uppercase">
                     {{ sp.ten }}
                     {% if sp.kieu_hang == 'Pre-order' %}
-                        <span class="badge bg-warning text-dark fs-6 ms-2 align-middle">⏳ PRE-ORDER</span>
+                    <span class="badge bg-warning text-dark fs-6 ms-2 align-middle">⏳ PRE-ORDER</span>
                     {% endif %}
                 </h1>
-                <p class="text-muted">Hãng: <strong class="text-dark">{{ sp.hang_sx }}</strong> | Phân loại: {{ sp.the_loai }}</p>
+                <p class="text-muted">Hãng: <strong class="text-dark">{{ sp.hang_sx }}</strong> | Phân loại: {{
+                    sp.the_loai }}</p>
                 <hr>
-                
+
                 <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-3 shadow-sm">
                     <h2 class="text-danger fw-bold m-0 fs-1">{{ sp.gia_ban }} đ</h2>
                     <div class="text-end">
                         {% if sp.kieu_hang == 'Pre-order' %}
-                            <span class="badge bg-info text-dark px-3 py-2 fs-6 rounded-pill">Sắp ra mắt</span>
+                        <span class="badge bg-info text-dark px-3 py-2 fs-6 rounded-pill">Sắp ra mắt</span>
                         {% elif sp.so_luong > 0 %}
-                            <span class="badge bg-success px-3 py-2 fs-6 rounded-pill">ĐANG CÓ HÀNG ({{ sp.so_luong }})</span>
+                        <span class="badge bg-success px-3 py-2 fs-6 rounded-pill">ĐANG CÓ HÀNG ({{ sp.so_luong
+                            }})</span>
                         {% else %}
-                            <span class="badge bg-danger px-3 py-2 fs-6 rounded-pill">HẾT HÀNG</span>
+                        <span class="badge bg-danger px-3 py-2 fs-6 rounded-pill">HẾT HÀNG</span>
                         {% endif %}
                     </div>
                 </div>
@@ -96,12 +105,12 @@
                     <p class="mb-0"><strong>📅 Ngày phát hành dự kiến:</strong> {{ sp.ngay_phat_hanh }}</p>
                 </div>
                 {% endif %}
-                
+
                 <div class="mb-4 mt-4">
                     <h5 class="fw-bold border-bottom pb-2">📘 MÔ TẢ SẢN PHẨM</h5>
                     <p class="text-secondary" style="white-space: pre-line;">{{ sp.mo_ta }}</p>
                 </div>
-                
+
                 <a href="/them-vao-gio/{{ sp.id }}" class="btn btn-dark btn-lg w-100 py-3 fw-bold fs-5 shadow-sm">
                     <i class="fas fa-cart-plus me-2"></i> Thêm vào giỏ hàng
                 </a>
@@ -109,4 +118,5 @@
         </div>
     </div>
 </body>
+
 </html>

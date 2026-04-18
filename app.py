@@ -4,46 +4,64 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = 'wolves_clone_final_v5'
+app.secret_key = 'wolves_clone_ultimate_v6_2026'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# --- CƠ SỞ DỮ LIỆU ---
 def ket_noi_db():
     conn = sqlite3.connect('database_v5.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-def tao_bang():
+def tao_bang_moi():
     conn = ket_noi_db()
-    # Bảng sản phẩm full tính năng Pre-order
+    # 1. Sản phẩm & Thuộc tính mở rộng
     conn.execute('''CREATE TABLE IF NOT EXISTS san_pham (
         id INTEGER PRIMARY KEY AUTOINCREMENT, ten TEXT, the_loai TEXT, hang_sx TEXT, 
         gia_nhap REAL, gia_ban REAL, so_luong INTEGER, hinh_anh TEXT, mo_ta TEXT, 
-        kieu_hang TEXT DEFAULT 'Co san', tien_coc REAL DEFAULT 0, ngay_phat_hanh TEXT)''')
+        kieu_hang TEXT DEFAULT 'Co san', tien_coc REAL DEFAULT 0, ngay_phat_hanh TEXT,
+        nguon_nhap_id INTEGER)''')
+    
+    # 2. Các bảng danh mục quản lý
     conn.execute('CREATE TABLE IF NOT EXISTS danh_muc (id INTEGER PRIMARY KEY AUTOINCREMENT, ten_danh_muc TEXT)')
+    conn.execute('CREATE TABLE IF NOT EXISTS nguon_nhap (id INTEGER PRIMARY KEY AUTOINCREMENT, ten_nguon TEXT)')
+    conn.execute('CREATE TABLE IF NOT EXISTS hang_sx_list (id INTEGER PRIMARY KEY AUTOINCREMENT, ten_hang TEXT)')
     conn.execute('CREATE TABLE IF NOT EXISTS hinh_anh_sp (id INTEGER PRIMARY KEY AUTOINCREMENT, san_pham_id INTEGER, du_ong_dan TEXT)')
+    
+    # 3. Người dùng & Phân quyền
     conn.execute('''CREATE TABLE IF NOT EXISTS khach_hang (
         id INTEGER PRIMARY KEY AUTOINCREMENT, tai_khoan TEXT UNIQUE, mat_khau TEXT, 
         ho_ten TEXT, sdt TEXT, dia_chi TEXT, vai_tro TEXT DEFAULT 'khach')''')
+    
+    # 4. Đơn hàng & Chi tiết
     conn.execute('''CREATE TABLE IF NOT EXISTS don_hang (
         id INTEGER PRIMARY KEY AUTOINCREMENT, khach_hang_id INTEGER, ten_khach TEXT, 
         sdt TEXT, dia_chi TEXT, tong_tien REAL, ngay_dat DATETIME DEFAULT CURRENT_TIMESTAMP, 
         trang_thai TEXT DEFAULT "Chờ xử lý")''')
     conn.execute('CREATE TABLE IF NOT EXISTS chi_tiet_don (id INTEGER PRIMARY KEY AUTOINCREMENT, don_hang_id INTEGER, san_pham_id INTEGER, so_luong INTEGER, gia REAL)')
     
+    # Khởi tạo Admin mặc định
     if conn.execute("SELECT COUNT(*) FROM khach_hang WHERE vai_tro = 'admin'").fetchone()[0] == 0:
         conn.execute("INSERT INTO khach_hang (tai_khoan, mat_khau, ho_ten, vai_tro) VALUES ('admin', '123456', 'Quản trị viên', 'admin')")
-    conn.commit(); conn.close()
+    
+    conn.commit()
+    conn.close()
 
-tao_bang()
+tao_bang_moi()
 
 @app.context_processor
 def inject_data():
-    return dict(so_luong_gio_hang=sum(session.get('gio_hang', {}).values()), 
-                is_admin='admin_id' in session, is_khach='khach_id' in session, 
-                khach_ten=session.get('khach_ten', ''))
+    return dict(
+        so_luong_gio_hang=sum(session.get('gio_hang', {}).values()),
+        is_admin='admin_id' in session,
+        is_khach='khach_id' in session,
+        khach_ten=session.get('khach_ten', '')
+    )
 
-# --- USER ROUTES ---
+# ==================== TRANG CHỦ & ĐĂNG NHẬP ====================
+
 @app.route('/')
 def trang_chu():
     conn = ket_noi_db()
@@ -78,7 +96,7 @@ def dang_nhap():
             else: session['khach_id'] = u['id']
             session['khach_ten'] = u['ho_ten']
             return redirect(url_for('trang_chu'))
-        return "Sai thông tin!"
+        return "Sai tài khoản hoặc mật khẩu!"
     return render_template('dang_nhap_chung.html')
 
 @app.route('/dang-ky', methods=['GET', 'POST'])
@@ -90,17 +108,24 @@ def dang_ky():
                          (request.form['tai_khoan'], request.form['mat_khau'], request.form['ho_ten'], request.form['sdt'], request.form['dia_chi']))
             conn.commit()
             return redirect(url_for('dang_nhap'))
-        except:
-            return "Lỗi đăng ký!"
-        finally:
-            conn.close()
+        except: return "Lỗi: Tài khoản đã tồn tại!"
+        finally: conn.close()
     return render_template('dang_ky_khach.html')
 
 @app.route('/dang-xuat')
 def dang_xuat():
-    session.clear(); return redirect(url_for('trang_chu'))
+    session.clear()
+    return redirect(url_for('trang_chu'))
 
-# --- GIỎ HÀNG & LỊCH SỬ ---
+# ==================== GIỎ HÀNG & LỊCH SỬ ====================
+
+@app.route('/them-vao-gio/<int:id>')
+def them_vao_gio(id):
+    if 'gio_hang' not in session: session['gio_hang'] = {}
+    session['gio_hang'][str(id)] = session['gio_hang'].get(str(id), 0) + 1
+    session.modified = True
+    return redirect(url_for('xem_gio_hang'))
+
 @app.route('/gio-hang')
 def xem_gio_hang():
     conn = ket_noi_db(); items, tong = [], 0
@@ -113,13 +138,6 @@ def xem_gio_hang():
     u = conn.execute('SELECT * FROM khach_hang WHERE id=?', (uid,)).fetchone() if uid else None
     conn.close()
     return render_template('gio_hang.html', gio_hang=items, tong_tien=tong, user=u)
-
-@app.route('/them-vao-gio/<int:id>')
-def them_vao_gio(id):
-    if 'gio_hang' not in session: session['gio_hang'] = {}
-    session['gio_hang'][str(id)] = session['gio_hang'].get(str(id), 0) + 1
-    session.modified = True
-    return redirect(url_for('xem_gio_hang'))
 
 @app.route('/dat-hang', methods=['POST'])
 def dat_hang():
@@ -150,7 +168,8 @@ def lich_su_don_hang():
     conn.close()
     return render_template('lich_su_don_hang.html', ds_don_hang=ds)
 
-# --- QUẢN TRỊ (ADMIN) ---
+# ==================== HỆ THỐNG QUẢN TRỊ (ADMIN) ====================
+
 @app.route('/admin')
 def admin():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
@@ -159,33 +178,45 @@ def admin():
 
 @app.route('/them', methods=['GET', 'POST'])
 def them_san_pham():
+    if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     if request.method == 'POST':
         f = request.files['hinh_anh']
-        img = '/static/uploads/' + secure_filename(f.filename) if f else ''
-        if f: f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
+        img = '/static/uploads/' + secure_filename(f.filename) if f and f.filename != '' else ''
+        if img: f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
         cur = conn.cursor()
-        cur.execute('INSERT INTO san_pham (ten, the_loai, hang_sx, gia_nhap, gia_ban, so_luong, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh) VALUES (?,?,?,?,?,?,?,?,?,?,?)', 
-                    (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], float(request.form['gia_nhap']), float(request.form['gia_ban']), int(request.form['so_luong']), img, request.form['mo_ta'], request.form['kieu_hang'], float(request.form.get('tien_coc',0) or 0), request.form.get('ngay_phat_hanh','')))
+        cur.execute('''INSERT INTO san_pham (ten, the_loai, hang_sx, gia_nhap, gia_ban, so_luong, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh, nguon_nhap_id) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''', 
+                    (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], float(request.form['gia_nhap']), 
+                     float(request.form['gia_ban']), int(request.form['so_luong']), img, request.form['mo_ta'], 
+                     request.form['kieu_hang'], float(request.form.get('tien_coc', 0) or 0), request.form.get('ngay_phat_hanh', ''), 
+                     request.form.get('nguon_nhap_id')))
         sid = cur.lastrowid
         for pf in request.files.getlist('hinh_anh_phu'):
-            if pf:
-                pf.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(pf.filename)))
-                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (sid, '/static/uploads/'+secure_filename(pf.filename)))
+            if pf and pf.filename != '':
+                ten_file = secure_filename(pf.filename)
+                pf.save(os.path.join(app.config['UPLOAD_FOLDER'], ten_file))
+                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (sid, '/static/uploads/'+ten_file))
         conn.commit(); conn.close(); return redirect(url_for('admin'))
-    dms = conn.execute('SELECT * FROM danh_muc').fetchall(); conn.close()
-    return render_template('them.html', danh_mucs=dms)
+    
+    dms = conn.execute('SELECT * FROM danh_muc').fetchall()
+    hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
+    ngs = conn.execute('SELECT * FROM nguon_nhap').fetchall()
+    conn.close()
+    return render_template('them.html', danh_mucs=dms, hangs=hgs, nguons=ngs)
 
 @app.route('/sua/<int:id>', methods=['GET', 'POST'])
 def sua_san_pham(id):
     conn = ket_noi_db()
     if request.method == 'POST':
-        conn.execute('UPDATE san_pham SET ten=?, the_loai=?, hang_sx=?, gia_nhap=?, gia_ban=?, so_luong=?, mo_ta=?, kieu_hang=?, tien_coc=?, ngay_phat_hanh=? WHERE id=?', 
-                     (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], float(request.form['gia_nhap']), float(request.form['gia_ban']), int(request.form['so_luong']), request.form['mo_ta'], request.form['kieu_hang'], float(request.form.get('tien_coc',0) or 0), request.form.get('ngay_phat_hanh',''), id))
+        conn.execute('''UPDATE san_pham SET ten=?, the_loai=?, hang_sx=?, gia_nhap=?, gia_ban=?, so_luong=?, mo_ta=?, kieu_hang=?, tien_coc=?, ngay_phat_hanh=? WHERE id=?''', 
+            (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], float(request.form['gia_nhap']), float(request.form['gia_ban']), int(request.form['so_luong']), request.form['mo_ta'], request.form['kieu_hang'], float(request.form.get('tien_coc', 0) or 0), request.form.get('ngay_phat_hanh', ''), id))
         conn.commit(); conn.close(); return redirect(url_for('admin'))
     sp = conn.execute('SELECT * FROM san_pham WHERE id=?', (id,)).fetchone()
-    dms = conn.execute('SELECT * FROM danh_muc').fetchall(); conn.close()
-    return render_template('sua.html', sp=sp, danh_mucs=dms)
+    dms = conn.execute('SELECT * FROM danh_muc').fetchall()
+    hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
+    conn.close()
+    return render_template('sua.html', sp=sp, danh_mucs=dms, hangs=hgs)
 
 @app.route('/xoa/<int:id>', methods=['POST'])
 def xoa_san_pham(id):
@@ -210,12 +241,31 @@ def thong_ke():
     conn.close()
     return render_template('thong_ke.html', doanh_thu=dt, so_don_moi=sd, tien_loi=dt*0.3, thue_vat=dt*0.1)
 
-@app.route('/danh-muc', methods=['GET', 'POST'])
-def quan_ly_danh_muc():
+@app.route('/admin/nguon-nhap', methods=['GET', 'POST'])
+def quan_ly_nguon_nhap():
     conn = ket_noi_db()
     if request.method == 'POST':
-        conn.execute('INSERT INTO danh_muc (ten_danh_muc) VALUES (?)', (request.form['ten_danh_muc'],)); conn.commit()
-    dms = conn.execute('SELECT * FROM danh_muc').fetchall(); conn.close()
+        conn.execute('INSERT INTO nguon_nhap (ten_nguon) VALUES (?)', (request.form['ten_nguon'],)); conn.commit()
+    ngs = conn.execute('SELECT * FROM nguon_nhap').fetchall(); conn.close()
+    return render_template('quan_ly_nguon.html', nguons=ngs)
+
+@app.route('/admin/hang-sx', methods=['GET', 'POST'])
+def quan_ly_hang_sx():
+    conn = ket_noi_db()
+    if request.method == 'POST':
+        conn.execute('INSERT INTO hang_sx_list (ten_hang) VALUES (?)', (request.form['ten_hang'],)); conn.commit()
+    hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall(); conn.close()
+    return render_template('quan_ly_hang.html', hangs=hgs)
+
+@app.route('/danh-muc', methods=['GET', 'POST'])
+def quan_ly_danh_muc():
+    if 'admin_id' not in session: return redirect(url_for('dang_nhap')) # Bảo mật
+    conn = ket_noi_db()
+    if request.method == 'POST':
+        conn.execute('INSERT INTO danh_muc (ten_danh_muc) VALUES (?)', (request.form['ten_danh_muc'],))
+        conn.commit()
+    dms = conn.execute('SELECT * FROM danh_muc').fetchall()
+    conn.close()
     return render_template('danh_muc.html', danh_mucs=dms)
 
 @app.route('/admin/khach-hang')
@@ -224,5 +274,6 @@ def quan_ly_khach_hang():
     return render_template('quan_ly_khach.html', khach_hangs=ks)
 
 if __name__ == '__main__':
+    # Tắt Timer nếu sếp bị mở 2 tab, hoặc giữ nguyên nếu sếp thích tự động
     Timer(1.5, lambda: webbrowser.open_new('http://127.0.0.1:5000/')).start()
     app.run(debug=True)

@@ -21,22 +21,40 @@
                             <label class="form-label fw-bold">Tên sản phẩm *</label>
                             <input type="text" name="ten" class="form-control" required>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Hãng sản xuất</label>
-                            <input type="text" name="hang_sx" class="form-control" placeholder="Vd: Nike, Adidas...">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Phân Loại (Danh mục)</label>
+                                <div class="input-group">
+                                    <select name="the_loai" class="form-select border-primary">
+                                        {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}">{{
+                                            dm.ten_danh_muc }}</option>{% endfor %}
+                                    </select>
+                                    <a href="/danh-muc" class="btn btn-primary" title="Thêm danh mục mới">+</a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Hãng Sản Xuất</label>
+                                <div class="input-group">
+                                    <select name="hang_sx" class="form-select border-primary">
+                                        {% for h in hangs %}<option value="{{ h.ten_hang }}">{{ h.ten_hang }}</option>{%
+                                        endfor %}
+                                    </select>
+                                    <a href="/admin/hang-sx" class="btn btn-primary" title="Thêm hãng mới">+</a>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Phân Loại (Động)</label>
-                            <select name="the_loai" class="form-select" required>
-                                <option value="">-- Chọn phân loại --</option>
-                                {% for dm in danh_mucs %}
-                                <option value="{{ dm.ten_danh_muc }}">{{ dm.ten_danh_muc }}</option>
-                                {% endfor %}
-                                {% if not danh_mucs %}
-                                <option value="Chưa phân loại">Chưa có dữ liệu (Hãy thêm danh mục trước)</option>
-                                {% endif %}
-                            </select>
+                        <div class="col-md-12 mb-3 mt-2">
+                            <label class="form-label fw-bold text-danger">🛡️ Nguồn Nhập (CHỈ ADMIN THẤY - BÍ
+                                MẬT)</label>
+                            <div class="input-group">
+                                <select name="nguon_nhap_id" class="form-select border-danger bg-light">
+                                    <option value="">-- Chọn nguồn nhập để sếp dễ quản lý --</option>
+                                    {% for n in nguons %}<option value="{{ n.id }}">{{ n.ten_nguon }}</option>{% endfor
+                                    %}
+                                </select>
+                                <a href="/admin/nguon-nhap" class="btn btn-danger">+</a>
+                            </div>
                         </div>
 
                         <div class="col-md-6 mb-3">
