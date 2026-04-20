@@ -52,9 +52,24 @@ def tao_bang():
 
 tao_bang()
 
+# --- HÀM ĐẾM SỐ LƯỢNG GIỎ HÀNG TRÊN THANH MENU ---
 @app.context_processor
 def inject_data():
-    return dict(so_luong_gio_hang=sum(session.get('gio_hang', {}).values()), is_admin='admin_id' in session, is_khach='khach_id' in session, khach_ten=session.get('khach_ten', ''))
+    gio_hang = session.get('gio_hang', [])
+    so_luong = 0
+    
+    # Tính tổng số lượng từ danh sách giỏ hàng mới
+    if isinstance(gio_hang, list):
+        for item in gio_hang:
+            if isinstance(item, dict) and 'so_luong' in item:
+                so_luong += item['so_luong']
+
+    return dict(
+        so_luong_gio_hang=so_luong, 
+        is_admin='admin_id' in session, 
+        is_khach='khach_id' in session, 
+        khach_ten=session.get('khach_ten', '')
+    )
 
 # ==================== TRANG CHỦ & ĐĂNG NHẬP ====================
 
@@ -122,53 +137,95 @@ def dang_xuat():
 
 # ==================== GIỎ HÀNG & ĐẶT HÀNG ====================
 
+# 1. THÊM VÀO GIỎ HÀNG
 @app.route('/them-vao-gio/<int:id>')
 def them_vao_gio(id):
-    if 'gio_hang' not in session: session['gio_hang'] = {}
-    session['gio_hang'][str(id)] = session['gio_hang'].get(str(id), 0) + 1
+    conn = ket_noi_db()
+    sp = conn.execute('SELECT id, ten, gia_ban, hinh_anh, so_luong, kieu_hang FROM san_pham WHERE id=?', (id,)).fetchone()
+    conn.close()
+    
+    if not sp: return redirect(url_for('index'))
+
+    gio = session.get('gio_hang', [])
+    if isinstance(gio, dict): gio = []
+    elif isinstance(gio, list) and len(gio) > 0 and not isinstance(gio[0], dict): gio = []
+
+    # Xóa các báo lỗi cũ (nếu có) để làm mới
+    for item in gio:
+        item.pop('error', None)
+
+    found = False
+    for item in gio:
+        if item['id'] == id:
+            if item['so_luong'] < sp['so_luong']:
+                item['so_luong'] += 1
+            else:
+                item['error'] = f"Chỉ còn {sp['so_luong']} cái!" # Gắn lỗi vào đúng SP này
+            found = True
+            break
+    
+    if not found:
+        if sp['kieu_hang'] != 'Pre-order' and sp['so_luong'] <= 0:
+            # Hết hàng từ đầu thì cho vào giỏ với thông báo đỏ
+            gio.append({'id': sp['id'], 'ten': sp['ten'], 'gia': sp['gia_ban'], 'hinh_anh': sp['hinh_anh'], 'so_luong': 1, 'error': 'Đã hết hàng!'})
+        else:
+            gio.append({'id': sp['id'], 'ten': sp['ten'], 'gia': sp['gia_ban'], 'hinh_anh': sp['hinh_anh'], 'so_luong': 1})
+
+    session['gio_hang'] = gio
     session.modified = True
     return redirect(url_for('xem_gio_hang'))
 
-# --- XÓA SẢN PHẨM KHỎI GIỎ HÀNG ---
-@app.route('/xoa-khoi-gio/<int:id>')
-def xoa_khoi_gio(id):
-    gio = session.get('gio_hang', [])
-    # Dùng list comprehension để giữ lại các sản phẩm KHÁC với id cần xóa
-    gio = [sp for sp in gio if sp['id'] != id]
-    
-    session['gio_hang'] = gio
-    session.modified = True
-    return redirect(url_for('gio_hang'))
 
+# 2. XEM GIỎ HÀNG
+@app.route('/gio-hang')
+def xem_gio_hang():
+    gio = session.get('gio_hang', [])
+    
+    # 🔥 Áp dụng luôn cơ chế Tự chữa lành cho lúc xem giỏ
+    if isinstance(gio, dict) or (isinstance(gio, list) and len(gio) > 0 and not isinstance(gio[0], dict)): 
+        gio = []
+        session['gio_hang'] = gio
+        session.modified = True
+        
+    tong_tien = sum(item['gia'] * item['so_luong'] for item in gio)
+    
+    return render_template('gio_hang.html', gio_hang=gio, tong_tien=tong_tien)
+
+# 3. TĂNG / GIẢM SỐ LƯỢNG
 @app.route('/cap-nhat-gio/<int:id>/<hanh_dong>')
 def cap_nhat_gio(id, hanh_dong):
     gio = session.get('gio_hang', [])
+    conn = ket_noi_db()
+    sp = conn.execute('SELECT so_luong, kieu_hang FROM san_pham WHERE id=?', (id,)).fetchone()
+    conn.close()
     
     for item in gio:
         if item['id'] == id:
+            item.pop('error', None) # Xóa dòng chữ đỏ cũ đi khi thao tác lại
+            
             if hanh_dong == 'tang':
-                # (Tùy chọn) Sếp có thể check tồn kho ở đây, hiện tại cứ cho tăng thoải mái
-                item['so_luong'] += 1
+                if sp and item['so_luong'] < sp['so_luong']:
+                    item['so_luong'] += 1
+                else:
+                    item['error'] = f"Tối đa {sp['so_luong']} món!" # Báo lỗi nếu bấm quá
             elif hanh_dong == 'giam' and item['so_luong'] > 1:
                 item['so_luong'] -= 1
             break
             
     session['gio_hang'] = gio
     session.modified = True
-    return redirect(url_for('gio_hang'))
+    return redirect(url_for('xem_gio_hang'))
 
-@app.route('/gio-hang')
-def xem_gio_hang():
-    conn = ket_noi_db(); items, tong = [], 0
-    for sid, sl in session.get('gio_hang', {}).items():
-        sp = conn.execute('SELECT * FROM san_pham WHERE id=?', (sid,)).fetchone()
-        if sp:
-            tong += sp['gia_ban'] * sl
-            items.append({'id':sid, 'ten':sp['ten'], 'gia_ban':sp['gia_ban'], 'so_luong':sl, 'hinh_anh':sp['hinh_anh'], 'thanh_tien': sp['gia_ban']*sl})
-    uid = session.get('khach_id') or session.get('admin_id')
-    u = conn.execute('SELECT * FROM khach_hang WHERE id=?', (uid,)).fetchone() if uid else None
-    conn.close()
-    return render_template('gio_hang.html', gio_hang=items, tong_tien=tong, user=u)
+# 4. XÓA KHỎI GIỎ
+@app.route('/xoa-khoi-gio/<int:id>')
+def xoa_khoi_gio(id):
+    gio = session.get('gio_hang', [])
+    # Dùng list comprehension để giữ lại những SP có ID khác với ID muốn xóa
+    gio = [item for item in gio if item['id'] != id]
+    
+    session['gio_hang'] = gio
+    session.modified = True
+    return redirect(url_for('xem_gio_hang'))
 
 @app.route('/dat-hang', methods=['POST'])
 def dat_hang():
@@ -443,7 +500,29 @@ def quan_ly_don_hang():
                            current_page=page, total_pages=total_pages)
 
 # ==================== 2. HỒ SƠ KHÁCH HÀNG (THỐNG KÊ CHI TIẾT) ====================
-# --- TRANG CHI TIẾT HỒ SƠ KHÁCH HÀNG (MỚI) ---
+# ================= QUẢN LÝ DANH SÁCH KHÁCH HÀNG (TRANG TỔNG) =================
+@app.route('/admin/khach-hang')
+def quan_ly_khach_hang():
+    if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
+    conn = ket_noi_db()
+    
+    # Lấy danh sách khách hàng kèm tổng thống kê tiền bạc
+    khachs = conn.execute('''
+        SELECT k.id, k.ho_ten, k.sdt, k.tai_khoan, 
+               COUNT(d.id) as so_don, 
+               SUM(d.tong_tien) as tong_mua, 
+               SUM(d.tien_da_tra) as da_tra
+        FROM khach_hang k
+        LEFT JOIN don_hang d ON k.id = d.khach_hang_id
+        GROUP BY k.id
+        ORDER BY k.id DESC
+    ''').fetchall()
+    
+    conn.close()
+    return render_template('quan_ly_khach.html', khachs=khachs)
+
+
+# ================= XEM HỒ SƠ CHI TIẾT 1 KHÁCH HÀNG =================
 @app.route('/admin/khach-hang/<int:id>')
 def chi_tiet_khach(id):
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
@@ -544,6 +623,50 @@ def xoa_nguon(id):
     conn.execute('DELETE FROM nguon_nhap WHERE id=?', (id,))
     conn.commit(); conn.close()
     return redirect(url_for('quan_ly_nguon_nhap'))
+
+# ================= XỬ LÝ THANH TOÁN & ĐẶT HÀNG =================
+@app.route('/thanh-toan', methods=['GET', 'POST'])
+def thanh_toan():
+    gio_hang = session.get('gio_hang', [])
+    if not gio_hang:
+        return redirect(url_for('xem_gio_hang')) # Giỏ trống thì đuổi về
+        
+    tong_tien = sum(item['gia'] * item['so_luong'] for item in gio_hang)
+    
+    # Nếu khách bấm Nút ĐẶT HÀNG
+    if request.method == 'POST':
+        ten_khach = request.form['ten']
+        sdt = request.form['sdt']
+        dia_chi = request.form['dia_chi']
+        khach_id = session.get('khach_id', 0) # Bằng 0 nếu là khách vãng lai
+        
+        conn = ket_noi_db()
+        cur = conn.cursor()
+        
+        # 1. Tạo Đơn hàng chính
+        cur.execute('INSERT INTO don_hang (khach_hang_id, ten_khach, sdt, dia_chi, tong_tien, trang_thai) VALUES (?, ?, ?, ?, ?, ?)', 
+                    (khach_id, ten_khach, sdt, dia_chi, tong_tien, 'Chờ xử lý'))
+        don_id = cur.lastrowid
+        
+        # 2. Tạo Chi tiết đơn & Trừ tồn kho
+        for item in gio_hang:
+            cur.execute('INSERT INTO chi_tiet_don (don_hang_id, san_pham_id, so_luong, gia) VALUES (?, ?, ?, ?)', 
+                        (don_id, item['id'], item['so_luong'], item['gia']))
+            # Trừ Tồn kho (so_luong) đi, giữ nguyên (so_luong_nhap)
+            cur.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (item['so_luong'], item['id']))
+            
+        conn.commit()
+        conn.close()
+        
+        # 3. Xóa sạch giỏ hàng
+        session['gio_hang'] = []
+        session.modified = True
+        
+        # Trả về trang thông báo thành công
+        return f"<script>alert('Tuyệt vời! Sếp đã đặt hàng thành công. Mã đơn: #{don_id}'); window.location.href='/';</script>"
+
+    # Nếu truy cập bình thường thì mở giao diện Thanh toán
+    return render_template('thanh_toan.html', gio_hang=gio_hang, tong_tien=tong_tien)
 
 if __name__ == '__main__':
     Timer(1.5, lambda: webbrowser.open_new('http://127.0.0.1:5000/')).start()

@@ -22,7 +22,7 @@
     <div class="container mt-5 mb-5">
         <h2 class="fw-bold mb-4"><i class="fas fa-shopping-cart text-primary"></i> Giỏ Hàng Của Bạn</h2>
 
-        {% if session.get('gio_hang') %}
+        {% if gio_hang %}
         <div class="row g-4">
             <div class="col-md-8">
                 <div class="card cart-card p-4">
@@ -37,10 +37,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% set ns = namespace(tong=0) %}
-                            {% for sp in session['gio_hang'] %}
-                            {% set thanh_tien = sp.gia * sp.so_luong %}
-                            {% set ns.tong = ns.tong + thanh_tien %}
+                            {% for sp in gio_hang %}
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-3">
@@ -58,9 +55,15 @@
                                         <span class="fw-bold mx-1" style="width: 20px; text-align: center;">{{ sp.so_luong }}</span>
                                         <a href="/cap-nhat-gio/{{ sp.id }}/tang" class="btn btn-sm btn-outline-secondary qty-btn"><i class="fas fa-plus fa-xs"></i></a>
                                     </div>
+                                    
+                                    {% if sp.error %}
+                                        <div class="text-danger small mt-2 fw-bold text-center">
+                                            <i class="fas fa-exclamation-triangle"></i> {{ sp.error }}
+                                        </div>
+                                    {% endif %}
                                 </td>
 
-                                <td class="text-end text-danger fw-bold">{{ "{:,.0f}".format(thanh_tien) }}đ</td>
+                                <td class="text-end text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ</td>
                                 <td class="text-end">
                                     <a href="/xoa-khoi-gio/{{ sp.id }}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Bỏ sản phẩm này?')"><i class="fas fa-trash-alt"></i></a>
                                 </td>
@@ -76,7 +79,7 @@
                     <h5 class="fw-bold mb-4">Tóm tắt đơn hàng</h5>
                     <div class="d-flex justify-content-between mb-3">
                         <span class="text-muted">Tổng phụ:</span>
-                        <span class="fw-bold">{{ "{:,.0f}".format(ns.tong) }}đ</span>
+                        <span class="fw-bold">{{ "{:,.0f}".format(tong_tien) }}đ</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
                         <span class="text-muted">Phí giao hàng:</span>
@@ -84,7 +87,7 @@
                     </div>
                     <div class="d-flex justify-content-between mb-4">
                         <span class="fw-bold fs-5">TỔNG CỘNG:</span>
-                        <span class="text-danger fw-bold fs-4">{{ "{:,.0f}".format(ns.tong) }}đ</span>
+                        <span class="text-danger fw-bold fs-4">{{ "{:,.0f}".format(tong_tien) }}đ</span>
                     </div>
                     <a href="/thanh-toan" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm fs-5">TIẾN HÀNH ĐẶT HÀNG <i class="fas fa-arrow-right ms-2"></i></a>
                 </div>
@@ -98,6 +101,5 @@
         </div>
         {% endif %}
     </div>
-
 </body>
 </html>
