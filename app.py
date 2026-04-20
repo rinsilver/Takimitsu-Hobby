@@ -73,12 +73,19 @@ def trang_chu():
     return render_template('index.html', san_phams=sps, danh_mucs=dms, tu_khoa=tk, the_loai_chon=tl, kieu_hang_chon=kh)
 
 @app.route('/san-pham/<int:id>')
-def chi_tiet_san_pham(id):
+def chi_tiet(id):
     conn = ket_noi_db()
-    sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
-    anh_phu = conn.execute('SELECT * FROM hinh_anh_sp WHERE san_pham_id = ?', (id,)).fetchall()
+    sp = conn.execute('SELECT * FROM san_pham WHERE id=?', (id,)).fetchone()
+    if not sp:
+        conn.close(); return "Sản phẩm không tồn tại!", 404
+        
+    anh_phu = conn.execute('SELECT du_ong_dan FROM hinh_anh_sp WHERE san_pham_id=?', (id,)).fetchall()
+    
+    # Lấy Sản phẩm liên quan (Cùng hãng sản xuất, loại trừ sản phẩm hiện tại, lấy tối đa 4 cái)
+    sp_lien_quan = conn.execute('SELECT * FROM san_pham WHERE hang_sx=? AND id!=? LIMIT 4', (sp['hang_sx'], id)).fetchall()
+    
     conn.close()
-    return render_template('chi_tiet.html', sp=sp, anh_phu=anh_phu)
+    return render_template('chi_tiet.html', sp=sp, anh_phu=anh_phu, sp_lien_quan=sp_lien_quan)
 
 @app.route('/dang-nhap', methods=['GET', 'POST'])
 def dang_nhap():
@@ -121,6 +128,34 @@ def them_vao_gio(id):
     session['gio_hang'][str(id)] = session['gio_hang'].get(str(id), 0) + 1
     session.modified = True
     return redirect(url_for('xem_gio_hang'))
+
+# --- XÓA SẢN PHẨM KHỎI GIỎ HÀNG ---
+@app.route('/xoa-khoi-gio/<int:id>')
+def xoa_khoi_gio(id):
+    gio = session.get('gio_hang', [])
+    # Dùng list comprehension để giữ lại các sản phẩm KHÁC với id cần xóa
+    gio = [sp for sp in gio if sp['id'] != id]
+    
+    session['gio_hang'] = gio
+    session.modified = True
+    return redirect(url_for('gio_hang'))
+
+@app.route('/cap-nhat-gio/<int:id>/<hanh_dong>')
+def cap_nhat_gio(id, hanh_dong):
+    gio = session.get('gio_hang', [])
+    
+    for item in gio:
+        if item['id'] == id:
+            if hanh_dong == 'tang':
+                # (Tùy chọn) Sếp có thể check tồn kho ở đây, hiện tại cứ cho tăng thoải mái
+                item['so_luong'] += 1
+            elif hanh_dong == 'giam' and item['so_luong'] > 1:
+                item['so_luong'] -= 1
+            break
+            
+    session['gio_hang'] = gio
+    session.modified = True
+    return redirect(url_for('gio_hang'))
 
 @app.route('/gio-hang')
 def xem_gio_hang():
@@ -408,24 +443,26 @@ def quan_ly_don_hang():
                            current_page=page, total_pages=total_pages)
 
 # ==================== 2. HỒ SƠ KHÁCH HÀNG (THỐNG KÊ CHI TIẾT) ====================
-@app.route('/admin/khach-hang')
-def quan_ly_khach_hang():
+# --- TRANG CHI TIẾT HỒ SƠ KHÁCH HÀNG (MỚI) ---
+@app.route('/admin/khach-hang/<int:id>')
+def chi_tiet_khach(id):
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
-    # Gom nhóm dữ liệu: Tính tổng đơn, tổng mua, tổng đã trả của từng khách
-    khach_hangs = conn.execute('''
-        SELECT k.id, k.tai_khoan, k.ho_ten, k.sdt, 
-               COUNT(d.id) as so_don, 
-               SUM(d.tong_tien) as tong_mua, 
-               SUM(d.tien_da_tra) as tong_tra
-        FROM khach_hang k
-        LEFT JOIN don_hang d ON k.id = d.khach_hang_id
-        WHERE k.vai_tro = 'khach'
-        GROUP BY k.id
-        ORDER BY tong_mua DESC
-    ''').fetchall()
+    
+    # 1. Lấy thông tin cá nhân
+    khach = conn.execute('SELECT * FROM khach_hang WHERE id = ?', (id,)).fetchone()
+    
+    # 2. Thống kê tài chính
+    thong_ke = conn.execute('''
+        SELECT COUNT(id) as so_don, SUM(tong_tien) as tong_mua, SUM(tien_da_tra) as tong_tra 
+        FROM don_hang WHERE khach_hang_id = ?
+    ''', (id,)).fetchone()
+    
+    # 3. Lịch sử mua hàng
+    don_hangs = conn.execute('SELECT * FROM don_hang WHERE khach_hang_id = ? ORDER BY id DESC', (id,)).fetchall()
+    
     conn.close()
-    return render_template('quan_ly_khach.html', khach_hangs=khach_hangs)
+    return render_template('chi_tiet_khach.html', khach=khach, thong_ke=thong_ke, don_hangs=don_hangs)
 
 @app.route('/admin/cap-nhat-don/<int:id>', methods=['POST'])
 def cap_nhat_don(id):

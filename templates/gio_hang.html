@@ -1,126 +1,103 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
-    <title>Giỏ hàng của bạn</title>
+    <title>Giỏ Hàng - Wolves Clone</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .cart-card { border-radius: 15px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .qty-btn { width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; }
+    </style>
 </head>
-
-<body class="bg-light">
-
-    <nav class="navbar navbar-dark bg-dark mb-4 shadow">
+<body>
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">WOLVES CLONE</a>
-            <a href="/" class="text-light text-decoration-none"><i class="fas fa-home"></i> Tiếp tục mua sắm</a>
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-wolf-pack-battalion text-warning"></i> WOLVES CLONE</a>
+            <a href="/" class="btn btn-outline-light btn-sm rounded-pill"><i class="fas fa-arrow-left"></i> Tiếp tục mua sắm</a>
         </div>
     </nav>
 
-    <div class="container">
-        <h2 class="fw-bold mb-4">🛒 Giỏ Hàng Của Bạn</h2>
+    <div class="container mt-5 mb-5">
+        <h2 class="fw-bold mb-4"><i class="fas fa-shopping-cart text-primary"></i> Giỏ Hàng Của Bạn</h2>
 
-        <div class="row">
-            <div class="col-md-8 mb-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-0">
-                        {% if gio_hang %}
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">Sản phẩm</th>
-                                    <th>Đơn giá</th>
-                                    <th>Số lượng</th>
-                                    <th>Thành tiền</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in gio_hang %}
-                                <tr>
-                                    <td class="ps-3">
-                                        <div class="d-flex align-items-center">
-                                            <img src="{{ item.hinh_anh }}" alt="Ảnh" class="rounded me-3"
-                                                style="width: 60px; height: 60px; object-fit: cover;">
-                                            <span class="fw-bold">{{ item.ten }}</span>
+        {% if session.get('gio_hang') %}
+        <div class="row g-4">
+            <div class="col-md-8">
+                <div class="card cart-card p-4">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Đơn giá</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Thành tiền</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set ns = namespace(tong=0) %}
+                            {% for sp in session['gio_hang'] %}
+                            {% set thanh_tien = sp.gia * sp.so_luong %}
+                            {% set ns.tong = ns.tong + thanh_tien %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div style="width: 60px; height: 60px; border-radius: 10px; overflow: hidden; background: #f1f3f5;">
+                                            <img src="{{ sp.hinh_anh }}" style="width:100%; height:100%; object-fit:cover;">
                                         </div>
-                                    </td>
-                                    <td class="text-danger fw-bold">{{ item.gia_ban }} đ</td>
-                                    <td><span class="badge bg-secondary fs-6">{{ item.so_luong }}</span></td>
-                                    <td class="text-danger fw-bold">{{ item.thanh_tien }} đ</td>
-                                    <td>
-                                        <a href="/xoa-khoi-gio/{{ item.id }}" class="text-danger text-decoration-none"
-                                            title="Xóa">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% else %}
-                        <div class="p-5 text-center text-muted">
-                            <h4>Giỏ hàng đang trống!</h4>
-                            <p>Hãy quay lại trang chủ để chọn món đồ bạn yêu thích nhé.</p>
-                            <a href="/" class="btn btn-dark mt-2">Đi mua sắm ngay</a>
-                        </div>
-                        {% endif %}
-                    </div>
+                                        <strong class="text-dark">{{ sp.ten }}</strong>
+                                    </div>
+                                </td>
+                                <td class="text-center text-muted fw-bold">{{ "{:,.0f}".format(sp.gia) }}đ</td>
+                                
+                                <td>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <a href="/cap-nhat-gio/{{ sp.id }}/giam" class="btn btn-sm btn-outline-secondary qty-btn"><i class="fas fa-minus fa-xs"></i></a>
+                                        <span class="fw-bold mx-1" style="width: 20px; text-align: center;">{{ sp.so_luong }}</span>
+                                        <a href="/cap-nhat-gio/{{ sp.id }}/tang" class="btn btn-sm btn-outline-secondary qty-btn"><i class="fas fa-plus fa-xs"></i></a>
+                                    </div>
+                                </td>
+
+                                <td class="text-end text-danger fw-bold">{{ "{:,.0f}".format(thanh_tien) }}đ</td>
+                                <td class="text-end">
+                                    <a href="/xoa-khoi-gio/{{ sp.id }}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Bỏ sản phẩm này?')"><i class="fas fa-trash-alt"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            {% if gio_hang %}
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-3 bg-white">
-                    <h4 class="fw-bold border-bottom pb-3 mb-3">Hóa Đơn</h4>
-
+                <div class="card cart-card p-4 border-top border-primary border-4">
+                    <h5 class="fw-bold mb-4">Tóm tắt đơn hàng</h5>
                     <div class="d-flex justify-content-between mb-3">
                         <span class="text-muted">Tổng phụ:</span>
-                        <span class="fw-bold">{{ tong_tien }} đ</span>
+                        <span class="fw-bold">{{ "{:,.0f}".format(ns.tong) }}đ</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
-                        <span class="text-muted">Phí vận chuyển:</span>
-                        <span class="fw-bold text-success">Miễn phí</span>
+                        <span class="text-muted">Phí giao hàng:</span>
+                        <span class="text-success fw-bold">Miễn phí</span>
                     </div>
                     <div class="d-flex justify-content-between mb-4">
                         <span class="fw-bold fs-5">TỔNG CỘNG:</span>
-                        <span class="fw-bold fs-4 text-danger">{{ tong_tien }} đ</span>
+                        <span class="text-danger fw-bold fs-4">{{ "{:,.0f}".format(ns.tong) }}đ</span>
                     </div>
-
-                    <h5 class="fw-bold mb-3 mt-2">Thông tin giao hàng</h5>
-                    <form action="/dat-hang" method="POST">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Họ và tên</label>
-                            <input type="text" name="ten_khach" class="form-control"
-                                value="{{ user.ho_ten if user else '' }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Số điện thoại</label>
-                            <input type="text" name="sdt" class="form-control" value="{{ user.sdt if user else '' }}"
-                                required>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label small fw-bold">Địa chỉ nhận hàng</label>
-                            <textarea name="dia_chi" class="form-control" rows="2"
-                                required>{{ user.dia_chi if user else '' }}</textarea>
-                        </div>
-
-                        {% if is_admin or is_khach %}
-                        <button type="submit" class="btn btn-danger w-100 py-3 fw-bold fs-5 text-uppercase shadow-sm">
-                            Xác nhận đặt hàng
-                        </button>
-                        {% else %}
-                        <div class="alert alert-warning text-center">
-                            <p class="mb-2 small">Bạn cần đăng nhập để đặt hàng</p>
-                            <a href="/dang-nhap" class="btn btn-dark w-100 fw-bold">ĐĂNG NHẬP NGAY</a>
-                        </div>
-                        {% endif %}
-                    </form>
+                    <a href="/thanh-toan" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm fs-5">TIẾN HÀNH ĐẶT HÀNG <i class="fas fa-arrow-right ms-2"></i></a>
                 </div>
             </div>
-            {% endif %}
         </div>
+        {% else %}
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+            <h1 class="display-1 text-muted mb-4"><i class="fas fa-shopping-basket"></i></h1>
+            <h4 class="text-muted mb-4">Giỏ hàng của sếp đang trống!</h4>
+            <a href="/" class="btn btn-dark rounded-pill px-5 py-3 fw-bold">ĐI MUA SẮM NGAY</a>
+        </div>
+        {% endif %}
     </div>
-</body>
 
+</body>
 </html>

@@ -3,120 +3,274 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ sp.ten }}</title>
+    <title>{{ sp.ten }} - Wolves Clone</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .product-card {
+            background: #fff;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .main-img-box {
+            height: 450px;
+            background-color: #f1f3f5;
+            border-radius: 15px;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-img-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+
+        .main-img-box:hover img {
+            transform: scale(1.05);
+        }
+
+        .thumb-box {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            overflow: hidden;
+            background: #fff;
+            transition: 0.2s;
+        }
+
+        .thumb-box:hover,
+        .thumb-box.active {
+            border-color: #0d6efd;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+        }
+
+        .thumb-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Box giá tiền mới - Gọn gàng hơn */
+        .price-box {
+            background-color: #fdf2f2;
+            border: 1px solid #f8d7da;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .price-text {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #dc3545;
+            line-height: 1;
+        }
+
+        /* Ảnh Zoom trong Modal */
+        .carousel-item img {
+            max-height: 85vh;
+            object-fit: contain;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 
-<body class="bg-light">
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5 shadow">
+<body>
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">WOLVES CLONE</a>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link text-white" href="/">Trang chủ</a></li>
-
-                    {% if is_admin %}
-                    <li class="nav-item">
-                        <a class="nav-link text-warning fw-bold" href="/admin">
-                            <i class="fas fa-user-shield me-1"></i> Chào, Sếp Admin
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-sm btn-outline-warning ms-2" href="/admin">Vào Quản Trị</a>
-                    </li>
-                    <li class="nav-item"><a class="nav-link text-white ms-2" href="/dang-xuat">Thoát</a></li>
-
-                    {% elif is_khach %}
-                    <li class="nav-item">
-                        <a class="nav-link text-info fw-bold" href="#">
-                            <i class="fas fa-user me-1"></i> Chào, {{ khach_ten }}
-                        </a>
-                    </li>
-                    <li class="nav-item"><a class="nav-link text-white ms-2" href="/dang-xuat">Đăng xuất</a></li>
-
-                    {% else %}
-                    <li class="nav-item"><a class="nav-link text-white" href="/dang-nhap">Đăng nhập</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="/dang-ky">Đăng ký</a></li>
-                    {% endif %}
-
-                    <li class="nav-item ms-3">
-                        <a class="btn btn-primary btn-sm position-relative" href="/gio-hang">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                {{ so_luong_gio_hang }}
-                            </span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-wolf-pack-battalion text-warning"></i> WOLVES
+                CLONE</a>
+            <a href="/" class="btn btn-outline-light btn-sm rounded-pill"><i class="fas fa-arrow-left"></i> Về Cửa
+                Hàng</a>
         </div>
     </nav>
 
-    <div class="container mb-5">
-        <a href="/" class="btn btn-outline-dark mb-4 fw-bold"><i class="fas fa-arrow-left me-2"></i> Quay lại trang
-            chủ</a>
+    <div class="container mt-5 mb-5">
+        <div class="product-card p-4 p-md-5 mb-5">
+            <div class="row g-5">
+                <div class="col-md-6">
+                    <div class="main-img-box shadow-sm mb-3" data-bs-toggle="modal" data-bs-target="#imageSliderModal">
+                        <img id="mainImage" src="{{ sp.hinh_anh }}">
+                    </div>
 
-        <div class="row bg-white p-5 rounded-4 shadow-sm">
-            <div class="col-md-6 mb-4">
-                <img id="mainImage" src="{{ sp.hinh_anh }}" class="img-fluid rounded w-100 shadow-sm mb-3"
-                    style="height: 500px; object-fit: cover;">
-                <div class="d-flex gap-2 overflow-auto justify-content-center p-2 rounded bg-light">
-                    <img src="{{ sp.hinh_anh }}" onclick="document.getElementById('mainImage').src=this.src"
-                        style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
-                    {% for anh in anh_phu %}
-                    <img src="{{ anh.du_ong_dan }}" onclick="document.getElementById('mainImage').src=this.src"
-                        style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" class="rounded border">
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <h1 class="fw-bold text-uppercase">
-                    {{ sp.ten }}
-                    {% if sp.kieu_hang == 'Pre-order' %}
-                    <span class="badge bg-warning text-dark fs-6 ms-2 align-middle">⏳ PRE-ORDER</span>
-                    {% endif %}
-                </h1>
-                <p class="text-muted">Hãng: <strong class="text-dark">{{ sp.hang_sx }}</strong> | Phân loại: {{
-                    sp.the_loai }}</p>
-                <hr>
-
-                <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-3 shadow-sm">
-                    <h2 class="text-danger fw-bold m-0 fs-1">{{ sp.gia_ban }} đ</h2>
-                    <div class="text-end">
-                        {% if sp.kieu_hang == 'Pre-order' %}
-                        <span class="badge bg-info text-dark px-3 py-2 fs-6 rounded-pill">Sắp ra mắt</span>
-                        {% elif sp.so_luong > 0 %}
-                        <span class="badge bg-success px-3 py-2 fs-6 rounded-pill">ĐANG CÓ HÀNG ({{ sp.so_luong
-                            }})</span>
-                        {% else %}
-                        <span class="badge bg-danger px-3 py-2 fs-6 rounded-pill">HẾT HÀNG</span>
-                        {% endif %}
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <div class="thumb-box active" onclick="changeImage('{{ sp.hinh_anh }}', 0, this)">
+                            <img src="{{ sp.hinh_anh }}">
+                        </div>
+                        {% for anh in anh_phu %}
+                        <div class="thumb-box shadow-sm"
+                            onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)">
+                            <img src="{{ anh.du_ong_dan }}">
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
 
-                {% if sp.kieu_hang == 'Pre-order' %}
-                <div class="alert alert-warning border-0 shadow-sm mt-3">
-                    <h5 class="fw-bold"><i class="fas fa-clock me-2"></i>Thông tin Đặt trước:</h5>
-                    <p class="mb-1 text-danger"><strong>💰 Số tiền cọc:</strong> {{ sp.tien_coc }} đ</p>
-                    <p class="mb-0"><strong>📅 Ngày phát hành dự kiến:</strong> {{ sp.ngay_phat_hanh }}</p>
-                </div>
-                {% endif %}
+                <div class="col-md-6">
+                    <span class="badge bg-dark rounded-pill px-3 py-2 mb-2">{{ sp.hang_sx }}</span>
+                    <span class="badge bg-secondary rounded-pill px-3 py-2 mb-2">{{ sp.the_loai }}</span>
+                    {% if sp.kieu_hang == 'Pre-order' %}
+                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2 mb-2 fw-bold"><i
+                            class="fas fa-clock"></i> Hàng Pre-order</span>
+                    {% endif %}
 
-                <div class="mb-4 mt-4">
-                    <h5 class="fw-bold border-bottom pb-2">📘 MÔ TẢ SẢN PHẨM</h5>
-                    <p class="text-secondary" style="white-space: pre-line;">{{ sp.mo_ta }}</p>
-                </div>
+                    <h2 class="fw-bold mt-2 mb-3 text-dark">{{ sp.ten }}</h2>
 
-                <a href="/them-vao-gio/{{ sp.id }}" class="btn btn-dark btn-lg w-100 py-3 fw-bold fs-5 shadow-sm">
-                    <i class="fas fa-cart-plus me-2"></i> Thêm vào giỏ hàng
-                </a>
+                    <div class="price-box mb-4">
+                        <div class="price-text">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                        {% if sp.kieu_hang == 'Pre-order' and sp.tien_coc > 0 %}
+                        <hr class="my-2" style="border-color: #f5c2c7;">
+                        <div class="text-danger fw-bold fs-6"><i class="fas fa-info-circle"></i> Tiền cọc trước: {{
+                            "{:,.0f}".format(sp.tien_coc) }}đ</div>
+                        <div class="text-muted small mt-1"><i class="fas fa-calendar-alt"></i> Dự kiến phát hành: {{
+                            sp.ngay_phat_hanh if sp.ngay_phat_hanh else 'Chưa có lịch' }}</div>
+                        {% endif %}
+                    </div>
+
+                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fas fa-align-left text-primary"></i> MÔ TẢ SẢN
+                        PHẨM</h6>
+                    <p class="text-muted lh-lg mb-4" style="white-space: pre-line; font-size: 0.95rem;">{{ sp.mo_ta if
+                        sp.mo_ta else 'Chưa có thông tin mô tả cho sản phẩm này.' }}</p>
+
+                    {% if sp.so_luong > 0 or sp.kieu_hang == 'Pre-order' %}
+                    <a href="/them-vao-gio/{{ sp.id }}"
+                        class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill shadow">
+                        <i class="fas fa-cart-plus me-2"></i> THÊM VÀO GIỎ HÀNG
+                    </a>
+                    <div class="text-center mt-3 text-success fw-bold small"><i class="fas fa-check-circle"></i> Kho
+                        còn: {{ sp.so_luong }} món</div>
+                    {% else %}
+                    <button class="btn btn-secondary w-100 py-3 fw-bold fs-5 rounded-pill" disabled><i
+                            class="fas fa-box-open"></i> TẠM HẾT HÀNG</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if sp_lien_quan %}
+        <h4 class="fw-bold mb-4 border-start border-primary border-4 ps-3">SẢN PHẨM CÙNG HÃNG</h4>
+        <div class="row g-4 mb-5">
+            {% for splq in sp_lien_quan %}
+            <div class="col-md-3 col-6">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                    <a href="/san-pham/{{ splq.id }}">
+                        <div
+                            style="height: 200px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ splq.hinh_anh }}"
+                                style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                        </div>
+                    </a>
+                    <div class="card-body text-center p-3">
+                        <h6 class="text-truncate fw-bold mb-2">{{ splq.ten }}</h6>
+                        <div class="text-danger fw-bold">{{ "{:,.0f}".format(splq.gia_ban) }}đ</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="modal fade" id="imageSliderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"
+                        aria-label="Close" style="filter: invert(1); z-index: 1055; position: relative;"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="productCarousel" class="carousel slide" data-bs-ride="false">
+                        <div class="carousel-inner text-center">
+                            <div class="carousel-item active">
+                                <img src="{{ sp.hinh_anh }}" class="d-block w-100">
+                            </div>
+                            {% for anh in anh_phu %}
+                            <div class="carousel-item">
+                                <img src="{{ anh.du_ong_dan }}" class="d-block w-100">
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if anh_phu %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3"
+                                aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-3"
+                                aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <footer class="bg-dark text-light pt-5 pb-4 mt-auto border-top border-warning border-3">
+        <div class="container">
+            <div class="row text-center text-md-start">
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-wolf-pack-battalion"></i> WOLVES CLONE</h5>
+                    <p class="text-white-50 small lh-lg">Cửa hàng mô hình hàng đầu với dịch vụ Pre-order uy tín, nhanh
+                        chóng. Chuyên cung cấp hàng chính hãng từ Nhật Bản.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-white">LIÊN HỆ CHÚNG TÔI</h5>
+                    <div class="text-white-50 small lh-lg">
+                        <p class="mb-2"><i class="fas fa-phone-alt me-2 text-warning"></i> Hotline: 0909.888.999</p>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-warning"></i> 123 Đường Sói, Quận Tân
+                            Bình, TP.HCM</p>
+                        <p class="mb-0"><i class="fas fa-envelope me-2 text-warning"></i> admin@wolvesclone.com</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-white">KẾT NỐI</h5>
+                    <div class="d-flex gap-3 justify-content-center justify-content-md-start mt-3">
+                        <a href="#" class="btn btn-outline-warning rounded-circle"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="btn btn-outline-warning rounded-circle"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="btn btn-outline-warning rounded-circle"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center text-white-50 small mt-4 pt-3 border-top border-secondary">
+                &copy; 2026 Wolves Clone. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function changeImage(src, slideIndex, element) {
+            document.getElementById('mainImage').src = src;
+
+            let thumbs = document.querySelectorAll('.thumb-box');
+            thumbs.forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+
+            var myCarousel = document.querySelector('#productCarousel');
+            var carousel = bootstrap.Carousel.getInstance(myCarousel) || new bootstrap.Carousel(myCarousel);
+            // Ép kiểu chữ thành số để Slider chạy đúng
+            carousel.to(parseInt(slideIndex));
+        }
+    </script>
 </body>
 
 </html>
