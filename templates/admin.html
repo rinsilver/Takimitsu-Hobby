@@ -119,8 +119,9 @@
             letter-spacing: 1px;
             font-size: 0.8rem;
             padding: 15px 20px;
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #eaeaea;
+            background-color: #212529 !important;
+            color: #ffffff !important;
+            border-bottom: 2px solid #373b3e;
         }
 
         .premium-table tbody td {
@@ -197,20 +198,28 @@
     <nav class="admin-nav">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
-                <div class="avatar-box shadow-sm"><i class="fas fa-user-crown fa-lg text-dark"></i></div>
+                <div class="avatar-box shadow-sm"><i class="fas fa-user-shield fa-lg text-dark"></i></div>
                 <h5 class="mb-0 fw-bold">QUẢN TRỊ VIÊN: <span class="text-primary">{{ session.get('khach_ten', 'Sếp
                         Lớn') }}</span></h5>
             </div>
-            <div class="nav-btn-group d-flex gap-2">
+
+            <div class="nav-btn-group d-flex gap-2 align-items-center">
                 <a href="/admin" class="btn btn-dark active"><i class="fas fa-boxes"></i> Kho hàng</a>
                 <a href="/admin/cong-no-nguon" class="btn btn-outline-dark"><i class="fas fa-file-invoice-dollar"></i>
                     Nợ & Lịch Về</a>
                 <a href="/admin/don-hang" class="btn btn-outline-dark"><i class="fas fa-shopping-basket"></i> Đơn
                     khách</a>
+                <a href="/admin/khach-hang" class="btn btn-outline-dark"><i class="fas fa-users"></i> Khách hàng</a>
                 <a href="/danh-muc" class="btn btn-outline-dark"><i class="fas fa-folder"></i> Danh mục</a>
                 <a href="/admin/hang-sx" class="btn btn-outline-dark"><i class="fas fa-industry"></i> Hãng SX</a>
                 <a href="/admin/nguon-nhap" class="btn btn-outline-danger"><i class="fas fa-user-secret"></i> Nguồn (Bí
                     mật)</a>
+
+                <div class="vr mx-1"></div>
+
+                <a href="/" class="btn btn-warning fw-bold shadow-sm" target="_blank">
+                    <i class="fas fa-store"></i> Xem Web
+                </a>
             </div>
         </div>
     </nav>
@@ -302,7 +311,13 @@
                                     <div class="fw-bold text-dark">{{ sp.ten }}</div>
                                     <small class="text-muted">Mã: {{ sp. hang_sx }}-{{ sp.id }}</small>
                                 </td>
-                                <td><span class="badge badge- SHF">{{ sp.the_loai }}</span></td>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill shadow-sm px-3 py-2 fw-bold"
+                                        style="letter-spacing: 0.5px;">
+                                        <i class="fas fa-tag fa-xs me-1"></i> {{ sp.the_loai if sp.the_loai else 'Chưa
+                                        phân loại' }}
+                                    </span>
+                                </td>
                                 <td><span class="badge bg-outline-dark border border-dark text-dark">{{ sp.hang_sx
                                         }}</span></td>
                                 <td class="text-center">

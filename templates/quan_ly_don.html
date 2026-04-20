@@ -2,69 +2,180 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản Lý Đơn Hàng</title>
+    <title>Quản lý Đơn Khách - V6 Premium</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .premium-card { background: #fff; border-radius: 15px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .nav-btn-group .btn { border-radius: 30px; font-weight: 600; padding: 10px 20px; }
+        .premium-table thead th { text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; padding: 15px 20px; background-color: #212529 !important; color: #ffffff !important; border-bottom: 2px solid #373b3e; }
+        .premium-table tbody td { padding: 15px 20px; vertical-align: middle; border-bottom: 1px solid #f2f2f2; }
+    </style>
 </head>
-<body class="bg-light">
-
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container-fluid px-4">
-            <span class="navbar-brand mb-0 h1">ERP - QUẢN LÝ ĐƠN HÀNG</span>
-            <div>
-                <a href="/admin/thong-ke" class="btn btn-sm btn-warning fw-bold me-2">📊 Xem Thống Kê</a>
-                <a href="/admin" class="btn btn-sm btn-outline-light">📦 Về Kho Hàng</a>
+<body>
+    <div class="container-fluid px-4 mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="btn-group shadow-sm nav-btn-group">
+                <a href="/admin" class="btn btn-dark"><i class="fas fa-boxes"></i> Kho hàng</a>
+                <a href="/admin/cong-no-nguon" class="btn btn-outline-dark"><i class="fas fa-file-invoice-dollar"></i> Nợ Nguồn & Lịch Về</a>
+                <a href="/admin/don-hang" class="btn btn-primary active"><i class="fas fa-shopping-basket"></i> Đơn khách</a>
+                <a href="/admin/khach-hang" class="btn btn-outline-dark"><i class="fas fa-users"></i> Khách hàng</a>
+                <a href="/danh-muc" class="btn btn-outline-dark"><i class="fas fa-folder"></i> Danh mục</a>
+                <a href="/admin/hang-sx" class="btn btn-outline-dark"><i class="fas fa-industry"></i> Hãng SX</a>
+                <a href="/admin/nguon-nhap" class="btn btn-outline-danger"><i class="fas fa-user-secret"></i> Nguồn (Bí mật)</a>
             </div>
+            <a href="/" class="btn btn-warning fw-bold rounded-pill shadow-sm" target="_blank">
+                <i class="fas fa-store"></i> Xem Web Shop
+            </a>
         </div>
-    </nav>
 
-    <div class="container-fluid px-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0 table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Mã Đơn</th>
-                            <th>Khách Hàng</th>
-                            <th>Thông tin Giao hàng</th>
-                            <th>Ngày Đặt</th>
-                            <th class="text-danger">Tổng Tiền</th>
-                            <th>Trạng Thái / Cập nhật</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dh in don_hangs %}
-                        <tr>
-                            <td class="fw-bold">#{{ dh.id }}</td>
-                            <td class="fw-bold">{{ dh.ten_khach }}</td>
-                            <td>
-                                📞 {{ dh.sdt }} <br>
-                                🏠 {{ dh.dia_chi }}
-                            </td>
-                            <td class="text-muted">{{ dh.ngay_dat }}</td>
-                            <td class="text-danger fw-bold fs-5">{{ dh.tong_tien }} đ</td>
-                            <td>
-                                <form action="/admin/cap-nhat-don/{{ dh.id }}" method="POST" class="d-flex gap-2">
-                                    <select name="trang_thai" class="form-select form-select-sm" 
-                                        style="width: 130px; 
-                                        {% if dh.trang_thai == 'Hoàn thành' %} background-color: #d1e7dd; 
-                                        {% elif dh.trang_thai == 'Chờ xử lý' %} background-color: #fff3cd; 
-                                        {% endif %}">
-                                        <option value="Chờ xử lý" {% if dh.trang_thai == 'Chờ xử lý' %}selected{% endif %}>Chờ xử lý</option>
-                                        <option value="Đang giao" {% if dh.trang_thai == 'Đang giao' %}selected{% endif %}>Đang giao</option>
-                                        <option value="Hoàn thành" {% if dh.trang_thai == 'Hoàn thành' %}selected{% endif %}>Hoàn thành</option>
-                                        <option value="Đã hủy" {% if dh.trang_thai == 'Đã hủy' %}selected{% endif %}>Đã hủy</option>
+        <div class="premium-card p-4 mb-4">
+            <form method="GET" action="/admin/don-hang" class="row g-2 align-items-end m-0">
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted mb-1">Trạng thái đơn:</label>
+                    <select name="trang_thai" class="form-select rounded-pill shadow-sm border-0 bg-light">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="Chờ xử lý" {{ 'selected' if trang_thai_chon == 'Chờ xử lý' }}>⏳ Chờ xử lý</option>
+                        <option value="Đã cọc" {{ 'selected' if trang_thai_chon == 'Đã cọc' }}>💰 Đã cọc</option>
+                        <option value="Đang giao" {{ 'selected' if trang_thai_chon == 'Đang giao' }}>🚚 Đang giao</option>
+                        <option value="Hoàn thành" {{ 'selected' if trang_thai_chon == 'Hoàn thành' }}>✅ Hoàn thành</option>
+                        <option value="Đã hủy" {{ 'selected' if trang_thai_chon == 'Đã hủy' }}>❌ Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted mb-1">Sắp xếp theo:</label>
+                    <select name="sap_xep" class="form-select rounded-pill shadow-sm border-0 bg-light">
+                        <option value="moi_nhat" {{ 'selected' if sap_xep_chon == 'moi_nhat' }}>Ngày đặt: Mới nhất</option>
+                        <option value="cu_nhat" {{ 'selected' if sap_xep_chon == 'cu_nhat' }}>Ngày đặt: Cũ nhất</option>
+                        <option value="tien_cao" {{ 'selected' if sap_xep_chon == 'tien_cao' }}>Tổng tiền: Giảm dần</option>
+                        <option value="ten_az" {{ 'selected' if sap_xep_chon == 'ten_az' }}>Tên Khách: A -> Z</option>
+                        <option value="ten_za" {{ 'selected' if sap_xep_chon == 'ten_za' }}>Tên Khách: Z -> A</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold shadow-sm"><i class="fas fa-filter"></i> LỌC & SẮP XẾP</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="premium-card overflow-hidden mb-4">
+            <table class="table premium-table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Mã Đơn & Khách Hàng</th>
+                        <th>Thông tin SP & Lịch Về Hàng</th>
+                        <th>Tài Chính</th>
+                        <th>Cập nhật Tiền & Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dh in don_hangs %}
+                    {% set khach_no = dh.tong_tien - dh.tien_da_tra %}
+                    <tr class="{{ 'opacity-75 bg-light' if dh.trang_thai == 'Hoàn thành' or dh.trang_thai == 'Đã hủy' else '' }}">
+                        
+                        <td class="ps-4">
+                            <span class="fw-bold fs-5 text-primary">#{{ dh.id }}</span><br>
+                            <span class="badge bg-dark rounded-pill mb-1 mt-1"><i class="fas fa-user"></i> {{ dh.ten_khach }}</span><br>
+                            <small class="text-muted"><i class="fas fa-phone-alt"></i> {{ dh.sdt }}</small><br>
+                            <small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ dh.dia_chi }}</small><br>
+                            <small class="text-secondary"><i class="fas fa-calendar-alt"></i> {{ dh.ngay_dat[:16] }}</small>
+                        </td>
+                        
+                        <td>
+                            <ul class="list-unstyled m-0">
+                                {% for ct in dh.chi_tiet %}
+                                <li class="d-flex align-items-center gap-3 mb-2 pb-2 border-bottom border-light">
+                                    <div class="shadow-sm border border-light" style="width: 50px; height: 50px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: #fff;">
+                                        <img src="{{ ct.hinh_anh }}" onerror="this.src='https://via.placeholder.com/50'" style="width: 100%; height: 100%; object-fit: cover;">
+                                    </div>
+                                    <div class="flex-grow-1 lh-sm">
+                                        <strong class="text-dark d-block" style="font-size: 0.9rem;">{{ ct.ten }} <span class="text-muted fw-normal">(x{{ ct.so_luong }})</span></strong>
+                                        <span class="text-danger fw-bold" style="font-size: 0.85rem;">{{ "{:,.0f}".format(ct.gia) }}đ</span>
+                                        {% if ct.kieu_hang == 'Pre-order' %}
+                                            <br><span class="text-primary fw-bold" style="font-size: 0.75rem;"><i class="fas fa-clock"></i> Phát hành: {{ ct.ngay_phat_hanh if ct.ngay_phat_hanh else 'Chưa rõ' }}</span>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+
+                        <td>
+                            <div class="mb-1">Tổng bill: <strong class="fs-6">{{ "{:,.0f}".format(dh.tong_tien) }}đ</strong></div>
+                            <div class="text-success fw-bold">Đã trả: {{ "{:,.0f}".format(dh.tien_da_tra) }}đ</div>
+                            {% if khach_no > 0 %}
+                                <div class="text-danger fw-bold">Còn nợ: {{ "{:,.0f}".format(khach_no) }}đ</div>
+                            {% else %}
+                                <span class="badge bg-success rounded-pill mt-1">ĐÃ THU ĐỦ</span>
+                            {% endif %}
+                        </td>
+
+                        <td style="min-width: 260px;">
+                            <form action="/admin/cap-nhat-don/{{ dh.id }}" method="POST" class="m-0">
+                                <div class="input-group input-group-sm mb-2 shadow-sm rounded-pill overflow-hidden border border-light">
+                                    <span class="input-group-text bg-white border-0 text-success"><i class="fas fa-money-bill-wave"></i></span>
+                                    <input type="number" name="so_tien" value="0" min="0" class="form-control border-0 bg-light" required>
+                                    <select name="hanh_dong" class="form-select border-0 bg-white fw-bold text-dark" style="max-width: 85px; box-shadow: none;">
+                                        <option value="cong">+ Thêm</option>
+                                        <option value="sua">Sửa</option>
                                     </select>
-                                    <button type="submit" class="btn btn-sm btn-dark">Lưu</button>
+                                </div>
+                                
+                                <div class="input-group input-group-sm mb-1 shadow-sm rounded-pill overflow-hidden border border-light">
+                                    <span class="input-group-text bg-white border-0 text-primary"><i class="fas fa-info-circle"></i></span>
+                                    <select name="trang_thai" class="form-select border-0 bg-light" style="box-shadow: none;">
+                                        <option value="Chờ xử lý" {{ 'selected' if dh.trang_thai == 'Chờ xử lý' }}>Chờ xử lý</option>
+                                        <option value="Đã cọc" {{ 'selected' if dh.trang_thai == 'Đã cọc' }}>Đã cọc</option>
+                                        <option value="Đang giao" {{ 'selected' if dh.trang_thai == 'Đang giao' }}>Đang giao</option>
+                                        <option value="Hoàn thành" {{ 'selected' if dh.trang_thai == 'Hoàn thành' }}>Hoàn thành</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary fw-bold px-3"><i class="fas fa-save"></i></button>
+                                </div>
+                            </form>
+
+                            {% if dh.trang_thai != 'Đã hủy' %}
+                            <div class="text-end pe-2 mt-2">
+                                <form action="/admin/huy-don/{{ dh.id }}" method="POST" class="m-0" onsubmit="return confirm('Sếp chắc chắn muốn HỦY đơn này và hoàn số lượng vào kho chứ?')">
+                                    <button type="submit" class="btn btn-link text-danger p-0 fw-bold text-decoration-none" style="font-size: 0.75rem;">
+                                        <i class="fas fa-times-circle"></i> Hủy đơn này
+                                    </button>
                                 </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="6" class="text-center py-4">Chưa có đơn hàng nào!</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center mt-2">
+                                <span class="badge bg-danger rounded-pill px-3 py-1 shadow-sm"><i class="fas fa-ban"></i> ĐƠN ĐÃ HỦY</span>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                    
+                    {% if not don_hangs %}
+                    <tr><td colspan="4" class="text-center py-5 text-muted fw-bold">Sếp chưa có đơn hàng nào hoặc không có đơn khớp bộ lọc!</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
+
+        {% if total_pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ 'disabled' if current_page == 1 else '' }}">
+                    <a class="page-link rounded-pill mx-1 text-dark" href="/admin/don-hang?page={{ current_page - 1 }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">Trang trước</a>
+                </li>
+                {% for p in range(1, total_pages + 1) %}
+                <li class="page-item {{ 'active' if p == current_page else '' }}">
+                    <a class="page-link rounded-circle mx-1 {{ 'bg-dark border-dark' if p == current_page else 'text-dark' }}" href="/admin/don-hang?page={{ p }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">{{ p }}</a>
+                </li>
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if current_page == total_pages else '' }}">
+                    <a class="page-link rounded-pill mx-1 text-dark" href="/admin/don-hang?page={{ current_page + 1 }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">Trang sau</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
     </div>
 </body>
 </html>
