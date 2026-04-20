@@ -501,17 +501,32 @@ def quan_ly_don_hang():
 
 # ==================== 2. HỒ SƠ KHÁCH HÀNG (THỐNG KÊ CHI TIẾT) ====================
 # ================= QUẢN LÝ DANH SÁCH KHÁCH HÀNG (TRANG TỔNG) =================
-@app.route('/admin/khach-hang')
+@app.route('/admin/khach-hang', methods=['GET', 'POST'])
 def quan_ly_khach_hang():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
-    # Lấy danh sách khách hàng kèm tổng thống kê tiền bạc
+    # XỬ LÝ KHI BẤM NÚT TẠO KHÁCH HÀNG MỚI
+    if request.method == 'POST':
+        ho_ten = request.form['ho_ten']
+        tai_khoan = request.form['tai_khoan']
+        mat_khau = request.form['mat_khau']
+        sdt = request.form['sdt']
+        dia_chi = request.form['dia_chi']
+        
+        try:
+            conn.execute('INSERT INTO khach_hang (ho_ten, tai_khoan, mat_khau, sdt, dia_chi) VALUES (?,?,?,?,?)',
+                        (ho_ten, tai_khoan, mat_khau, sdt, dia_chi))
+            conn.commit()
+        except:
+            pass # Tránh lỗi nếu trùng tài khoản
+            
+    # LẤY DANH SÁCH HIỂN THỊ
     khachs = conn.execute('''
         SELECT k.id, k.ho_ten, k.sdt, k.tai_khoan, 
                COUNT(d.id) as so_don, 
-               SUM(d.tong_tien) as tong_mua, 
-               SUM(d.tien_da_tra) as da_tra
+               IFNULL(SUM(d.tong_tien), 0) as tong_mua, 
+               IFNULL(SUM(d.tien_da_tra), 0) as da_tra
         FROM khach_hang k
         LEFT JOIN don_hang d ON k.id = d.khach_hang_id
         GROUP BY k.id
