@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hồ Sơ Của Tôi - Wolves Clone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f5f7;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .profile-card {
+            background: #fff;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-card {
+            border-left: 4px solid #111;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-status {
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark py-3 shadow-sm border-bottom border-danger border-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-wolf-pack-battalion text-danger"></i> WOLVES
+                CLONE</a>
+            <a href="/" class="btn btn-outline-light rounded-pill px-4"><i class="fas fa-arrow-left"></i> Về cửa
+                hàng</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5 mb-5">
+        <h2 class="fw-bold mb-4 text-uppercase"><i class="fas fa-user-circle text-danger"></i> HỒ SƠ CỦA TÔI</h2>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="profile-card p-4">
+                    <div class="text-center mb-4">
+                        <div class="bg-dark text-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm"
+                            style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h4 class="fw-bold mt-3 mb-0">{{ khach.ho_ten }}</h4>
+                        <span class="badge bg-secondary mt-2">@{{ khach.tai_khoan }}</span>
+                    </div>
+
+                    <hr class="text-muted border-2">
+
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1 text-uppercase">Số điện thoại</small>
+                        <div class="fw-bold fs-5"><i class="fas fa-phone-alt text-danger me-2"></i> {{ khach.sdt }}
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <small class="text-muted fw-bold d-block mb-1 text-uppercase">Địa chỉ giao hàng mặc định</small>
+                        <div><i class="fas fa-map-marker-alt text-danger me-2"></i> {{ khach.dia_chi if khach.dia_chi
+                            else 'Chưa cập nhật địa chỉ' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="profile-card p-4 h-100">
+                    <h4 class="fw-bold border-bottom pb-3 mb-4"><i class="fas fa-history"></i> LỊCH SỬ MUA HÀNG</h4>
+
+                    {% if don_hangs %}
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Mã Đơn</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Tổng Tiền</th>
+                                    <th>Còn Nợ</th>
+                                    <th>Trạng Thái</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dh in don_hangs %}
+                                <tr>
+                                    <td>
+                                        <a href="/admin/don-hang/{{ dh['id'] }}"
+                                            class="fw-bold text-primary text-decoration-none">
+                                            #{{ dh['id'] }}
+                                        </a>
+                                    </td>
+                                    <td><small class="text-muted">{{ dh['ngay_dat'][:16] }}</small></td>
+                                    <td class="fw-bold">{{ "{:,.0f}".format(dh['tong_tien']) }}đ</td>
+                                    <td class="fw-bold text-danger">{{ "{:,.0f}".format(dh['tong_tien'] -
+                                        dh['tien_da_tra']) }}đ</td>
+                                    <td>
+                                        {% if dh['trang_thai'] == 'Chờ xử lý' %}
+                                        <span class="badge bg-warning text-dark px-2 py-1 rounded-pill">Chờ xử lý</span>
+                                        {% elif dh['trang_thai'] == 'Đang giao hàng' %}
+                                        <span class="badge bg-info text-dark px-2 py-1 rounded-pill">Đang giao</span>
+                                        {% elif dh['trang_thai'] == 'Hoàn thành' %}
+                                        <span class="badge bg-success px-2 py-1 rounded-pill">Hoàn thành</span>
+                                        {% elif dh['trang_thai'] == 'Đã hủy' %}
+                                        <span class="badge bg-danger px-2 py-1 rounded-pill">Đã hủy</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="/admin/don-hang/{{ dh['id'] }}"
+                                            class="btn btn-sm btn-outline-dark rounded-pill fw-bold px-3 shadow-sm">
+                                            Xem chi tiết <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-box-open text-muted" style="font-size: 4rem;"></i>
+                        <h5 class="text-muted mt-3 fw-bold">Sếp chưa có đơn hàng nào!</h5>
+                        <a href="/" class="btn btn-dark rounded-pill px-4 py-2 mt-2 fw-bold">MUA SẮM NGAY</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -590,27 +590,27 @@ def cap_nhat_don(id):
     return redirect(url_for('quan_ly_don_hang'))
 
 # ================= XÓA / HỦY ĐƠN HÀNG =================
+# ================= HỦY ĐƠN HÀNG (GIỮ LẠI LỊCH SỬ) =================
 @app.route('/admin/huy-don/<int:id>')
 def huy_don(id):
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
-    # 1. Lấy thông tin các món đồ trong đơn để HOÀN LẠI VÀO KHO
-    items = conn.execute('SELECT san_pham_id, so_luong FROM chi_tiet_don WHERE don_hang_id = ?', (id,)).fetchall()
+    # Kiểm tra xem đơn đã hủy chưa (tránh cộng dồn kho nhiều lần)
+    dh = conn.execute('SELECT trang_thai FROM don_hang WHERE id = ?', (id,)).fetchone()
     
-    for item in items:
-        # Cộng trả lại số lượng cho sản phẩm
-        conn.execute('UPDATE san_pham SET so_luong = so_luong + ? WHERE id = ?', 
-                     (item['so_luong'], item['san_pham_id']))
+    if dh and dh['trang_thai'] != 'Đã hủy':
+        # 1. Lấy thông tin đồ trong đơn để HOÀN LẠI VÀO KHO
+        items = conn.execute('SELECT san_pham_id, so_luong FROM chi_tiet_don WHERE don_hang_id = ?', (id,)).fetchall()
+        for item in items:
+            conn.execute('UPDATE san_pham SET so_luong = so_luong + ? WHERE id = ?', 
+                         (item['so_luong'], item['san_pham_id']))
+            
+        # 2. CẬP NHẬT trạng thái thay vì xóa
+        conn.execute('UPDATE don_hang SET trang_thai = "Đã hủy" WHERE id = ?', (id,))
+        conn.commit()
         
-    # 2. Xóa sạch dấu vết của đơn hàng này trong Database
-    conn.execute('DELETE FROM chi_tiet_don WHERE don_hang_id = ?', (id,))
-    conn.execute('DELETE FROM don_hang WHERE id = ?', (id,))
-    
-    conn.commit()
     conn.close()
-    
-    # Quay trở lại đúng cái trang sếp vừa đứng (trang Quản lý đơn hoặc trang Hồ sơ khách)
     return redirect(request.referrer or url_for('quan_ly_don_hang'))
 
 @app.route('/admin/thong-ke')
@@ -678,25 +678,34 @@ def chi_tiet_don_json(id):
         "items": [{"ten": i['ten'], "so_luong": i['so_luong'], "gia": i['gia'], "hinh_anh": i['hinh_anh']} for i in items]
     }
 
-# ================= XEM VÀ CHỈNH SỬA ĐƠN HÀNG (TRANG RIÊNG) =================
+# ================= XEM VÀ CHỈNH SỬA ĐƠN HÀNG =================
 @app.route('/admin/don-hang/<int:id>', methods=['GET', 'POST'])
 def xem_sua_don_hang(id):
-    if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
+    # Cho phép cả Admin và Khách đã đăng nhập
+    khach_id = session.get('khach_id')
+    admin_id = session.get('admin_id')
+    if not admin_id and not khach_id: return redirect(url_for('dang_nhap'))
+
     conn = ket_noi_db()
-    
-    # Nếu sếp bấm nút "CẬP NHẬT LƯU"
-    if request.method == 'POST':
+    dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
+    if not dh: 
+        conn.close(); return "Không tìm thấy đơn hàng!", 404
+
+    # BẢO MẬT: Nếu là khách thì CHỈ ĐƯỢC XEM đơn của chính mình
+    if not admin_id and dh['khach_hang_id'] != khach_id:
+        conn.close(); return "<script>alert('Sếp không có quyền xem đơn của người khác!'); window.history.back();</script>"
+
+    # NẾU LÀ ADMIN BẤM NÚT LƯU CẬP NHẬT
+    if request.method == 'POST' and admin_id:
         trang_thai = request.form['trang_thai']
         tien_da_tra = request.form.get('tien_da_tra', 0)
-        
         conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ? WHERE id = ?', 
                      (trang_thai, tien_da_tra, id))
         conn.commit()
         conn.close()
         return redirect(url_for('xem_sua_don_hang', id=id))
 
-    # Lấy dữ liệu hiển thị
-    dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
+    # Kéo dữ liệu món hàng
     items = conn.execute('''
         SELECT c.*, s.ten, s.hinh_anh, s.hang_sx 
         FROM chi_tiet_don c 
@@ -705,7 +714,6 @@ def xem_sua_don_hang(id):
     ''', (id,)).fetchall()
     conn.close()
 
-    if not dh: return "Không tìm thấy đơn hàng!", 404
     return render_template('chi_tiet_don.html', dh=dh, items=items)
 
 # ================= IN HÓA ĐƠN =================
@@ -724,6 +732,41 @@ def in_hoa_don(id):
     conn.close()
     
     return render_template('in_hoa_don.html', dh=dh, items=items)
+
+# ================= HỒ SƠ KHÁCH HÀNG & LỊCH SỬ ĐƠN (CÁ NHÂN) =================
+@app.route('/ho-so')
+def ho_so_khach():
+    # Kiểm tra xem có khách đăng nhập chưa
+    khach_id = session.get('khach_id')
+    if not khach_id:
+        # Nếu là Admin đang soi web thì đẩy thẳng về trang Quản lý khách của Admin
+        if session.get('admin_id'):
+            return redirect(url_for('quan_ly_khach_hang')) 
+        return redirect(url_for('dang_nhap'))
+        
+    conn = ket_noi_db()
+    
+    # 1. Lấy thông tin cá nhân của khách đó
+    khach = conn.execute('SELECT * FROM khach_hang WHERE id = ?', (khach_id,)).fetchone()
+    
+    # 2. Lấy danh sách lịch sử đơn hàng của họ
+    don_hangs = conn.execute('SELECT * FROM don_hang WHERE khach_hang_id = ? ORDER BY id DESC', (khach_id,)).fetchall()
+    
+    # 3. Lấy thêm hình ảnh, chi tiết đồ trong từng đơn để khách xem cho trực quan
+    don_hangs_full = []
+    for dh in don_hangs:
+        dh_dict = dict(dh)
+        items = conn.execute('''
+            SELECT c.*, s.ten, s.hinh_anh 
+            FROM chi_tiet_don c 
+            JOIN san_pham s ON c.san_pham_id = s.id 
+            WHERE c.don_hang_id = ?
+        ''', (dh['id'],)).fetchall()
+        dh_dict['items'] = items
+        don_hangs_full.append(dh_dict)
+        
+    conn.close()
+    return render_template('ho_so.html', khach=khach, don_hangs=don_hangs_full)
 
 # ================= XỬ LÝ THANH TOÁN & ĐẶT HÀNG =================
 @app.route('/thanh-toan', methods=['GET', 'POST'])

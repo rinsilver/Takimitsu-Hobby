@@ -289,8 +289,11 @@
                     <li class="nav-item"><a class="nav-link" href="/">TRANG CHỦ</a></li>
 
                     {% if is_admin or is_khach %}
-                    <li class="nav-item fw-bold text-light mx-3">
-                        Chào, <span class="text-warning">{{ khach_ten if khach_ten else 'Sếp Admin' }}</span>
+                    <li class="nav-item mx-3 d-flex align-items-center">
+                        <a href="/ho-so" class="text-decoration-none text-light fw-bold">
+                            <i class="fas fa-user-circle text-warning fs-5 me-1"></i> Chào, <span
+                                class="text-warning">{{ khach_ten if khach_ten else 'Sếp Admin' }}</span>
+                        </a>
                     </li>
 
                     <li class="nav-item">
