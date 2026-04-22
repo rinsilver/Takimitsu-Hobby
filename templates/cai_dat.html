@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Cài Đặt Website - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style> body { background-color: #f4f6f9; } </style>
+</head>
+<body>
+    <div class="container mt-4 mb-5">
+        <div class="btn-group w-100 shadow-sm mb-4">
+            <a href="/admin" class="btn btn-outline-dark"><i class="fas fa-boxes"></i> Kho hàng</a>
+            <a href="/admin/don-hang" class="btn btn-outline-dark"><i class="fas fa-shopping-basket"></i> Đơn khách</a>
+            <a href="/admin/khach-hang" class="btn btn-outline-dark"><i class="fas fa-users"></i> Khách hàng</a>
+            <a href="/admin/cai-dat" class="btn btn-primary active"><i class="fas fa-palette"></i> Giao diện</a>
+            <a href="/" class="btn btn-dark"><i class="fas fa-store"></i> Xem Web</a>
+        </div>
+
+        <h3 class="fw-bold mb-4"><i class="fas fa-cogs text-primary"></i> CÀI ĐẶT WEBSITE</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm p-4 h-100 border-0 rounded-4">
+                        <h5 class="fw-bold mb-3">THÔNG TIN CHUNG</h5>
+                        <input type="text" name="ten_web" class="form-control mb-3" value="{{ settings.ten_web }}" placeholder="Tên Website">
+                        
+                        <label class="fw-bold small">Upload Logo (Từ máy tính):</label>
+                        <input type="file" name="logo_file" class="form-control mb-2" accept="image/*">
+                        {% if settings.logo_url %}<img src="{{ settings.logo_url }}" height="50" class="mb-3 border p-1 rounded">{% endif %}
+                        
+                        <label class="fw-bold small mt-2">Màu chủ đạo:</label>
+                        <input type="color" name="mau_chu_dao" class="form-control form-control-color mb-3 w-100" value="{{ settings.mau_chu_dao }}">
+                        
+                        <textarea name="thong_tin_footer" class="form-control mb-3" rows="3" placeholder="Mô tả Footer">{{ settings.thong_tin_footer }}</textarea>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm p-4 mb-4 border-0 rounded-4">
+                        <h5 class="fw-bold mb-3">BANNER TRANG CHỦ</h5>
+                        <label class="fw-bold small">Banner 1:</label>
+                        <input type="file" name="banner_1_file" class="form-control mb-2" accept="image/*">
+                        {% if settings.banner_1 %}<img src="{{ settings.banner_1 }}" height="60" class="mb-3 rounded">{% endif %}
+                        
+                        <label class="fw-bold small mt-2">Banner 2:</label>
+                        <input type="file" name="banner_2_file" class="form-control mb-2" accept="image/*">
+                        {% if settings.banner_2 %}<img src="{{ settings.banner_2 }}" height="60" class="mb-2 rounded">{% endif %}
+                    </div>
+
+                    <div class="card shadow-sm p-4 border-0 rounded-4">
+                        <h5 class="fw-bold mb-3">MẠNG XÃ HỘI</h5>
+                        <div class="input-group mb-2"><span class="input-group-text"><i class="fab fa-facebook"></i></span><input type="text" name="link_fb" class="form-control" value="{{ settings.link_fb }}"></div>
+                        <div class="input-group mb-2"><span class="input-group-text"><i class="fab fa-instagram"></i></span><input type="text" name="link_ig" class="form-control" value="{{ settings.link_ig }}"></div>
+                        <div class="input-group mb-2"><span class="input-group-text"><i class="fab fa-youtube"></i></span><input type="text" name="link_yt" class="form-control" value="{{ settings.link_yt }}"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-3 mt-4 fw-bold fs-5 rounded-pill shadow">LƯU CÀI ĐẶT</button>
+        </form>
+    </div>
+</body>
+</html>

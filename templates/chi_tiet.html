@@ -1,118 +1,123 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
-    <title>{{ sp.ten }} - Wolves Clone</title>
+    <title>{{ sp.ten }} - {{ settings.ten_web }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
+        /* ĐỒNG BỘ MÀU TỪ TRANG CÀI ĐẶT */
+        :root { --main-color: {{ settings.mau_chu_dao }}; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, sans-serif; color: #212529; }
+        
+        /* NAVBAR TỪ INDEX */
+        .navbar { border-bottom: 3px solid var(--main-color); background-color: #111 !important; }
+        .mega-dropdown { position: static !important; }
+        .mega-menu { width: 100%; left: 0; right: 0; padding: 20px; border-radius: 0; border: none; border-top: 2px solid var(--main-color); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .mega-menu-title { font-weight: 800; text-transform: uppercase; color: var(--main-color); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .mega-menu-item { display: flex; align-items: center; padding: 10px; color: #333; text-decoration: none; transition: 0.3s; border-radius: 8px; }
+        .mega-menu-item:hover { background: #f8f9fa; color: var(--main-color); }
+        .mega-menu-item i { font-size: 1.5rem; margin-right: 15px; color: #666; width: 30px; text-align: center; }
 
-        .product-card {
-            background: #fff;
-            border-radius: 20px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
+        /* GIAO DIỆN CHI TIẾT SẢN PHẨM */
+        .product-card { background: #fff; border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); overflow: hidden; }
+        
+        /* KHU VỰC ẢNH */
+        .main-img-box { height: 450px; background-color: #fff; border: 1px solid #eee; border-radius: 15px; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .main-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s; padding: 10px; }
+        .main-img-box:hover img { transform: scale(1.05); }
+        .thumb-box { width: 70px; height: 70px; border-radius: 10px; border: 2px solid #eee; cursor: pointer; overflow: hidden; background: #fff; transition: 0.2s; padding: 2px; }
+        .thumb-box:hover, .thumb-box.active { border-color: var(--main-color); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
 
-        .main-img-box {
-            height: 450px;
-            background-color: #f1f3f5;
-            border-radius: 15px;
-            cursor: pointer;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        /* KHU VỰC GIÁ */
+        .price-box { background-color: #fafafa; border: 1px solid #eee; border-left: 5px solid var(--main-color); border-radius: 15px; padding: 20px; }
+        .price-text { font-size: 2rem; font-weight: 800; color: var(--main-color); line-height: 1; }
+        .carousel-item img { max-height: 85vh; object-fit: contain; margin: 0 auto; }
 
-        .main-img-box img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            transition: transform 0.3s;
-        }
-
-        .main-img-box:hover img {
-            transform: scale(1.05);
-        }
-
-        .thumb-box {
-            width: 70px;
-            height: 70px;
-            border-radius: 10px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            overflow: hidden;
-            background: #fff;
-            transition: 0.2s;
-        }
-
-        .thumb-box:hover,
-        .thumb-box.active {
-            border-color: #0d6efd;
-            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
-        }
-
-        .thumb-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Box giá tiền mới - Gọn gàng hơn */
-        .price-box {
-            background-color: #fdf2f2;
-            border: 1px solid #f8d7da;
-            border-radius: 15px;
-            padding: 20px;
-        }
-
-        .price-text {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #dc3545;
-            line-height: 1;
-        }
-
-        /* Ảnh Zoom trong Modal */
-        .carousel-item img {
-            max-height: 85vh;
-            object-fit: contain;
-            margin: 0 auto;
-        }
+        /* TIỆN ÍCH CHUNG */
+        .text-main { color: var(--main-color) !important; }
+        .bg-main { background-color: var(--main-color) !important; color: white !important; }
+        .btn-main { background-color: var(--main-color); color: white; font-weight: bold; border-radius: 30px; border: none; }
+        .btn-main:hover { opacity: 0.9; color: white; }
     </style>
 </head>
-
 <body>
-    <nav class="navbar navbar-dark bg-dark shadow-sm">
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top p-3 shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-wolf-pack-battalion text-warning"></i> WOLVES
-                CLONE</a>
-            <a href="/" class="btn btn-outline-light btn-sm rounded-pill"><i class="fas fa-arrow-left"></i> Về Cửa
-                Hàng</a>
+            <a class="navbar-brand fw-bold fs-3" href="/">
+                {% if settings.logo_url %}<img src="{{ settings.logo_url }}" alt="Logo" height="40">{% else %}<span class="text-main">WOLVES</span> CLONE{% endif %}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item dropdown mega-dropdown me-3">
+                        <a class="nav-link dropdown-toggle fw-bold text-white" href="#" data-bs-toggle="dropdown">
+                            <i class="fas fa-th-large text-main me-1"></i> DANH MỤC
+                        </a>
+                        <div class="dropdown-menu mega-menu">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h5 class="mega-menu-title">Bandai Spirits</h5>
+                                        <a href="/san-pham?hang_sx=Bandai" class="mega-menu-item"><i class="fas fa-robot"></i> <div><strong class="d-block">S.H.Figuarts</strong><small>Mô hình khớp cử động</small></div></a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h5 class="mega-menu-title">Thương Hiệu Khác</h5>
+                                        <a href="/san-pham?hang_sx=Good Smile" class="mega-menu-item"><i class="fas fa-child"></i> <div><strong class="d-block">Good Smile</strong><small>Nendoroid, Figma</small></div></a>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="p-4 bg-light rounded-4 h-100 d-flex flex-column justify-content-center">
+                                            <h6 class="fw-bold text-dark mb-3">TÌM KIẾM SẢN PHẨM</h6>
+                                            <a href="/san-pham" class="btn btn-main py-2 shadow-sm">XEM TẤT CẢ KHO HÀNG</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link fw-bold text-white" href="/san-pham">SẢN PHẨM</a></li>
+                    {% if is_admin or is_khach %}
+                        <li class="nav-item mx-3 d-flex align-items-center">
+                            <a href="/ho-so" class="text-decoration-none text-light fw-bold"><i class="fas fa-user-circle fs-5 me-1 text-main"></i> Chào, <span class="text-main">{{ khach_ten if khach_ten else 'Admin' }}</span></a>
+                        </li>
+                        {% if is_admin %}
+                            <li class="nav-item"><a class="btn btn-warning fw-bold rounded-pill mx-1 text-dark" href="/admin">QUẢN TRỊ</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="btn btn-outline-danger rounded-pill ms-2" href="/dang-xuat"><i class="fas fa-sign-out-alt"></i></a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="btn btn-main px-4 ms-2 shadow-sm" href="/dang-nhap">ĐĂNG NHẬP</a></li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="container mt-5 mb-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/san-pham" class="text-decoration-none text-muted">Sản phẩm</a></li>
+                <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">{{ sp.ten }}</li>
+            </ol>
+        </nav>
+
         <div class="product-card p-4 p-md-5 mb-5">
             <div class="row g-5">
+                
                 <div class="col-md-6">
                     <div class="main-img-box shadow-sm mb-3" data-bs-toggle="modal" data-bs-target="#imageSliderModal">
                         <img id="mainImage" src="{{ sp.hinh_anh }}">
                     </div>
-
                     <div class="d-flex gap-2 justify-content-center flex-wrap">
                         <div class="thumb-box active" onclick="changeImage('{{ sp.hinh_anh }}', 0, this)">
                             <img src="{{ sp.hinh_anh }}">
                         </div>
                         {% for anh in anh_phu %}
-                        <div class="thumb-box shadow-sm"
-                            onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)">
+                        <div class="thumb-box shadow-sm" onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)">
                             <img src="{{ anh.du_ong_dan }}">
                         </div>
                         {% endfor %}
@@ -123,59 +128,52 @@
                     <span class="badge bg-dark rounded-pill px-3 py-2 mb-2">{{ sp.hang_sx }}</span>
                     <span class="badge bg-secondary rounded-pill px-3 py-2 mb-2">{{ sp.the_loai }}</span>
                     {% if sp.kieu_hang == 'Pre-order' %}
-                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2 mb-2 fw-bold"><i
-                            class="fas fa-clock"></i> Hàng Pre-order</span>
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2 mb-2 fw-bold"><i class="fas fa-clock"></i> Pre-order</span>
                     {% endif %}
 
                     <h2 class="fw-bold mt-2 mb-3 text-dark">{{ sp.ten }}</h2>
 
-                    <div class="price-box mb-4">
+                    <div class="price-box mb-4 shadow-sm">
                         <div class="price-text">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
                         {% if sp.kieu_hang == 'Pre-order' and sp.tien_coc > 0 %}
-                        <hr class="my-2" style="border-color: #f5c2c7;">
-                        <div class="text-danger fw-bold fs-6"><i class="fas fa-info-circle"></i> Tiền cọc trước: {{
-                            "{:,.0f}".format(sp.tien_coc) }}đ</div>
-                        <div class="text-muted small mt-1"><i class="fas fa-calendar-alt"></i> Dự kiến phát hành: {{
-                            sp.ngay_phat_hanh if sp.ngay_phat_hanh else 'Chưa có lịch' }}</div>
+                            <hr class="my-3 border-secondary opacity-25">
+                            <div class="text-danger fw-bold fs-6"><i class="fas fa-info-circle"></i> Tiền cọc trước: {{ "{:,.0f}".format(sp.tien_coc) }}đ</div>
+                            <div class="text-muted small mt-1"><i class="fas fa-calendar-alt"></i> Dự kiến phát hành: {{ sp.ngay_phat_hanh if sp.ngay_phat_hanh else 'Chưa cập nhật' }}</div>
                         {% endif %}
                     </div>
 
-                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fas fa-align-left text-primary"></i> MÔ TẢ SẢN
-                        PHẨM</h6>
-                    <p class="text-muted lh-lg mb-4" style="white-space: pre-line; font-size: 0.95rem;">{{ sp.mo_ta if
-                        sp.mo_ta else 'Chưa có thông tin mô tả cho sản phẩm này.' }}</p>
+                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fas fa-align-left text-muted"></i> MÔ TẢ SẢN PHẨM</h6>
+                    <p class="text-muted lh-lg mb-4" style="white-space: pre-line; font-size: 0.95rem;">{{ sp.mo_ta if sp.mo_ta else 'Đang cập nhật thông tin chi tiết.' }}</p>
 
-                    {% if sp.so_luong > 0 or sp.kieu_hang == 'Pre-order' %}
-                    <a href="/them-vao-gio/{{ sp.id }}"
-                        class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill shadow">
-                        <i class="fas fa-cart-plus me-2"></i> THÊM VÀO GIỎ HÀNG
+                    <div class="alert text-center rounded-pill py-2 fw-bold border-0 shadow-sm mb-3" style="background-color: #f8f9fa; color: var(--main-color);">
+                        <i class="fas fa-headset fs-5 me-2"></i> Sản phẩm nhận đặt hàng qua hệ thống Admin
+                    </div>
+                    
+                    <a href="{{ settings.link_fb }}" target="_blank" class="btn btn-main w-100 py-3 fw-bold fs-5 rounded-pill shadow-sm">
+                        <i class="fab fa-facebook me-2"></i> NHẮN TIN FANPAGE ĐỂ MUA
                     </a>
-                    <div class="text-center mt-3 text-success fw-bold small"><i class="fas fa-check-circle"></i> Kho
-                        còn: {{ sp.so_luong }} món</div>
-                    {% else %}
-                    <button class="btn btn-secondary w-100 py-3 fw-bold fs-5 rounded-pill" disabled><i
-                            class="fas fa-box-open"></i> TẠM HẾT HÀNG</button>
-                    {% endif %}
+                    
+                    <div class="text-center mt-3 text-success fw-bold small">
+                        <i class="fas fa-box"></i> Kho hiện còn: {{ sp.so_luong }} sản phẩm
+                    </div>
                 </div>
             </div>
         </div>
 
         {% if sp_lien_quan %}
-        <h4 class="fw-bold mb-4 border-start border-primary border-4 ps-3">SẢN PHẨM CÙNG HÃNG</h4>
+        <h4 class="fw-bold mb-4 border-start border-5 ps-3 text-dark" style="border-color: var(--main-color) !important;">{{ tieu_de_goi_y }}</h4>
         <div class="row g-4 mb-5">
             {% for splq in sp_lien_quan %}
             <div class="col-md-3 col-6">
-                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden" style="transition: 0.3s;">
                     <a href="/san-pham/{{ splq.id }}">
-                        <div
-                            style="height: 200px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                            <img src="{{ splq.hinh_anh }}"
-                                style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                        <div style="height: 220px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 15px; border-bottom: 1px solid #f8f9fa;">
+                            <img src="{{ splq.hinh_anh }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
                         </div>
                     </a>
-                    <div class="card-body text-center p-3">
-                        <h6 class="text-truncate fw-bold mb-2">{{ splq.ten }}</h6>
-                        <div class="text-danger fw-bold">{{ "{:,.0f}".format(splq.gia_ban) }}đ</div>
+                    <div class="card-body bg-light text-center p-3">
+                        <a href="/san-pham/{{ splq.id }}" class="text-dark text-decoration-none"><h6 class="text-truncate fw-bold mb-2">{{ splq.ten }}</h6></a>
+                        <div class="fw-bold fs-5 text-main">{{ "{:,.0f}".format(splq.gia_ban) }}đ</div>
                     </div>
                 </div>
             </div>
@@ -188,8 +186,7 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content bg-transparent border-0">
                 <div class="modal-header border-0 pb-0">
-                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"
-                        aria-label="Close" style="filter: invert(1); z-index: 1055; position: relative;"></button>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1); z-index: 1055; position: relative;"></button>
                 </div>
                 <div class="modal-body p-0">
                     <div id="productCarousel" class="carousel slide" data-bs-ride="false">
@@ -205,17 +202,11 @@
                         </div>
 
                         {% if anh_phu %}
-                        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel"
-                            data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3"
-                                aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
                         </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel"
-                            data-bs-slide="next">
-                            <span class="carousel-control-next-icon bg-dark rounded-circle p-3"
-                                aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
                         </button>
                         {% endif %}
                     </div>
@@ -224,35 +215,24 @@
         </div>
     </div>
 
-    <footer class="bg-dark text-light pt-5 pb-4 mt-auto border-top border-warning border-3">
+    <footer class="bg-dark text-light py-5 mt-0">
         <div class="container">
-            <div class="row text-center text-md-start">
-                <div class="col-md-4 mb-4">
-                    <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-wolf-pack-battalion"></i> WOLVES CLONE</h5>
-                    <p class="text-white-50 small lh-lg">Cửa hàng mô hình hàng đầu với dịch vụ Pre-order uy tín, nhanh
-                        chóng. Chuyên cung cấp hàng chính hãng từ Nhật Bản.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="fw-bold mb-3 text-main">{{ settings.ten_web }}</h4>
+                    <p class="text-secondary" style="max-width: 80%;">{{ settings.thong_tin_footer }}</p>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <h5 class="fw-bold mb-3 text-white">LIÊN HỆ CHÚNG TÔI</h5>
-                    <div class="text-white-50 small lh-lg">
-                        <p class="mb-2"><i class="fas fa-phone-alt me-2 text-warning"></i> Hotline: 0909.888.999</p>
-                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-warning"></i> 123 Đường Sói, Quận Tân
-                            Bình, TP.HCM</p>
-                        <p class="mb-0"><i class="fas fa-envelope me-2 text-warning"></i> admin@wolvesclone.com</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <h5 class="fw-bold mb-3 text-white">KẾT NỐI</h5>
-                    <div class="d-flex gap-3 justify-content-center justify-content-md-start mt-3">
-                        <a href="#" class="btn btn-outline-warning rounded-circle"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="btn btn-outline-warning rounded-circle"><i class="fab fa-tiktok"></i></a>
-                        <a href="#" class="btn btn-outline-warning rounded-circle"><i class="fab fa-instagram"></i></a>
+                <div class="col-md-6 text-md-end mt-4 mt-md-0">
+                    <h5 class="fw-bold mb-3 text-white">KẾT NỐI VỚI CHÚNG TÔI</h5>
+                    <div class="fs-3">
+                        <a href="{{ settings.link_fb }}" class="text-light me-3 text-decoration-none hover-main"><i class="fab fa-facebook"></i></a>
+                        <a href="{{ settings.link_ig }}" class="text-light me-3 text-decoration-none"><i class="fab fa-instagram"></i></a>
+                        <a href="{{ settings.link_yt }}" class="text-light text-decoration-none"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
             </div>
-            <div class="text-center text-white-50 small mt-4 pt-3 border-top border-secondary">
-                &copy; 2026 Wolves Clone. All rights reserved.
-            </div>
+            <hr class="mt-4 border-secondary opacity-25">
+            <p class="text-center text-secondary small mb-0">&copy; 2026 {{ settings.ten_web }}. Đã đăng ký bản quyền.</p>
         </div>
     </footer>
 
@@ -267,10 +247,8 @@
 
             var myCarousel = document.querySelector('#productCarousel');
             var carousel = bootstrap.Carousel.getInstance(myCarousel) || new bootstrap.Carousel(myCarousel);
-            // Ép kiểu chữ thành số để Slider chạy đúng
             carousel.to(parseInt(slideIndex));
         }
     </script>
 </body>
-
 </html>

@@ -2,6 +2,9 @@ import os, webbrowser, sqlite3
 from threading import Timer
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
+import json
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'wolves_master_system_ultimate_v7'
@@ -9,6 +12,36 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# --- HỆ THỐNG QUẢN LÝ CÀI ĐẶT GIAO DIỆN (JSON) ---
+SETTINGS_FILE = 'settings.json'
+
+def get_settings():
+    if not os.path.exists(SETTINGS_FILE):
+        default_settings = {
+            "ten_web": "WOLVES CLONE", "logo_url": "", "mau_chu_dao": "#e60012",
+            "banner_1": "", "banner_2": "", "thong_tin_footer": "Điểm đến hàng đầu cho cộng đồng sưu tầm mô hình.",
+            "link_fb": "#", "link_ig": "#", "link_yt": "#"
+        }
+        save_settings(default_settings)
+    with open(SETTINGS_FILE, 'r', encoding='utf-8') as f: return json.load(f)
+
+# Bơm settings vào TOÀN BỘ trang web
+@app.context_processor
+def inject_data():
+    gio_hang = session.get('gio_hang', [])
+    so_luong = 0
+    if isinstance(gio_hang, list):
+        for item in gio_hang:
+            if isinstance(item, dict) and 'so_luong' in item:
+                so_luong += item['so_luong']
+
+    return dict(
+        so_luong_gio_hang=so_luong, 
+        is_admin='admin_id' in session, 
+        is_khach='khach_id' in session, 
+        khach_ten=session.get('khach_ten', ''),
+        settings=get_settings() # <--- Thêm dòng này để HTML gọi màu sắc, logo ra
+    )
 # --- CƠ SỞ DỮ LIỆU ---
 def ket_noi_db():
     conn = sqlite3.connect('database_v5.db')
@@ -74,33 +107,55 @@ def inject_data():
 # ==================== TRANG CHỦ & ĐĂNG NHẬP ====================
 
 @app.route('/')
-def trang_chu():
+def index():
     conn = ket_noi_db()
-    dms = conn.execute('SELECT * FROM danh_muc').fetchall()
-    tk, tl, kh = request.args.get('tim_kiem',''), request.args.get('the_loai',''), request.args.get('kieu_hang','')
-    q = "SELECT * FROM san_pham WHERE 1=1"
-    p = []
-    if tk: q += " AND ten LIKE ?"; p.append(f"%{tk}%")
-    if tl: q += " AND the_loai = ?"; p.append(tl)
-    if kh: q += " AND kieu_hang = ?"; p.append(kh)
-    sps = conn.execute(q + " ORDER BY id DESC", p).fetchall()
+    
+    # Lấy 8 sản phẩm mới nhất
+    san_phams = conn.execute('SELECT * FROM san_pham ORDER BY id DESC LIMIT 8').fetchall()
+    
+    # Lọc TÊN HÃNG trực tiếp từ kho sản phẩm (DISTINCT giúp loại bỏ tên trùng)
+    hang_sxs_raw = conn.execute('SELECT DISTINCT hang_sx FROM san_pham WHERE hang_sx IS NOT NULL AND hang_sx != "" LIMIT 8').fetchall()
+    
+    # Ép nó thành 1 danh sách chữ sạch sẽ để HTML dễ đọc
+    danh_sach_hang = [h['hang_sx'] for h in hang_sxs_raw]
+    
     conn.close()
-    return render_template('index.html', san_phams=sps, danh_mucs=dms, tu_khoa=tk, the_loai_chon=tl, kieu_hang_chon=kh)
+    return render_template('index.html', san_phams=san_phams, hang_sxs=danh_sach_hang)
 
+# ================= TRANG CHI TIẾT SẢN PHẨM =================
+# ================= TRANG CHI TIẾT SẢN PHẨM =================
 @app.route('/san-pham/<int:id>')
-def chi_tiet(id):
+def chi_tiet_sp(id):
     conn = ket_noi_db()
-    sp = conn.execute('SELECT * FROM san_pham WHERE id=?', (id,)).fetchone()
-    if not sp:
-        conn.close(); return "Sản phẩm không tồn tại!", 404
+    
+    # 1. TỰ ĐỘNG TẠO BẢNG ẢNH PHỤ NẾU SẾP CHƯA TẠO (Sửa lỗi mất nhiều ảnh)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS anh_san_pham (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            san_pham_id INTEGER,
+            du_ong_dan TEXT
+        )
+    ''')
+    conn.commit()
+
+    sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
+    if not sp: 
+        conn.close()
+        return "Không tìm thấy sản phẩm", 404
+    
+    # Kéo danh sách ảnh phụ bình thường
+    anh_phu = conn.execute('SELECT * FROM hinh_anh_sp WHERE san_pham_id = ?', (id,)).fetchall()
+    
+    # 2. Logic Sản phẩm gợi ý thông minh
+    sp_lien_quan = conn.execute('SELECT * FROM san_pham WHERE hang_sx = ? AND id != ? LIMIT 4', (sp['hang_sx'], id)).fetchall()
+    tieu_de_goi_y = "SẢN PHẨM CÙNG HÃNG"
+    
+    if not sp_lien_quan:
+        sp_lien_quan = conn.execute('SELECT * FROM san_pham WHERE id != ? ORDER BY id DESC LIMIT 4', (id,)).fetchall()
+        tieu_de_goi_y = "GỢI Ý SẢN PHẨM KHÁC"
         
-    anh_phu = conn.execute('SELECT du_ong_dan FROM hinh_anh_sp WHERE san_pham_id=?', (id,)).fetchall()
-    
-    # Lấy Sản phẩm liên quan (Cùng hãng sản xuất, loại trừ sản phẩm hiện tại, lấy tối đa 4 cái)
-    sp_lien_quan = conn.execute('SELECT * FROM san_pham WHERE hang_sx=? AND id!=? LIMIT 4', (sp['hang_sx'], id)).fetchall()
-    
     conn.close()
-    return render_template('chi_tiet.html', sp=sp, anh_phu=anh_phu, sp_lien_quan=sp_lien_quan)
+    return render_template('chi_tiet.html', sp=sp, anh_phu=anh_phu, sp_lien_quan=sp_lien_quan, tieu_de_goi_y=tieu_de_goi_y)
 
 @app.route('/dang-nhap', methods=['GET', 'POST'])
 def dang_nhap():
@@ -113,7 +168,7 @@ def dang_nhap():
             if u['vai_tro'] == 'admin': session['admin_id'] = u['id']
             else: session['khach_id'] = u['id']
             session['khach_ten'] = u['ho_ten']
-            return redirect(url_for('trang_chu'))
+            return redirect(url_for('index'))
         return "Sai tài khoản hoặc mật khẩu!"
     return render_template('dang_nhap_chung.html')
 
@@ -130,10 +185,11 @@ def dang_ky():
         finally: conn.close()
     return render_template('dang_ky_khach.html')
 
+# ================= ĐĂNG XUẤT =================
 @app.route('/dang-xuat')
 def dang_xuat():
     session.clear()
-    return redirect(url_for('trang_chu'))
+    return redirect(url_for('index'))  # <-- Đổi 'trang_chu' thành 'index' ở đây
 
 # ==================== GIỎ HÀNG & ĐẶT HÀNG ====================
 
@@ -306,15 +362,55 @@ def them_san_pham():
 def sua_san_pham(id):
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
+    
     if request.method == 'POST':
-        conn.execute('''UPDATE san_pham SET ten=?, the_loai=?, hang_sx=?, gia_nhap=?, gia_ban=?, so_luong=?, mo_ta=?, kieu_hang=?, tien_coc=?, ngay_phat_hanh=?, ngay_du_kien_ve=? WHERE id=?''', 
-            (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], float(request.form['gia_nhap']), float(request.form['gia_ban']), int(request.form['so_luong']), request.form['mo_ta'], request.form['kieu_hang'], float(request.form.get('tien_coc', 0)), request.form.get('ngay_phat_hanh', ''), request.form.get('ngay_ve', ''), id))
-        conn.commit(); conn.close(); return redirect(url_for('admin'))
-    sp = conn.execute('SELECT * FROM san_pham WHERE id=?', (id,)).fetchone()
+        # Xử lý ảnh đại diện (nếu sếp có chọn ảnh mới)
+        f = request.files.get('hinh_anh')
+        img_sql = ""
+        tham_so = [
+            request.form['ten'], request.form['the_loai'], request.form['hang_sx'],
+            float(request.form['gia_nhap']), float(request.form['gia_ban']), int(request.form['so_luong']),
+            request.form['mo_ta'], request.form['kieu_hang'], float(request.form.get('tien_coc', 0)),
+            request.form.get('ngay_phat_hanh', ''), request.form.get('nguon_nhap_id'),
+            float(request.form.get('tien_da_tra_nguon', 0)), request.form.get('trang_thai_nhap', 'Còn nợ'),
+            request.form.get('ngay_ve', '')
+        ]
+
+        if f and f.filename != '':
+            ten_file = secure_filename(f.filename)
+            f.save(os.path.join(app.config['UPLOAD_FOLDER'], ten_file))
+            img_sql = ", hinh_anh = ?"
+            tham_so.append('/static/uploads/' + ten_file)
+            
+        tham_so.append(id) # ID cho mệnh đề WHERE
+
+        # Cập nhật sản phẩm
+        conn.execute(f'''
+            UPDATE san_pham SET 
+            ten=?, the_loai=?, hang_sx=?, gia_nhap=?, gia_ban=?, so_luong=?, mo_ta=?, 
+            kieu_hang=?, tien_coc=?, ngay_phat_hanh=?, nguon_nhap_id=?, tien_da_tra_nguon=?, 
+            trang_thai_nhap=?, ngay_du_kien_ve=? {img_sql} 
+            WHERE id=?
+        ''', tuple(tham_so))
+        
+        # Lưu thêm ảnh phụ mới (nếu sếp có up thêm)
+        for pf in request.files.getlist('hinh_anh_phu'):
+            if pf and pf.filename != '':
+                ten_file = secure_filename(pf.filename)
+                pf.save(os.path.join(app.config['UPLOAD_FOLDER'], ten_file))
+                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (id, '/static/uploads/'+ten_file))
+                
+        conn.commit(); conn.close()
+        return redirect(url_for('admin')) # Hoặc redirect về trang quản lý sếp muốn
+
+    # LẤY DATA CHO GET METHOD (Giống hệt hàm Thêm của sếp)
+    sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
     dms = conn.execute('SELECT * FROM danh_muc').fetchall()
     hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
+    ngs = conn.execute('SELECT * FROM nguon_nhap').fetchall()
     conn.close()
-    return render_template('sua.html', sp=sp, danh_mucs=dms, hangs=hgs)
+    
+    return render_template('sua.html', sp=sp, danh_mucs=dms, hangs=hgs, nguons=ngs)
 
 @app.route('/xoa/<int:id>', methods=['POST'])
 def xoa_san_pham(id):
@@ -767,7 +863,74 @@ def ho_so_khach():
         
     conn.close()
     return render_template('ho_so.html', khach=khach, don_hangs=don_hangs_full)
+# ================= TRANG ADMIN: CÀI ĐẶT GIAO DIỆN =================
+@app.route('/admin/cai-dat', methods=['GET', 'POST'])
+def cai_dat_giao_dien():
+    if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
+    settings = get_settings()
+    
+    if request.method == 'POST':
+        # Logic Lưu File từ máy tính
+        def luu_file(ten_input, file_cu):
+            file = request.files.get(ten_input)
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                os.makedirs('static/uploads', exist_ok=True) # Tạo thư mục nếu chưa có
+                filepath = os.path.join('static/uploads', filename)
+                file.save(filepath)
+                return '/' + filepath # Trả về đường dẫn để web hiển thị
+            return file_cu # Nếu sếp không chọn file mới thì giữ nguyên ảnh cũ
 
+        new_settings = {
+            "ten_web": request.form['ten_web'],
+            "mau_chu_dao": request.form['mau_chu_dao'],
+            "thong_tin_footer": request.form['thong_tin_footer'],
+            "link_fb": request.form.get('link_fb', '#'),
+            "link_ig": request.form.get('link_ig', '#'),
+            "link_yt": request.form.get('link_yt', '#'),
+            "logo_url": luu_file('logo_file', settings.get('logo_url')),
+            "banner_1": luu_file('banner_1_file', settings.get('banner_1')),
+            "banner_2": luu_file('banner_2_file', settings.get('banner_2'))
+        }
+        save_settings(new_settings)
+        return redirect(url_for('cai_dat_giao_dien'))
+        
+    return render_template('cai_dat.html')
+
+# ================= TRANG KHÁCH: TẤT CẢ SẢN PHẨM =================
+@app.route('/san-pham')
+def tat_ca_san_pham():
+    conn = ket_noi_db()
+    
+    danh_muc_loc = request.args.get('danh_muc', '')
+    hang_loc = request.args.get('hang_sx', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 12 # 12 sản phẩm 1 trang
+    
+    cau_lenh_base = ' FROM san_pham WHERE 1=1'
+    dk = []
+    
+    if danh_muc_loc:
+        cau_lenh_base += ' AND the_loai = ?'
+        dk.append(danh_muc_loc)
+    if hang_loc:
+        cau_lenh_base += ' AND hang_sx = ?'
+        dk.append(hang_loc)
+        
+    tong_sp = conn.execute('SELECT COUNT(id)' + cau_lenh_base, dk).fetchone()[0]
+    tong_trang = (tong_sp + per_page - 1) // per_page
+    
+    cau_lenh = 'SELECT *' + cau_lenh_base + ' ORDER BY id DESC LIMIT ? OFFSET ?'
+    dk.extend([per_page, (page - 1) * per_page])
+    
+    san_phams = conn.execute(cau_lenh, dk).fetchall()
+    
+    # Lấy danh sách bộ lọc
+    danh_mucs = conn.execute('SELECT DISTINCT the_loai as ten_danh_muc FROM san_pham').fetchall()
+    hangs = conn.execute('SELECT DISTINCT hang_sx as ten_hang FROM san_pham').fetchall()
+    
+    conn.close()
+    return render_template('tat_ca_san_pham.html', san_phams=san_phams, danh_mucs=danh_mucs, hangs=hangs, page=page, tong_trang=tong_trang, dm_chon=danh_muc_loc, hang_chon=hang_loc)
 # ================= XỬ LÝ THANH TOÁN & ĐẶT HÀNG =================
 @app.route('/thanh-toan', methods=['GET', 'POST'])
 def thanh_toan():

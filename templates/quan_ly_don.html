@@ -55,8 +55,7 @@
                 <a href="/admin/khach-hang" class="btn btn-outline-dark"><i class="fas fa-users"></i> Khách hàng</a>
                 <a href="/danh-muc" class="btn btn-outline-dark"><i class="fas fa-folder"></i> Danh mục</a>
                 <a href="/admin/hang-sx" class="btn btn-outline-dark"><i class="fas fa-industry"></i> Hãng SX</a>
-                <a href="/admin/nguon-nhap" class="btn btn-outline-danger"><i class="fas fa-user-secret"></i> Nguồn (Bí
-                    mật)</a>
+                <a href="/admin/nguon-nhap" class="btn btn-outline-danger"><i class="fas fa-user-secret"></i> Nguồn (Bí mật)</a>
             </div>
             <a href="/" class="btn btn-warning fw-bold rounded-pill shadow-sm" target="_blank">
                 <i class="fas fa-store"></i> Xem Web Shop
@@ -224,21 +223,24 @@
         <nav aria-label="Page navigation" class="mt-4 mb-5">
             <ul class="pagination justify-content-center shadow-sm" style="border-radius: 10px; overflow: hidden;">
                 <li class="page-item {% if page == 1 %}disabled{% endif %}">
-                    <a class="page-link text-dark fw-bold" href="?page={{ page - 1 }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">
+                    <a class="page-link text-dark fw-bold"
+                        href="?page={{ page - 1 }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">
                         <i class="fas fa-chevron-left"></i> Trước
                     </a>
                 </li>
-                
+
                 {% for p in range(1, tong_trang + 1) %}
                 <li class="page-item {% if p == page %}active{% endif %}">
-                    <a class="page-link {% if p == page %}bg-dark border-dark text-white{% else %}text-dark{% endif %} fw-bold" href="?page={{ p }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">
+                    <a class="page-link {% if p == page %}bg-dark border-dark text-white{% else %}text-dark{% endif %} fw-bold"
+                        href="?page={{ p }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">
                         {{ p }}
                     </a>
                 </li>
                 {% endfor %}
-                
+
                 <li class="page-item {% if page == tong_trang %}disabled{% endif %}">
-                    <a class="page-link text-dark fw-bold" href="?page={{ page + 1 }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">
+                    <a class="page-link text-dark fw-bold"
+                        href="?page={{ page + 1 }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">
                         Sau <i class="fas fa-chevron-right"></i>
                     </a>
                 </li>

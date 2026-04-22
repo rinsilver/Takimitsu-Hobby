@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tất cả sản phẩm - {{ settings.ten_web }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --main-color: {{ settings.mau_chu_dao }}; }
+        .product-card { transition: 0.3s; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--main-color); }
+        .price { color: var(--main-color); font-weight: bold; }
+        .btn-custom { background-color: var(--main-color); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5 mb-5">
+        <h2 class="fw-bold mb-4 text-uppercase border-bottom pb-2">KHO TÀNG MÔ HÌNH</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-3">
+                <form method="GET" class="card p-3 shadow-sm border-0 bg-light">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-filter"></i> BỘ LỌC</h6>
+                    <div class="mb-3">
+                        <label class="small fw-bold mb-1">Danh mục</label>
+                        <select name="danh_muc" class="form-select form-select-sm">
+                            <option value="">Tất cả</option>
+                            {% for dm in danh_mucs %}
+                            <option value="{{ dm.ten_danh_muc }}" {% if dm_chon == dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold mb-1">Hãng sản xuất</label>
+                        <select name="hang_sx" class="form-select form-select-sm">
+                            <option value="">Tất cả</option>
+                            {% for h in hangs %}
+                            <option value="{{ h.ten_hang }}" {% if hang_chon == h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold">ÁP DỤNG</button>
+                    <a href="/san-pham" class="btn btn-outline-danger btn-sm w-100 fw-bold mt-2">XÓA LỌC</a>
+                </form>
+            </div>
+
+            <div class="col-md-9">
+                <div class="row row-cols-2 row-cols-md-3 g-3">
+                    {% for sp in san_phams %}
+                    <div class="col">
+                        <a href="/san-pham/{{ sp.id }}" class="text-decoration-none">
+                            <div class="card product-card h-100 bg-white">
+                                <div style="height: 200px; padding: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="{{ sp.hinh_anh }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                </div>
+                                <div class="card-body border-top p-3">
+                                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ sp.hang_sx }}</small>
+                                    <h6 class="text-dark fw-bold text-truncate">{{ sp.ten }}</h6>
+                                    <div class="price fs-5">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if tong_trang > 1 %}
+                <ul class="pagination justify-content-center mt-5">
+                    {% for p in range(1, tong_trang + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}">{{ p }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
