@@ -443,61 +443,70 @@ def quan_ly_danh_muc():
 # ==================== ĐƠN HÀNG & THỐNG KÊ ====================
 
 # ==================== 1. QUẢN LÝ ĐƠN HÀNG (CÓ PHÂN TRANG & SẮP XẾP) ====================
-@app.route('/admin/don-hang')
+# ================= QUẢN LÝ TẤT CẢ ĐƠN HÀNG (CÓ PHÂN TRANG) =================
+@app.route('/admin/don-hang', methods=['GET', 'POST'])
 def quan_ly_don_hang():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
-    
+    # 1. XỬ LÝ LƯU CẬP NHẬT NHANH
+    if request.method == 'POST':
+        don_id = request.form['don_id']
+        trang_thai = request.form['trang_thai']
+        tien_da_tra = request.form.get('tien_da_tra', 0)
+        
+        conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ? WHERE id = ?', 
+                     (trang_thai, tien_da_tra, don_id))
+        conn.commit()
+        return redirect(url_for('quan_ly_don_hang'))
+
+    # 2. XỬ LÝ LỌC, SẮP XẾP VÀ PHÂN TRANG
     trang_thai_loc = request.args.get('trang_thai', '')
     sap_xep = request.args.get('sap_xep', 'moi_nhat')
     page = request.args.get('page', 1, type=int)
-    per_page = 10 # 10 đơn 1 trang
-    offset = (page - 1) * per_page
+    per_page = 10 # Cài đặt hiển thị 10 đơn / 1 trang
     
-    query = "SELECT * FROM don_hang WHERE 1=1"
-    params = []
+    cau_lenh_base = ' FROM don_hang'
+    dk = []
     
-    # --- ĐOẠN LOGIC MỚI BỔ SUNG ---
     if trang_thai_loc:
-        query += " AND trang_thai = ?"; params.append(trang_thai_loc)
-    else:
-        # Nếu sếp không lọc gì cụ thể, mặc định ẨN hết các đơn Đã hủy cho sạch trang
-        query += " AND trang_thai != 'Đã hủy'"
-    # -----------------------------
+        cau_lenh_base += ' WHERE trang_thai = ?'
+        dk.append(trang_thai_loc)
         
-    # Sắp xếp theo tên khách và ngày tháng
-    if sap_xep == 'moi_nhat': query += " ORDER BY id DESC"
-    elif sap_xep == 'cu_nhat': query += " ORDER BY id ASC"
-    elif sap_xep == 'tien_cao': query += " ORDER BY tong_tien DESC"
-    elif sap_xep == 'ten_az': query += " ORDER BY ten_khach ASC"
-    elif sap_xep == 'ten_za': query += " ORDER BY ten_khach DESC"
-        
-    # Phân trang
-    total_items = conn.execute("SELECT COUNT(*) FROM (" + query + ")", params).fetchone()[0]
-    total_pages = (total_items + per_page - 1) // per_page
+    # Tính toán số trang
+    tong_don = conn.execute('SELECT COUNT(id)' + cau_lenh_base, dk).fetchone()[0]
+    tong_trang = (tong_don + per_page - 1) // per_page
+
+    # Lấy dữ liệu của đúng trang hiện tại
+    cau_lenh = 'SELECT *' + cau_lenh_base
+    if sap_xep == 'moi_nhat': cau_lenh += ' ORDER BY id DESC'
+    elif sap_xep == 'cu_nhat': cau_lenh += ' ORDER BY id ASC'
     
-    query += " LIMIT ? OFFSET ?"
-    params.extend([per_page, offset])
-    dhs = conn.execute(query, params).fetchall()
+    cau_lenh += ' LIMIT ? OFFSET ?'
+    dk.extend([per_page, (page - 1) * per_page])
     
-    # Kéo thêm Ngày về và Ngày phát hành từ bảng sản phẩm
+    don_hangs = conn.execute(cau_lenh, dk).fetchall()
+    
+    # Kéo thêm chi tiết từng món đồ
     don_hangs_full = []
-    for dh in dhs:
+    for dh in don_hangs:
         dh_dict = dict(dh)
-        chi_tiet = conn.execute('''
-            SELECT c.*, s.ten, s.ngay_phat_hanh, s.ngay_du_kien_ve, s.kieu_hang, s.hinh_anh 
+        items = conn.execute('''
+            SELECT c.*, s.ten, s.hinh_anh, s.kieu_hang, s.ngay_phat_hanh 
             FROM chi_tiet_don c 
             JOIN san_pham s ON c.san_pham_id = s.id 
             WHERE c.don_hang_id = ?
         ''', (dh['id'],)).fetchall()
-        dh_dict['chi_tiet'] = chi_tiet
+        dh_dict['items'] = items
         don_hangs_full.append(dh_dict)
-        
+
     conn.close()
-    return render_template('quan_ly_don.html', don_hangs=don_hangs_full, 
-                           trang_thai_chon=trang_thai_loc, sap_xep_chon=sap_xep,
-                           current_page=page, total_pages=total_pages)
+    return render_template('quan_ly_don.html', 
+                           don_hangs=don_hangs_full, 
+                           trang_thai_chon=trang_thai_loc, 
+                           sap_xep_chon=sap_xep,
+                           page=page, 
+                           tong_trang=tong_trang)
 
 # ==================== 2. HỒ SƠ KHÁCH HÀNG (THỐNG KÊ CHI TIẾT) ====================
 # ================= QUẢN LÝ DANH SÁCH KHÁCH HÀNG (TRANG TỔNG) =================
@@ -580,29 +589,29 @@ def cap_nhat_don(id):
     conn.commit(); conn.close()
     return redirect(url_for('quan_ly_don_hang'))
 
-# --- TÍNH NĂNG HỦY ĐƠN VÀ HOÀN TRẢ TỒN KHO ---
-@app.route('/admin/huy-don/<int:id>', methods=['POST'])
-def huy_don_hang(id):
+# ================= XÓA / HỦY ĐƠN HÀNG =================
+@app.route('/admin/huy-don/<int:id>')
+def huy_don(id):
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
-    # 1. Kiểm tra xem đơn này đã hủy chưa (tránh lỗi bấm 2 lần bị cộng dồn kho)
-    dh = conn.execute('SELECT trang_thai FROM don_hang WHERE id=?', (id,)).fetchone()
+    # 1. Lấy thông tin các món đồ trong đơn để HOÀN LẠI VÀO KHO
+    items = conn.execute('SELECT san_pham_id, so_luong FROM chi_tiet_don WHERE don_hang_id = ?', (id,)).fetchall()
     
-    if dh and dh['trang_thai'] != 'Đã hủy':
-        # 2. Cập nhật trạng thái thành Đã hủy
-        conn.execute("UPDATE don_hang SET trang_thai = 'Đã hủy' WHERE id = ?", (id,))
+    for item in items:
+        # Cộng trả lại số lượng cho sản phẩm
+        conn.execute('UPDATE san_pham SET so_luong = so_luong + ? WHERE id = ?', 
+                     (item['so_luong'], item['san_pham_id']))
         
-        # 3. Hoàn trả lại Tồn kho cho từng sản phẩm trong đơn
-        chi_tiet = conn.execute('SELECT san_pham_id, so_luong FROM chi_tiet_don WHERE don_hang_id=?', (id,)).fetchall()
-        for ct in chi_tiet:
-            # Cộng lại số lượng vào bảng san_pham
-            conn.execute('UPDATE san_pham SET so_luong = so_luong + ? WHERE id = ?', (ct['so_luong'], ct['san_pham_id']))
-            
-        conn.commit()
-        
+    # 2. Xóa sạch dấu vết của đơn hàng này trong Database
+    conn.execute('DELETE FROM chi_tiet_don WHERE don_hang_id = ?', (id,))
+    conn.execute('DELETE FROM don_hang WHERE id = ?', (id,))
+    
+    conn.commit()
     conn.close()
-    return redirect(url_for('quan_ly_don_hang'))
+    
+    # Quay trở lại đúng cái trang sếp vừa đứng (trang Quản lý đơn hoặc trang Hồ sơ khách)
+    return redirect(request.referrer or url_for('quan_ly_don_hang'))
 
 @app.route('/admin/thong-ke')
 def thong_ke():
@@ -638,6 +647,83 @@ def xoa_nguon(id):
     conn.execute('DELETE FROM nguon_nhap WHERE id=?', (id,))
     conn.commit(); conn.close()
     return redirect(url_for('quan_ly_nguon_nhap'))
+
+@app.route('/admin/chi-tiet-don/<int:id>')
+def chi_tiet_don_json(id):
+    if 'admin_id' not in session: return {"error": "Unauthorized"}, 401
+    conn = ket_noi_db()
+    
+    # 1. Lấy thông tin đơn chính
+    dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
+    
+    # 2. Lấy danh sách sản phẩm trong đơn
+    items = conn.execute('''
+        SELECT c.*, s.ten, s.hinh_anh 
+        FROM chi_tiet_don c 
+        JOIN san_pham s ON c.san_pham_id = s.id 
+        WHERE c.don_hang_id = ?
+    ''', (id,)).fetchall()
+    
+    conn.close()
+    
+    # Trả về dạng JSON để JavaScript hiển thị lên Modal
+    return {
+        "id": dh['id'],
+        "ten_khach": dh['ten_khach'],
+        "sdt": dh['sdt'],
+        "dia_chi": dh['dia_chi'],
+        "trang_thai": dh['trang_thai'],
+        "tong_tien": dh['tong_tien'],
+        "tien_da_tra": dh['tien_da_tra'],
+        "items": [{"ten": i['ten'], "so_luong": i['so_luong'], "gia": i['gia'], "hinh_anh": i['hinh_anh']} for i in items]
+    }
+
+# ================= XEM VÀ CHỈNH SỬA ĐƠN HÀNG (TRANG RIÊNG) =================
+@app.route('/admin/don-hang/<int:id>', methods=['GET', 'POST'])
+def xem_sua_don_hang(id):
+    if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
+    conn = ket_noi_db()
+    
+    # Nếu sếp bấm nút "CẬP NHẬT LƯU"
+    if request.method == 'POST':
+        trang_thai = request.form['trang_thai']
+        tien_da_tra = request.form.get('tien_da_tra', 0)
+        
+        conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ? WHERE id = ?', 
+                     (trang_thai, tien_da_tra, id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('xem_sua_don_hang', id=id))
+
+    # Lấy dữ liệu hiển thị
+    dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
+    items = conn.execute('''
+        SELECT c.*, s.ten, s.hinh_anh, s.hang_sx 
+        FROM chi_tiet_don c 
+        JOIN san_pham s ON c.san_pham_id = s.id 
+        WHERE c.don_hang_id = ?
+    ''', (id,)).fetchall()
+    conn.close()
+
+    if not dh: return "Không tìm thấy đơn hàng!", 404
+    return render_template('chi_tiet_don.html', dh=dh, items=items)
+
+# ================= IN HÓA ĐƠN =================
+@app.route('/admin/in-hoa-don/<int:id>')
+def in_hoa_don(id):
+    if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
+    conn = ket_noi_db()
+    
+    dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
+    items = conn.execute('''
+        SELECT c.*, s.ten 
+        FROM chi_tiet_don c 
+        JOIN san_pham s ON c.san_pham_id = s.id 
+        WHERE c.don_hang_id = ?
+    ''', (id,)).fetchall()
+    conn.close()
+    
+    return render_template('in_hoa_don.html', dh=dh, items=items)
 
 # ================= XỬ LÝ THANH TOÁN & ĐẶT HÀNG =================
 @app.route('/thanh-toan', methods=['GET', 'POST'])

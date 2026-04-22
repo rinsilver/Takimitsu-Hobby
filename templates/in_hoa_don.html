@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hóa Đơn #{{ dh.id }}</title>
+    <style>
+        /* CSS CHUYÊN DỤNG CHO MÁY IN KHỔ A5/A4 */
+        body { font-family: 'Courier New', Courier, monospace; color: #000; background: #fff; margin: 0; padding: 20px; font-size: 14px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px dashed #000; padding-bottom: 15px; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: bold; }
+        .header p { margin: 5px 0 0; }
+        .info { margin-bottom: 20px; line-height: 1.6; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border-bottom: 1px dashed #ccc; padding: 10px 0; text-align: left; }
+        th.right, td.right { text-align: right; }
+        th.center, td.center { text-align: center; }
+        .total-box { float: right; width: 60%; border-top: 2px solid #000; padding-top: 10px; }
+        .total-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; }
+        .footer { text-align: center; margin-top: 50px; font-style: italic; clear: both; }
+        
+        /* Ẩn các thứ rườm rà khi in */
+        @media print {
+            @page { margin: 1cm; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>WOLVES CLONE</h1>
+        <p>HÓA ĐƠN BÁN HÀNG</p>
+        <p>Mã đơn: <strong>#{{ dh.id }}</strong> | Ngày: {{ dh.ngay_dat[:10] }}</p>
+    </div>
+
+    <div class="info">
+        <strong>Khách hàng:</strong> {{ dh.ten_khach }}<br>
+        <strong>Điện thoại:</strong> {{ dh.sdt }}<br>
+        <strong>Địa chỉ:</strong> {{ dh.dia_chi }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tên sản phẩm</th>
+                <th class="center">SL</th>
+                <th class="right">Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.ten }}</td>
+                <td class="center">{{ item.so_luong }}</td>
+                <td class="right">{{ "{:,.0f}".format(item.gia * item.so_luong) }}đ</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total-box">
+        <div class="total-line">
+            <span>TỔNG CỘNG:</span>
+            <span>{{ "{:,.0f}".format(dh.tong_tien) }}đ</span>
+        </div>
+        <div class="total-line">
+            <span>ĐÃ THANH TOÁN:</span>
+            <span>{{ "{:,.0f}".format(dh.tien_da_tra) }}đ</span>
+        </div>
+        <div class="total-line" style="font-size: 1.2em;">
+            <span>CẦN THU (COD):</span>
+            <span>{{ "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        Cảm ơn sếp đã ủng hộ Wolves Clone!<br>
+        <small>Vui lòng quay video unbox để được hỗ trợ tốt nhất.</small>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

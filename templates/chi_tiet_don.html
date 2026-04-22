@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi Tiết Đơn #{{ dh.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>body { background-color: #f4f6f9; }</style>
+</head>
+<body>
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold m-0"><i class="fas fa-file-invoice text-primary"></i> ĐƠN HÀNG #{{ dh.id }}</h3>
+            <div>
+                <a href="/admin/don-hang" class="btn btn-outline-dark fw-bold rounded-pill me-2"><i class="fas fa-arrow-left"></i> Quay lại</a>
+                <a href="/admin/in-hoa-don/{{ dh.id }}" target="_blank" class="btn btn-dark fw-bold rounded-pill"><i class="fas fa-print"></i> IN HÓA ĐƠN</a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-{{ '8' if session.get('admin_id') else '12' }}">
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+                    <h5 class="fw-bold border-bottom pb-3 mb-3">SẢN PHẨM ĐÃ ĐẶT</h5>
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">SL</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ item.hinh_anh }}" class="rounded shadow-sm me-3" style="width:50px; height:50px; object-fit:cover;">
+                                        <div>
+                                            <span class="fw-bold d-block">{{ item.ten }}</span>
+                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">{{ item.hang_sx }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-bold">x{{ item.so_luong }}</td>
+                                <td class="text-end">{{ "{:,.0f}".format(item.gia) }}đ</td>
+                                <td class="text-end fw-bold text-danger">{{ "{:,.0f}".format(item.gia * item.so_luong) }}đ</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <h5 class="fw-bold border-bottom pb-3 mb-3">THÔNG TIN GIAO HÀNG</h5>
+                    <div class="row">
+                        <div class="col-sm-4 text-muted fw-bold mb-2">Người nhận:</div>
+                        <div class="col-sm-8 fw-bold mb-2">{{ dh.ten_khach }}</div>
+                        
+                        <div class="col-sm-4 text-muted fw-bold mb-2">Số điện thoại:</div>
+                        <div class="col-sm-8 fw-bold mb-2">{{ dh.sdt }}</div>
+                        
+                        <div class="col-sm-4 text-muted fw-bold mb-2">Địa chỉ:</div>
+                        <div class="col-sm-8 mb-2">{{ dh.dia_chi }}</div>
+                        
+                        <div class="col-sm-4 text-muted fw-bold">Ngày đặt:</div>
+                        <div class="col-sm-8">{{ dh.ngay_dat }}</div>
+                    </div>
+                </div>
+            </div>
+            {% if session.get('admin_id') %}
+            <div class="col-md-4">
+                <form method="POST">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 border-top border-primary border-4">
+                        <h5 class="fw-bold mb-4">CẬP NHẬT ĐƠN HÀNG</h5>
+                        
+                        <div class="mb-4">
+                            <label class="fw-bold small text-muted mb-2 text-uppercase">Trạng thái hiện tại</label>
+                            <select name="trang_thai" class="form-select fw-bold border-2">
+                                <option value="Chờ xử lý" {% if dh.trang_thai == 'Chờ xử lý' %}selected{% endif %}>Chờ xử lý</option>
+                                <option value="Đang giao hàng" {% if dh.trang_thai == 'Đang giao hàng' %}selected{% endif %}>Đang giao hàng</option>
+                                <option value="Hoàn thành" {% if dh.trang_thai == 'Hoàn thành' %}selected{% endif %}>Hoàn thành</option>
+                                <option value="Đã hủy" {% if dh.trang_thai == 'Đã hủy' %}selected{% endif %}>Đã hủy</option>
+                            </select>
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3 mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted fw-bold">Tổng Bill:</span>
+                                <span class="fw-bold fs-5">{{ "{:,.0f}".format(dh.tong_tien) }}đ</span>
+                            </div>
+                            
+                            <label class="fw-bold small text-muted mb-2 text-uppercase mt-2">Khách đã thanh toán (VNĐ)</label>
+                            <input type="number" name="tien_da_tra" class="form-control text-success fw-bold fs-5" value="{{ dh.tien_da_tra }}" required>
+                            
+                            <div class="d-flex justify-content-between mt-3 pt-3 border-top border-secondary border-opacity-25">
+                                <span class="text-danger fw-bold">Còn nợ:</span>
+                                <span class="text-danger fw-bold fs-5">{{ "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">
+                            <i class="fas fa-save me-2"></i> LƯU CẬP NHẬT
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
