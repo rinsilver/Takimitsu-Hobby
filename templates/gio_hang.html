@@ -1,21 +1,42 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Giỏ Hàng - Wolves Clone</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; }
-        .cart-card { border-radius: 15px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .qty-btn { width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; }
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .cart-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .qty-btn {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-dark bg-dark shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-wolf-pack-battalion text-warning"></i> WOLVES CLONE</a>
-            <a href="/" class="btn btn-outline-light btn-sm rounded-pill"><i class="fas fa-arrow-left"></i> Tiếp tục mua sắm</a>
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-wolf-pack-battalion text-warning"></i> WOLVES
+                CLONE</a>
+            <a href="/" class="btn btn-outline-light btn-sm rounded-pill"><i class="fas fa-arrow-left"></i> Tiếp tục mua
+                sắm</a>
         </div>
     </nav>
 
@@ -41,31 +62,39 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-3">
-                                        <div style="width: 60px; height: 60px; border-radius: 10px; overflow: hidden; background: #f1f3f5;">
-                                            <img src="{{ sp.hinh_anh }}" style="width:100%; height:100%; object-fit:cover;">
+                                        <div
+                                            style="width: 60px; height: 60px; border-radius: 10px; overflow: hidden; background: #f1f3f5;">
+                                            <img src="{{ sp.hinh_anh }}"
+                                                style="width:100%; height:100%; object-fit:cover;">
                                         </div>
                                         <strong class="text-dark">{{ sp.ten }}</strong>
                                     </div>
                                 </td>
                                 <td class="text-center text-muted fw-bold">{{ "{:,.0f}".format(sp.gia) }}đ</td>
-                                
+
                                 <td>
                                     <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <a href="/cap-nhat-gio/{{ sp.id }}/giam" class="btn btn-sm btn-outline-secondary qty-btn"><i class="fas fa-minus fa-xs"></i></a>
-                                        <span class="fw-bold mx-1" style="width: 20px; text-align: center;">{{ sp.so_luong }}</span>
-                                        <a href="/cap-nhat-gio/{{ sp.id }}/tang" class="btn btn-sm btn-outline-secondary qty-btn"><i class="fas fa-plus fa-xs"></i></a>
+                                        <a href="/cap-nhat-gio/{{ sp.cart_id | default(sp.id) }}/giam"
+                                            class="btn btn-sm btn-outline-secondary qty-btn"><i
+                                                class="fas fa-minus fa-xs"></i></a>
+                                        <span class="fw-bold mx-1" style="width: 20px; text-align: center;">{{
+                                            sp.so_luong }}</span>
+                                        <a href="/cap-nhat-gio/{{ sp.cart_id | default(sp.id) }}/tang"
+                                            class="btn btn-sm btn-outline-secondary qty-btn"><i
+                                                class="fas fa-plus fa-xs"></i></a>
                                     </div>
-                                    
+
                                     {% if sp.error %}
-                                        <div class="text-danger small mt-2 fw-bold text-center">
-                                            <i class="fas fa-exclamation-triangle"></i> {{ sp.error }}
-                                        </div>
+                                    <div class="text-danger small mt-2 fw-bold text-center">
+                                        <i class="fas fa-exclamation-triangle"></i> {{ sp.error }}
+                                    </div>
                                     {% endif %}
                                 </td>
 
-                                <td class="text-end text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ</td>
+                                <td class="text-end text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ
+                                </td>
                                 <td class="text-end">
-                                    <a href="/xoa-khoi-gio/{{ sp.id }}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Bỏ sản phẩm này?')"><i class="fas fa-trash-alt"></i></a>
+                                    <a href="/xoa-khoi-gio/{{ sp.cart_id | default(sp.id) }}" class="btn btn-sm btn-outline-danger rounded-pill px-3"><i class="fas fa-trash-alt"></i></a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -89,7 +118,8 @@
                         <span class="fw-bold fs-5">TỔNG CỘNG:</span>
                         <span class="text-danger fw-bold fs-4">{{ "{:,.0f}".format(tong_tien) }}đ</span>
                     </div>
-                    <a href="/thanh-toan" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm fs-5">TIẾN HÀNH ĐẶT HÀNG <i class="fas fa-arrow-right ms-2"></i></a>
+                    <a href="/thanh-toan" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm fs-5">TIẾN
+                        HÀNH ĐẶT HÀNG <i class="fas fa-arrow-right ms-2"></i></a>
                 </div>
             </div>
         </div>
@@ -102,4 +132,5 @@
         {% endif %}
     </div>
 </body>
+
 </html>

@@ -22,15 +22,16 @@
                             <label class="form-label fw-bold">Tên sản phẩm *</label>
                             <input type="text" name="ten" class="form-control" value="{{ sp.ten }}" required>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Phân Loại (Danh mục)</label>
                                 <div class="input-group">
                                     <select name="the_loai" class="form-select border-primary">
                                         {% for dm in danh_mucs %}
-                                            {% set ten_dm = dm.ten_danh_muc or dm.ten %}
-                                            <option value="{{ ten_dm }}" {% if sp.the_loai == ten_dm %}selected{% endif %}>{{ ten_dm }}</option>
+                                        {% set ten_dm = dm.ten_danh_muc or dm.ten %}
+                                        <option value="{{ ten_dm }}" {% if sp.the_loai==ten_dm %}selected{% endif %}>{{
+                                            ten_dm }}</option>
                                         {% endfor %}
                                     </select>
                                     <a href="/danh-muc" class="btn btn-primary" title="Thêm danh mục mới">+</a>
@@ -41,8 +42,9 @@
                                 <div class="input-group">
                                     <select name="hang_sx" class="form-select border-primary">
                                         {% for h in hangs %}
-                                            {% set ten_h = h.ten_hang or h.ten %}
-                                            <option value="{{ ten_h }}" {% if sp.hang_sx == ten_h %}selected{% endif %}>{{ ten_h }}</option>
+                                        {% set ten_h = h.ten_hang or h.ten %}
+                                        <option value="{{ ten_h }}" {% if sp.hang_sx==ten_h %}selected{% endif %}>{{
+                                            ten_h }}</option>
                                         {% endfor %}
                                     </select>
                                     <a href="/admin/hang-sx" class="btn btn-primary" title="Thêm hãng mới">+</a>
@@ -51,13 +53,15 @@
                         </div>
 
                         <div class="col-md-12 mb-3 mt-2">
-                            <label class="form-label fw-bold text-danger">🛡️ Nguồn Nhập (CHỈ ADMIN THẤY - BÍ MẬT)</label>
+                            <label class="form-label fw-bold text-danger">🛡️ Nguồn Nhập (CHỈ ADMIN THẤY - BÍ
+                                MẬT)</label>
                             <div class="input-group">
                                 <select name="nguon_nhap_id" class="form-select border-danger bg-light">
                                     <option value="">-- Chọn nguồn nhập để sếp dễ quản lý --</option>
                                     {% for n in nguons %}
-                                        {% set ten_nguon = n.ten_nguon or n.ten %}
-                                        <option value="{{ n.id }}" {% if sp.nguon_nhap_id == n.id %}selected{% endif %}>{{ ten_nguon }}</option>
+                                    {% set ten_nguon = n.ten_nguon or n.ten %}
+                                    <option value="{{ n.id }}" {% if sp.nguon_nhap_id==n.id %}selected{% endif %}>{{
+                                        ten_nguon }}</option>
                                     {% endfor %}
                                 </select>
                                 <a href="/admin/nguon-nhap" class="btn btn-danger">+</a>
@@ -66,12 +70,41 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Số lượng nhập kho *</label>
-                            <input type="number" name="so_luong" class="form-control" required value="{{ sp.so_luong }}">
+                            <input type="number" name="so_luong" class="form-control" required
+                                value="{{ sp.so_luong }}">
+                        </div>
+
+                        <div class="col-12 bg-light p-3 rounded mb-3 border shadow-sm">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-tags text-primary"></i> Bảng giá Phân loại (Nhập 0
+                                nếu hết hàng/yêu cầu Liên hệ)</h6>
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <label class="small fw-bold">Có sẵn - New Seal</label>
+                                    <input type="number" name="gia_san_new" class="form-control border-success"
+                                        value="{{ sp.gia_san_new if sp else 0 }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="small fw-bold">Có sẵn - Like New</label>
+                                    <input type="number" name="gia_san_likenew" class="form-control"
+                                        value="{{ sp.gia_san_likenew if sp else 0 }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="small fw-bold text-warning">Order - New Seal</label>
+                                    <input type="number" name="gia_order_new" class="form-control border-warning"
+                                        value="{{ sp.gia_order_new if sp else 0 }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="small fw-bold text-warning">Order - Like New</label>
+                                    <input type="number" name="gia_order_likenew" class="form-control"
+                                        value="{{ sp.gia_order_likenew if sp else 0 }}">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold text-danger">Giá nhập (VNĐ) *</label>
-                            <input type="number" name="gia_nhap" class="form-control" required value="{{ sp.gia_nhap }}">
+                            <input type="number" name="gia_nhap" class="form-control" required
+                                value="{{ sp.gia_nhap }}">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold text-success">Giá bán (VNĐ) *</label>
@@ -80,72 +113,83 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Kiểu hàng</label>
-                            <select name="kieu_hang" class="form-select" onchange="document.getElementById('preOrderFields').style.display = (this.value === 'Pre-order') ? 'flex' : 'none';">
-                                <option value="Co san" {% if sp.kieu_hang == 'Co san' %}selected{% endif %}>Hàng có sẵn</option>
-                                <option value="Pre-order" {% if sp.kieu_hang == 'Pre-order' %}selected{% endif %}>Hàng đặt trước (Pre-order)</option>
+                            <select name="kieu_hang" class="form-select"
+                                onchange="document.getElementById('preOrderFields').style.display = (this.value === 'Pre-order') ? 'flex' : 'none';">
+                                <option value="Co san" {% if sp.kieu_hang=='Co san' %}selected{% endif %}>Hàng có sẵn
+                                </option>
+                                <option value="Pre-order" {% if sp.kieu_hang=='Pre-order' %}selected{% endif %}>Hàng đặt
+                                    trước (Pre-order)</option>
                             </select>
                         </div>
 
                         {% if sp.kieu_hang == 'Pre-order' %}
                         <div id="preOrderFields" class="row w-100 m-0 p-0" style="display: flex;">
-                        {% else %}
-                        <div id="preOrderFields" class="row w-100 m-0 p-0" style="display: none;">
-                        {% endif %}
-                            <div class="col-md-6 mb-3 ps-0">
-                                <label class="form-label fw-bold text-primary">Số tiền cọc (VNĐ)</label>
-                                <input type="number" name="tien_coc" class="form-control" value="{{ sp.tien_coc }}">
+                            {% else %}
+                            <div id="preOrderFields" class="row w-100 m-0 p-0" style="display: none;">
+                                {% endif %}
+                                <div class="col-md-6 mb-3 ps-0">
+                                    <label class="form-label fw-bold text-primary">Số tiền cọc (VNĐ)</label>
+                                    <input type="number" name="tien_coc" class="form-control" value="{{ sp.tien_coc }}">
+                                </div>
+                                <div class="col-md-6 mb-3 pe-0">
+                                    <label class="form-label fw-bold text-primary">Ngày phát hành dự kiến</label>
+                                    <input type="date" name="ngay_phat_hanh" class="form-control"
+                                        value="{{ sp.ngay_phat_hanh }}">
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3 pe-0">
-                                <label class="form-label fw-bold text-primary">Ngày phát hành dự kiến</label>
-                                <input type="date" name="ngay_phat_hanh" class="form-control" value="{{ sp.ngay_phat_hanh }}">
+
+                            <div class="row bg-warning bg-opacity-10 p-3 rounded border border-warning mb-3 mx-1 w-100">
+                                <h6 class="fw-bold text-dark"><i class="fas fa-wallet"></i> Quản lý dòng tiền nhập (Bí
+                                    mật)</h6>
+                                <div class="col-md-4 mb-2">
+                                    <label class="small fw-bold">Tiền sếp đã trả cho nguồn</label>
+                                    <input type="number" name="tien_da_tra_nguon" class="form-control"
+                                        value="{{ sp.tien_da_tra_nguon }}">
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="small fw-bold">Trạng thái thanh toán</label>
+                                    <select name="trang_thai_nhap" class="form-select">
+                                        <option value="Còn nợ" {% if sp.trang_thai_nhap=='Còn nợ' %}selected{% endif %}>
+                                            Còn nợ nguồn</option>
+                                        <option value="Đã thanh toán" {% if sp.trang_thai_nhap=='Đã thanh toán'
+                                            %}selected{% endif %}>Đã thanh toán xong</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="small fw-bold">Ngày hàng về dự kiến</label>
+                                    <input type="text" name="ngay_ve" class="form-control"
+                                        placeholder="VD: Tháng 6/2026" value="{{ sp.ngay_du_kien_ve }}">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Ảnh đại diện (Chọn 1) *</label>
+                                <input type="file" name="hinh_anh" class="form-control" accept="image/*">
+                                <small class="text-muted">Bỏ trống nếu giữ ảnh cũ.</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-primary">Ảnh phụ kiện / Chi tiết</label>
+                                <input type="file" name="hinh_anh_phu" class="form-control" multiple accept="image/*">
+                                <small class="text-muted">Giữ phím Ctrl để chọn nhiều ảnh</small>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-bold">Mô tả chi tiết</label>
+                                <textarea name="mo_ta" class="form-control" rows="4"
+                                    placeholder="Chất liệu, kiểu dáng...">{{ sp.mo_ta }}</textarea>
                             </div>
                         </div>
 
-                        <div class="row bg-warning bg-opacity-10 p-3 rounded border border-warning mb-3 mx-1 w-100">
-                            <h6 class="fw-bold text-dark"><i class="fas fa-wallet"></i> Quản lý dòng tiền nhập (Bí mật)</h6>
-                            <div class="col-md-4 mb-2">
-                                <label class="small fw-bold">Tiền sếp đã trả cho nguồn</label>
-                                <input type="number" name="tien_da_tra_nguon" class="form-control" value="{{ sp.tien_da_tra_nguon }}">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="small fw-bold">Trạng thái thanh toán</label>
-                                <select name="trang_thai_nhap" class="form-select">
-                                    <option value="Còn nợ" {% if sp.trang_thai_nhap == 'Còn nợ' %}selected{% endif %}>Còn nợ nguồn</option>
-                                    <option value="Đã thanh toán" {% if sp.trang_thai_nhap == 'Đã thanh toán' %}selected{% endif %}>Đã thanh toán xong</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="small fw-bold">Ngày hàng về dự kiến</label>
-                                <input type="text" name="ngay_ve" class="form-control" placeholder="VD: Tháng 6/2026" value="{{ sp.ngay_du_kien_ve }}">
-                            </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="/admin" class="btn btn-outline-secondary">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-dark px-5">💾 Lưu Cập Nhật</button>
                         </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Ảnh đại diện (Chọn 1) *</label>
-                            <input type="file" name="hinh_anh" class="form-control" accept="image/*">
-                            <small class="text-muted">Bỏ trống nếu giữ ảnh cũ.</small>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-primary">Ảnh phụ kiện / Chi tiết</label>
-                            <input type="file" name="hinh_anh_phu" class="form-control" multiple accept="image/*">
-                            <small class="text-muted">Giữ phím Ctrl để chọn nhiều ảnh</small>
-                        </div>
-
-                        <div class="col-12 mb-4">
-                            <label class="form-label fw-bold">Mô tả chi tiết</label>
-                            <textarea name="mo_ta" class="form-control" rows="4" placeholder="Chất liệu, kiểu dáng...">{{ sp.mo_ta }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <a href="/admin" class="btn btn-outline-secondary">Hủy bỏ</a>
-                        <button type="submit" class="btn btn-dark px-5">💾 Lưu Cập Nhật</button>
-                    </div>
                 </form>
             </div>
         </div>
     </div>
 
 </body>
+
 </html>

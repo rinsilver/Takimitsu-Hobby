@@ -83,7 +83,19 @@ def tao_bang():
         conn.execute("INSERT INTO khach_hang (tai_khoan, mat_khau, ho_ten, vai_tro) VALUES ('admin', '123', 'Quản trị viên', 'admin')")
     conn.commit(); conn.close()
 
+def cap_nhat_db_phan_loai():
+    conn = ket_noi_db()
+    for col in ['gia_san_new', 'gia_san_likenew', 'gia_order_new', 'gia_order_likenew']:
+        try: conn.execute(f"ALTER TABLE san_pham ADD COLUMN {col} REAL DEFAULT 0")
+        except: pass
+    # Lấy giá bán cũ làm mặc định cho "Có sẵn - New" để web không bị lỗi
+    try: conn.execute("UPDATE san_pham SET gia_san_new = gia_ban WHERE gia_san_new = 0 AND gia_san_likenew = 0 AND gia_order_new = 0 AND gia_order_likenew = 0 AND gia_ban > 0")
+    except: pass
+    conn.commit()
+    conn.close()
+
 tao_bang()
+cap_nhat_db_phan_loai()
 
 # --- HÀM ĐẾM SỐ LƯỢNG GIỎ HÀNG TRÊN THANH MENU ---
 @app.context_processor
@@ -195,35 +207,37 @@ def dang_xuat():
 @app.route('/them-vao-gio/<int:id>')
 def them_vao_gio(id):
     conn = ket_noi_db()
-    sp = conn.execute('SELECT id, ten, gia_ban, hinh_anh, so_luong, kieu_hang FROM san_pham WHERE id=?', (id,)).fetchone()
+    sp = conn.execute('SELECT * FROM san_pham WHERE id=?', (id,)).fetchone()
     conn.close()
-    
     if not sp: return redirect(url_for('index'))
+
+    hinh_thuc = request.args.get('hinh_thuc', 'san')
+    loai = request.args.get('loai', 'new')
+    
+    key_gia = f"gia_{hinh_thuc}_{loai}"
+    gia_chon = sp[key_gia] if key_gia in sp.keys() else sp['gia_ban']
+        
+    if gia_chon <= 0:
+        return redirect(url_for('chi_tiet_sp', id=id))
+
+    # Đánh dấu Variant bằng ID chuỗi (vd: 1_san_new) để giỏ hàng không bị trùng
+    ten_variant = f"{sp['ten']} ({'Có sẵn' if hinh_thuc=='san' else 'Order'} - {'New Seal' if loai=='new' else 'Like New'})"
+    cart_item_id = f"{id}_{hinh_thuc}_{loai}"
 
     gio = session.get('gio_hang', [])
     if isinstance(gio, dict): gio = []
-    elif isinstance(gio, list) and len(gio) > 0 and not isinstance(gio[0], dict): gio = []
 
-    # Xóa các báo lỗi cũ (nếu có) để làm mới
-    for item in gio:
-        item.pop('error', None)
+    for item in gio: item.pop('error', None)
 
     found = False
     for item in gio:
-        if item['id'] == id:
-            if item['so_luong'] < sp['so_luong']:
-                item['so_luong'] += 1
-            else:
-                item['error'] = f"Chỉ còn {sp['so_luong']} cái!" # Gắn lỗi vào đúng SP này
-            found = True
-            break
+        if item.get('cart_id', str(item['id'])) == cart_item_id:
+            if item['so_luong'] < sp['so_luong']: item['so_luong'] += 1
+            else: item['error'] = f"Chỉ còn {sp['so_luong']} cái!"
+            found = True; break
     
     if not found:
-        if sp['kieu_hang'] != 'Pre-order' and sp['so_luong'] <= 0:
-            # Hết hàng từ đầu thì cho vào giỏ với thông báo đỏ
-            gio.append({'id': sp['id'], 'ten': sp['ten'], 'gia': sp['gia_ban'], 'hinh_anh': sp['hinh_anh'], 'so_luong': 1, 'error': 'Đã hết hàng!'})
-        else:
-            gio.append({'id': sp['id'], 'ten': sp['ten'], 'gia': sp['gia_ban'], 'hinh_anh': sp['hinh_anh'], 'so_luong': 1})
+        gio.append({'cart_id': cart_item_id, 'id': id, 'ten': ten_variant, 'gia': gia_chon, 'hinh_anh': sp['hinh_anh'], 'so_luong': 1})
 
     session['gio_hang'] = gio
     session.modified = True
@@ -246,39 +260,31 @@ def xem_gio_hang():
     return render_template('gio_hang.html', gio_hang=gio, tong_tien=tong_tien)
 
 # 3. TĂNG / GIẢM SỐ LƯỢNG
-@app.route('/cap-nhat-gio/<int:id>/<hanh_dong>')
-def cap_nhat_gio(id, hanh_dong):
+@app.route('/cap-nhat-gio/<cart_id>/<hanh_dong>')
+def cap_nhat_gio(cart_id, hanh_dong):
     gio = session.get('gio_hang', [])
+    real_id = int(str(cart_id).split('_')[0]) if '_' in str(cart_id) else int(cart_id)
     conn = ket_noi_db()
-    sp = conn.execute('SELECT so_luong, kieu_hang FROM san_pham WHERE id=?', (id,)).fetchone()
+    sp = conn.execute('SELECT so_luong FROM san_pham WHERE id=?', (real_id,)).fetchone()
     conn.close()
     
     for item in gio:
-        if item['id'] == id:
-            item.pop('error', None) # Xóa dòng chữ đỏ cũ đi khi thao tác lại
-            
+        if item.get('cart_id', str(item['id'])) == cart_id:
+            item.pop('error', None)
             if hanh_dong == 'tang':
-                if sp and item['so_luong'] < sp['so_luong']:
-                    item['so_luong'] += 1
-                else:
-                    item['error'] = f"Tối đa {sp['so_luong']} món!" # Báo lỗi nếu bấm quá
-            elif hanh_dong == 'giam' and item['so_luong'] > 1:
-                item['so_luong'] -= 1
+                if sp and item['so_luong'] < sp['so_luong']: item['so_luong'] += 1
+                else: item['error'] = "Tối đa rồi sếp ơi!"
+            elif hanh_dong == 'giam' and item['so_luong'] > 1: item['so_luong'] -= 1
             break
-            
     session['gio_hang'] = gio
     session.modified = True
     return redirect(url_for('xem_gio_hang'))
 
-# 4. XÓA KHỎI GIỎ
-@app.route('/xoa-khoi-gio/<int:id>')
-def xoa_khoi_gio(id):
+@app.route('/xoa-khoi-gio/<cart_id>')
+def xoa_khoi_gio(cart_id):
     gio = session.get('gio_hang', [])
-    # Dùng list comprehension để giữ lại những SP có ID khác với ID muốn xóa
-    gio = [item for item in gio if item['id'] != id]
-    
-    session['gio_hang'] = gio
-    session.modified = True
+    gio = [item for item in gio if item.get('cart_id', str(item['id'])) != cart_id]
+    session['gio_hang'] = gio; session.modified = True
     return redirect(url_for('xem_gio_hang'))
 
 @app.route('/dat-hang', methods=['POST'])
@@ -340,15 +346,22 @@ def them_san_pham():
         cur = conn.cursor()
         
         # ĐÃ SỬA: Thêm cột so_luong_nhap, thêm một dấu ? vào VALUES, và lưu request.form['so_luong'] 2 lần
-        cur.execute('''INSERT INTO san_pham (ten, the_loai, hang_sx, gia_nhap, gia_ban, so_luong, so_luong_nhap, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh, nguon_nhap_id, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', 
+        gia_san_new = float(request.form.get('gia_san_new', 0) or 0)
+        gia_san_likenew = float(request.form.get('gia_san_likenew', 0) or 0)
+        gia_order_new = float(request.form.get('gia_order_new', 0) or 0)
+        gia_order_likenew = float(request.form.get('gia_order_likenew', 0) or 0)
+        gia_ban = float(request.form.get('gia_ban', gia_san_new)) # Fallback
+        
+        cur.execute('''INSERT INTO san_pham (ten, the_loai, hang_sx, gia_nhap, gia_ban, so_luong, so_luong_nhap, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh, nguon_nhap_id, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve, gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', 
                     (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], 
-                     float(request.form['gia_nhap']), float(request.form['gia_ban']), 
-                     int(request.form['so_luong']), int(request.form['so_luong']), # <-- Bí quyết nhân đôi nằm ở đây
+                     float(request.form.get('gia_nhap', 0) or 0), gia_ban, 
+                     int(request.form.get('so_luong', 0) or 0), int(request.form.get('so_luong', 0) or 0), 
                      img, request.form['mo_ta'], request.form['kieu_hang'], 
-                     float(request.form.get('tien_coc', 0)), request.form.get('ngay_phat_hanh', ''), 
-                     request.form.get('nguon_nhap_id'), float(request.form.get('tien_da_tra_nguon', 0)), 
-                     request.form.get('trang_thai_nhap', 'Còn nợ'), request.form.get('ngay_ve', '')))
+                     float(request.form.get('tien_coc', 0) or 0), request.form.get('ngay_phat_hanh', ''), 
+                     request.form.get('nguon_nhap_id'), float(request.form.get('tien_da_tra_nguon', 0) or 0), 
+                     request.form.get('trang_thai_nhap', 'Còn nợ'), request.form.get('ngay_ve', ''),
+                     gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew))
         
         sid = cur.lastrowid
         
@@ -373,16 +386,27 @@ def sua_san_pham(id):
     conn = ket_noi_db()
     
     if request.method == 'POST':
-        # Xử lý ảnh đại diện (nếu sếp có chọn ảnh mới)
+        # 1. Lấy 4 giá phân loại từ form (Nếu không điền thì mặc định là 0)
+        gia_san_new = float(request.form.get('gia_san_new', 0) or 0)
+        gia_san_likenew = float(request.form.get('gia_san_likenew', 0) or 0)
+        gia_order_new = float(request.form.get('gia_order_new', 0) or 0)
+        gia_order_likenew = float(request.form.get('gia_order_likenew', 0) or 0)
+        
+        # Lấy giá bán gốc làm mặc định
+        gia_ban = float(request.form.get('gia_ban', gia_san_new)) 
+
         f = request.files.get('hinh_anh')
         img_sql = ""
+        
+        # 2. Xây dựng danh sách tham số (Cộng thêm 4 trường giá phân loại)
         tham_so = [
             request.form['ten'], request.form['the_loai'], request.form['hang_sx'],
-            float(request.form['gia_nhap']), float(request.form['gia_ban']), int(request.form['so_luong']),
-            request.form['mo_ta'], request.form['kieu_hang'], float(request.form.get('tien_coc', 0)),
+            float(request.form.get('gia_nhap', 0) or 0), gia_ban, int(request.form.get('so_luong', 0) or 0),
+            request.form['mo_ta'], request.form['kieu_hang'], float(request.form.get('tien_coc', 0) or 0),
             request.form.get('ngay_phat_hanh', ''), request.form.get('nguon_nhap_id'),
-            float(request.form.get('tien_da_tra_nguon', 0)), request.form.get('trang_thai_nhap', 'Còn nợ'),
-            request.form.get('ngay_ve', '')
+            float(request.form.get('tien_da_tra_nguon', 0) or 0), request.form.get('trang_thai_nhap', 'Còn nợ'),
+            request.form.get('ngay_ve', ''),
+            gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew # <-- 4 CỘT MỚI Ở ĐÂY
         ]
 
         if f and f.filename != '':
@@ -393,16 +417,17 @@ def sua_san_pham(id):
             
         tham_so.append(id) # ID cho mệnh đề WHERE
 
-        # Cập nhật sản phẩm
+        # 3. Thực thi cập nhật database
         conn.execute(f'''
             UPDATE san_pham SET 
             ten=?, the_loai=?, hang_sx=?, gia_nhap=?, gia_ban=?, so_luong=?, mo_ta=?, 
             kieu_hang=?, tien_coc=?, ngay_phat_hanh=?, nguon_nhap_id=?, tien_da_tra_nguon=?, 
-            trang_thai_nhap=?, ngay_du_kien_ve=? {img_sql} 
+            trang_thai_nhap=?, ngay_du_kien_ve=?,
+            gia_san_new=?, gia_san_likenew=?, gia_order_new=?, gia_order_likenew=? {img_sql} 
             WHERE id=?
         ''', tuple(tham_so))
         
-        # Lưu thêm ảnh phụ mới (nếu sếp có up thêm)
+        # 4. Lưu thêm ảnh phụ mới (nếu sếp có up thêm)
         for pf in request.files.getlist('hinh_anh_phu'):
             if pf and pf.filename != '':
                 ten_file = secure_filename(pf.filename)
@@ -410,9 +435,9 @@ def sua_san_pham(id):
                 conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (id, '/static/uploads/'+ten_file))
                 
         conn.commit(); conn.close()
-        return redirect(url_for('admin')) # Hoặc redirect về trang quản lý sếp muốn
+        return redirect(url_for('admin')) 
 
-    # LẤY DATA CHO GET METHOD (Giống hệt hàm Thêm của sếp)
+    # LẤY DATA CHO GET METHOD HIỂN THỊ LÊN FORM
     sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
     dms = conn.execute('SELECT * FROM danh_muc').fetchall()
     hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
