@@ -18,12 +18,20 @@ SETTINGS_FILE = 'settings.json'
 def get_settings():
     if not os.path.exists(SETTINGS_FILE):
         default_settings = {
-            "ten_web": "WOLVES CLONE", "logo_url": "", "mau_chu_dao": "#e60012",
-            "banner_1": "", "banner_2": "", "thong_tin_footer": "Điểm đến hàng đầu cho cộng đồng sưu tầm mô hình.",
+            "ten_web": "WOLVES STORE", "logo_url": "", "mau_chu_dao": "#e60012",
+            "banner_1": "", "banner_2": "", 
+            "thong_tin_footer": "Shop online chuyên sản phẩm mô hình chính hãng",
+            "dia_chi": "TP. Hồ Chí Minh", "dien_thoai": "091.416.5278", "email": "0914165278",
             "link_fb": "#", "link_ig": "#", "link_yt": "#"
         }
         save_settings(default_settings)
     with open(SETTINGS_FILE, 'r', encoding='utf-8') as f: return json.load(f)
+
+def save_settings(settings_data):
+    # Giả sử sếp lưu vào file json
+    import json
+    with open('settings.json', 'w', encoding='utf-8') as f:
+        json.dump(settings_data, f, ensure_ascii=False, indent=4)
 
 # Bơm settings vào TOÀN BỘ trang web
 @app.context_processor
@@ -900,38 +908,44 @@ def ho_so_khach():
     conn.close()
     return render_template('ho_so.html', khach=khach, don_hangs=don_hangs_full)
 # ================= TRANG ADMIN: CÀI ĐẶT GIAO DIỆN =================
+
 @app.route('/admin/cai-dat', methods=['GET', 'POST'])
 def cai_dat_giao_dien():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     settings = get_settings()
     
     if request.method == 'POST':
-        # Logic Lưu File từ máy tính
-        def luu_file(ten_input, file_cu):
+        def xu_ly_anh(ten_input, file_cu):
+            # Nếu sếp bấm nút xóa, JavaScript sẽ gửi giá trị rỗng lên đây
+            is_delete = request.form.get(f'is_delete_{ten_input}') == 'true'
+            if is_delete: return "" 
+            
             file = request.files.get(ten_input)
             if file and file.filename != '':
                 filename = secure_filename(file.filename)
-                os.makedirs('static/uploads', exist_ok=True) # Tạo thư mục nếu chưa có
                 filepath = os.path.join('static/uploads', filename)
                 file.save(filepath)
-                return '/' + filepath # Trả về đường dẫn để web hiển thị
-            return file_cu # Nếu sếp không chọn file mới thì giữ nguyên ảnh cũ
+                return '/' + filepath
+            return file_cu
 
+        # Dùng .get() để tránh lỗi BadRequestKeyError nếu thiếu ô nhập liệu
         new_settings = {
-            "ten_web": request.form['ten_web'],
-            "mau_chu_dao": request.form['mau_chu_dao'],
-            "thong_tin_footer": request.form['thong_tin_footer'],
+            "ten_web": request.form.get('ten_web', settings.get('ten_web')),
+            "mau_chu_dao": request.form.get('mau_chu_dao', settings.get('mau_chu_dao')),
+            "thong_tin_footer": request.form.get('thong_tin_footer', ''),
+            "dia_chi": request.form.get('dia_chi', ''),
+            "dien_thoai": request.form.get('dien_thoai', ''),
+            "email": request.form.get('email', ''),
             "link_fb": request.form.get('link_fb', '#'),
             "link_ig": request.form.get('link_ig', '#'),
             "link_yt": request.form.get('link_yt', '#'),
-            "logo_url": luu_file('logo_file', settings.get('logo_url')),
-            "banner_1": luu_file('banner_1_file', settings.get('banner_1')),
-            "banner_2": luu_file('banner_2_file', settings.get('banner_2'))
+            "logo_url": xu_ly_anh('logo_file', settings.get('logo_url')),
+            "banner_1": xu_ly_anh('banner_1_file', settings.get('banner_1')),
+            "banner_2": xu_ly_anh('banner_2_file', settings.get('banner_2'))
         }
         save_settings(new_settings)
         return redirect(url_for('cai_dat_giao_dien'))
-        
-    return render_template('cai_dat.html')
+    return render_template('cai_dat.html', settings=settings)
 
 # ================= TRANG KHÁCH: TẤT CẢ SẢN PHẨM =================
 # ================= TRANG KHÁCH: TẤT CẢ SẢN PHẨM (CÓ TÌM THEO TÊN) =================

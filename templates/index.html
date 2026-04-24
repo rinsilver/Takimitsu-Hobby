@@ -10,13 +10,16 @@
 
     <style>
         :root {
-            /* Sửa lại biến màu chuẩn để đồng bộ với index */
-            --main-color: {{ settings.mau_chu_dao }};
-        }
+        /* Phải viết dính liền trên một dòng như thế này thì mới nhận màu sếp nhé */
+        --main-color: {{ settings.mau_chu_dao }};
+        --bg-dark: #121212;
+        --bg-card: #0a0a0a;
+    }
 
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            background-color: #f8f9fa; /* Trả về xám nhạt để nổi bật khung trắng theo ảnh cũ */
+            background-color: #f8f9fa;
+            /* Trả về xám nhạt để nổi bật khung trắng theo ảnh cũ */
             color: #111;
             overflow-x: hidden;
         }
@@ -325,9 +328,11 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top p-3">
         <div class="container">
-            <a class="navbar-brand fw-bold fs-3" href="/">
-                {% if settings.logo_url %}<img src="{{ settings.logo_url }}" alt="Logo" height="40">{% else %}<span
-                    style="color:var(--main-color)">WOLVES</span> CLONE{% endif %}
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+                {% if settings.logo_url %}
+                <img src="{{ settings.logo_url }}" alt="Logo" height="40" class="me-2">
+                {% endif %}
+                <span style="color:var(--main-color)">{{ settings.ten_web }}</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span
                     class="navbar-toggler-icon"></span></button>
@@ -635,7 +640,15 @@
             <div class="row">
                 <div class="col-md-6 mb-4">
                     <h3 class="fw-bold mb-3" style="color:var(--main-color)">{{ settings.ten_web }}</h3>
-                    <p class="text-secondary" style="max-width: 80%;">{{ settings.thong_tin_footer }}</p>
+                    <p class="text-secondary mb-2">{{ settings.thong_tin_footer }}</p>
+                    <div class="small text-secondary">
+                        <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i><strong>Địa chỉ:</strong> {{
+                            settings.dia_chi }}</p>
+                        <p class="mb-1"><i class="fas fa-phone-alt me-2"></i><strong>Điện thoại:</strong> {{
+                            settings.dien_thoai }}</p>
+                        <p class="mb-1"><i class="fas fa-envelope me-2"></i><strong>Email:</strong> {{ settings.email }}
+                        </p>
+                    </div>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <h5 class="fw-bold mb-4">KẾT NỐI VỚI CHÚNG TÔI</h5>
