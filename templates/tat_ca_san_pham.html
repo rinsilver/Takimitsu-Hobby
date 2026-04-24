@@ -2,64 +2,165 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tất cả sản phẩm - {{ settings.ten_web }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         :root { --main-color: {{ settings.mau_chu_dao }}; }
-        .product-card { transition: 0.3s; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--main-color); }
-        .price { color: var(--main-color); font-weight: bold; }
-        .btn-custom { background-color: var(--main-color); color: white; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8f9fa; color: #111; overflow-x: hidden; }
+        
+        /* NAVBAR & MEGA MENU CHUẨN TỪ INDEX */
+        .navbar { border-bottom: 2px solid var(--main-color); background-color: #111 !important; }
+        .mega-dropdown { position: static !important; }
+        .mega-menu { position: absolute; width: 100%; left: 0; right: 0; padding: 20px; border-radius: 0; border: none; border-top: 2px solid var(--main-color); box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 0; }
+        .mega-menu-title { font-weight: 800; text-transform: uppercase; color: var(--main-color); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .mega-menu-item { display: flex; align-items: center; padding: 10px; color: #333; text-decoration: none; transition: 0.2s; }
+        .mega-menu-item:hover { background: #f8f9fa; color: var(--main-color); }
+        .mega-menu-item i { font-size: 1.5rem; margin-right: 15px; color: #666; width: 30px; text-align: center; }
+
+        /* CARD SẢN PHẨM VUÔNG VỨC CHUẨN TAMASHII */
+        .tms-card { display: block; text-decoration: none; background-color: #fff; border: 1px solid #e0e0e0; transition: transform 0.2s ease-in-out, box-shadow 0.2s; height: 100%; }
+        .tms-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); border-color: #ccc; }
+        
+        .tms-img-wrap { background-color: #f8f9fa; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; padding: 15px; border-bottom: 1px solid #e0e0e0; position: relative; }
+        .tms-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .tms-tag { position: absolute; bottom: 0; right: 0; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; color: #fff; text-transform: uppercase; }
+        .tag-order { background-color: #f1c40f; color: #000; }
+        .tag-avail { background-color: #e60012; }
+        
+        .tms-info { padding: 15px; background-color: #fff; }
+        .tms-name { color: #111; font-weight: 700; font-size: 0.95rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 15px; height: 2.8em; }
+        .tms-meta { display: flex; justify-content: space-between; align-items: center; }
+        .tms-price { color: #e60012; font-weight: 800; font-size: 1.1rem; }
+
+        /* BỘ LỌC BÊN TRÁI */
+        .filter-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 0; }
+        .filter-card h6 { border-bottom: 2px solid #111; padding-bottom: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* ÉP VUÔNG VỨC CÁC NÚT VÀ INPUT TÌM KIẾM */
+        .form-select, .btn { border-radius: 0 !important; }
+
+        /* FOOTER ĐỒNG BỘ */
+        footer { background-color: #111; padding: 60px 0 30px 0; color: #fff; border-top: 2px solid var(--main-color); margin-top: 60px; }
+        .hover-main:hover { color: var(--main-color) !important; }
     </style>
 </head>
 <body>
-    <div class="container mt-5 mb-5">
-        <h2 class="fw-bold mb-4 text-uppercase border-bottom pb-2">KHO TÀNG MÔ HÌNH</h2>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top p-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3" href="/">
+                {% if settings.logo_url %}<img src="{{ settings.logo_url }}" alt="Logo" height="40">{% else %}<span style="color:var(--main-color)">WOLVES</span> CLONE{% endif %}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item dropdown mega-dropdown me-3">
+                        <a class="nav-link dropdown-toggle fw-bold text-white" href="#" data-bs-toggle="dropdown">DANH MỤC</a>
+                        <div class="dropdown-menu mega-menu shadow-lg">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h5 class="mega-menu-title">Bandai Spirits</h5>
+                                        <a href="/san-pham?hang_sx=Bandai" class="mega-menu-item"><i class="fas fa-robot"></i> <div><strong class="d-block">S.H.Figuarts</strong><small>Mô hình khớp cử động</small></div></a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h5 class="mega-menu-title">Thương Hiệu Khác</h5>
+                                        <a href="/san-pham?hang_sx=Good Smile" class="mega-menu-item"><i class="fas fa-child"></i> <div><strong class="d-block">Good Smile</strong><small>Nendoroid, Figma</small></div></a>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="p-4 bg-light h-100 d-flex flex-column justify-content-center">
+                                            <h6 class="fw-bold text-dark mb-3">TÌM KIẾM SẢN PHẨM</h6>
+                                            <a href="/san-pham" class="btn text-white fw-bold w-100 rounded-0" style="background:var(--main-color)">XEM TẤT CẢ KHO HÀNG</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link fw-bold text-white" href="/san-pham">SẢN PHẨM</a></li>
+                    {% if is_admin or is_khach %}
+                        <li class="nav-item mx-3"><a href="/ho-so" class="text-decoration-none text-light fw-bold">Chào, <span style="color:var(--main-color)">{{ khach_ten }}</span></a></li>
+                        <li class="nav-item"><a href="/gio-hang" class="btn btn-outline-light rounded-0 position-relative me-2"><i class="fas fa-shopping-cart"></i>{% if so_luong_gio_hang > 0 %}<span class="position-absolute top-0 start-100 translate-middle badge bg-danger">{{ so_luong_gio_hang }}</span>{% endif %}</a></li>
+                        {% if is_admin %}<li class="nav-item"><a class="btn btn-warning fw-bold rounded-0 mx-1 text-dark" href="/admin">QUẢN TRỊ</a></li>{% endif %}
+                        <li class="nav-item"><a class="btn btn-outline-danger rounded-0 ms-2" href="/dang-xuat"><i class="fas fa-sign-out-alt"></i></a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="btn px-4 ms-2 text-white fw-bold rounded-0" style="background:var(--main-color)" href="/dang-nhap">ĐĂNG NHẬP</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="fw-bold mb-4 text-uppercase border-bottom border-2 pb-2 border-dark" style="letter-spacing: 1px;">KHO TÀNG MÔ HÌNH</h2>
         
         <div class="row g-4">
             <div class="col-md-3">
-                <form method="GET" class="card p-3 shadow-sm border-0 bg-light">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-filter"></i> BỘ LỌC</h6>
+                <form method="GET" class="filter-card p-4 shadow-sm">
+                    <h6 class="mb-4"><i class="fas fa-filter me-2"></i> TÌM KIẾM CHI TIẾT</h6>
+                    
                     <div class="mb-3">
-                        <label class="small fw-bold mb-1">Danh mục</label>
-                        <select name="danh_muc" class="form-select form-select-sm">
-                            <option value="">Tất cả</option>
+                        <label class="small fw-bold mb-2 text-muted">DANH MỤC</label>
+                        <select name="danh_muc" class="form-select border-secondary">
+                            <option value="">Tất cả danh mục</option>
                             {% for dm in danh_mucs %}
                             <option value="{{ dm.ten_danh_muc }}" {% if dm_chon == dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                    
                     <div class="mb-3">
-                        <label class="small fw-bold mb-1">Hãng sản xuất</label>
-                        <select name="hang_sx" class="form-select form-select-sm">
-                            <option value="">Tất cả</option>
+                        <label class="small fw-bold mb-2 text-muted">HÃNG SẢN XUẤT</label>
+                        <select name="hang_sx" class="form-select border-secondary">
+                            <option value="">Tất cả hãng</option>
                             {% for h in hangs %}
                             <option value="{{ h.ten_hang }}" {% if hang_chon == h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold">ÁP DỤNG</button>
-                    <a href="/san-pham" class="btn btn-outline-danger btn-sm w-100 fw-bold mt-2">XÓA LỌC</a>
+
+                    <div class="mb-4">
+                        <label class="small fw-bold mb-2 text-muted">TÌNH TRẠNG</label>
+                        <select name="kieu_hang" class="form-select border-secondary">
+                            <option value="">Tất cả tình trạng</option>
+                            <option value="Co san" {% if kieu_chon == 'Co san' %}selected{% endif %}>Hàng có sẵn</option>
+                            <option value="Pre-order" {% if kieu_chon == 'Pre-order' %}selected{% endif %}>Hàng Order</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark w-100 fw-bold py-2 mb-2 shadow-sm">ÁP DỤNG LỌC</button>
+                    <a href="/san-pham" class="btn btn-outline-secondary w-100 fw-bold py-2">XÓA BỘ LỌC</a>
                 </form>
             </div>
 
             <div class="col-md-9">
-                <div class="row row-cols-2 row-cols-md-3 g-3">
+                <div class="row row-cols-2 row-cols-md-3 g-4">
                     {% for sp in san_phams %}
                     <div class="col">
-                        <a href="/san-pham/{{ sp.id }}" class="text-decoration-none">
-                            <div class="card product-card h-100 bg-white">
-                                <div style="height: 200px; padding: 10px; display: flex; align-items: center; justify-content: center;">
-                                    <img src="{{ sp.hinh_anh }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
-                                </div>
-                                <div class="card-body border-top p-3">
-                                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ sp.hang_sx }}</small>
-                                    <h6 class="text-dark fw-bold text-truncate">{{ sp.ten }}</h6>
-                                    <div class="price fs-5">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                        <a href="/san-pham/{{ sp.id }}" class="tms-card">
+                            <div class="tms-img-wrap">
+                                <img src="{{ sp.hinh_anh }}">
+                                {% if sp.kieu_hang == 'Pre-order' %}
+                                    <div class="tms-tag tag-order">ORDER</div>
+                                {% else %}
+                                    <div class="tms-tag tag-avail">CÓ SẴN</div>
+                                {% endif %}
+                            </div>
+                            <div class="tms-info">
+                                <div class="tms-name">{{ sp.ten }}</div>
+                                <div class="tms-meta">
+                                    <span class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</span>
                                 </div>
                             </div>
                         </a>
+                    </div>
+                    {% else %}
+                    <div class="col-12 text-center py-5">
+                        <h4 class="text-muted"><i class="fas fa-search me-2"></i> Không tìm thấy sản phẩm phù hợp.</h4>
                     </div>
                     {% endfor %}
                 </div>
@@ -68,7 +169,10 @@
                 <ul class="pagination justify-content-center mt-5">
                     {% for p in range(1, tong_trang + 1) %}
                     <li class="page-item {% if p == page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ p }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}">{{ p }}</a>
+                        <a class="page-link text-dark fw-bold border-dark rounded-0 {% if p == page %}bg-dark text-white{% endif %}" 
+                           href="?page={{ p }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}">
+                           {{ p }}
+                        </a>
                     </li>
                     {% endfor %}
                 </ul>
@@ -76,5 +180,28 @@
             </div>
         </div>
     </div>
+
+    <footer>
+        <div class="container text-center text-md-start">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <h3 class="fw-bold mb-3" style="color:var(--main-color)">{{ settings.ten_web }}</h3>
+                    <p class="text-secondary" style="max-width: 80%;">{{ settings.thong_tin_footer }}</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5 class="fw-bold mb-4">KẾT NỐI VỚI CHÚNG TÔI</h5>
+                    <div class="fs-2">
+                        <a href="{{ settings.link_fb }}" class="text-white me-4 text-decoration-none" onmouseover="this.style.color='var(--main-color)'" onmouseout="this.style.color='#fff'"><i class="fab fa-facebook"></i></a>
+                        <a href="{{ settings.link_ig }}" class="text-white me-4 text-decoration-none" onmouseover="this.style.color='var(--main-color)'" onmouseout="this.style.color='#fff'"><i class="fab fa-instagram"></i></a>
+                        <a href="{{ settings.link_yt }}" class="text-white text-decoration-none" onmouseover="this.style.color='var(--main-color)'" onmouseout="this.style.color='#fff'"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 border-secondary">
+            <p class="text-center text-secondary small mb-0">&copy; 2026 {{ settings.ten_web }}. Điểm đến cho đam mê mô hình.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

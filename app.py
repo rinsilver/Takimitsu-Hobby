@@ -40,7 +40,7 @@ def inject_data():
         is_admin='admin_id' in session, 
         is_khach='khach_id' in session, 
         khach_ten=session.get('khach_ten', ''),
-        settings=get_settings() # <--- Thêm dòng này để HTML gọi màu sắc, logo ra
+        settings=get_settings()
     )
 # --- CƠ SỞ DỮ LIỆU ---
 def ket_noi_db():
@@ -104,25 +104,23 @@ def inject_data():
         khach_ten=session.get('khach_ten', '')
     )
 
-# ==================== TRANG CHỦ & ĐĂNG NHẬP ====================
-
+# ================= TRANG CHỦ (STYLE TAMASHII) =================
 @app.route('/')
 def index():
     conn = ket_noi_db()
-    
-    # Lấy 8 sản phẩm mới nhất
+    # 1. Giữ nguyên dữ liệu cũ của sếp
     san_phams = conn.execute('SELECT * FROM san_pham ORDER BY id DESC LIMIT 8').fetchall()
-    
-    # Lọc TÊN HÃNG trực tiếp từ kho sản phẩm (DISTINCT giúp loại bỏ tên trùng)
     hang_sxs_raw = conn.execute('SELECT DISTINCT hang_sx FROM san_pham WHERE hang_sx IS NOT NULL AND hang_sx != "" LIMIT 8').fetchall()
-    
-    # Ép nó thành 1 danh sách chữ sạch sẽ để HTML dễ đọc
     danh_sach_hang = [h['hang_sx'] for h in hang_sxs_raw]
     
+    # 2. Lấy thêm dữ liệu cho 2 khối Tamashii mới
+    hang_co_san = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Co san' ORDER BY id DESC LIMIT 5").fetchall()
+    hang_order = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Pre-order' ORDER BY id DESC LIMIT 5").fetchall()
+    
     conn.close()
-    return render_template('index.html', san_phams=san_phams, hang_sxs=danh_sach_hang)
+    return render_template('index.html', san_phams=san_phams, hang_sxs=danh_sach_hang, 
+                           hang_co_san=hang_co_san, hang_order=hang_order)
 
-# ================= TRANG CHI TIẾT SẢN PHẨM =================
 # ================= TRANG CHI TIẾT SẢN PHẨM =================
 @app.route('/san-pham/<int:id>')
 def chi_tiet_sp(id):
@@ -317,8 +315,19 @@ def lich_su_don_hang():
 @app.route('/admin')
 def admin():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
-    conn = ket_noi_db(); sps = conn.execute('SELECT * FROM san_pham').fetchall(); conn.close()
-    return render_template('admin.html', san_phams=sps)
+    conn = ket_noi_db()
+    tu_khoa = request.args.get('tu_khoa', '')
+    
+    query = "SELECT * FROM san_pham"
+    params = []
+    if tu_khoa:
+        query += " WHERE ten LIKE ? OR id LIKE ?"
+        params = [f'%{tu_khoa}%', f'%{tu_khoa}%']
+    
+    query += " ORDER BY id DESC"
+    sps = conn.execute(query, params).fetchall()
+    conn.close()
+    return render_template('admin.html', san_phams=sps, tu_khoa=tu_khoa)
 
 @app.route('/them', methods=['GET', 'POST'])
 def them_san_pham():
@@ -605,41 +614,43 @@ def quan_ly_don_hang():
                            tong_trang=tong_trang)
 
 # ==================== 2. HỒ SƠ KHÁCH HÀNG (THỐNG KÊ CHI TIẾT) ====================
-# ================= QUẢN LÝ DANH SÁCH KHÁCH HÀNG (TRANG TỔNG) =================
 @app.route('/admin/khach-hang', methods=['GET', 'POST'])
 def quan_ly_khach_hang():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
-    # XỬ LÝ KHI BẤM NÚT TẠO KHÁCH HÀNG MỚI
     if request.method == 'POST':
-        ho_ten = request.form['ho_ten']
-        tai_khoan = request.form['tai_khoan']
-        mat_khau = request.form['mat_khau']
-        sdt = request.form['sdt']
-        dia_chi = request.form['dia_chi']
-        
-        try:
-            conn.execute('INSERT INTO khach_hang (ho_ten, tai_khoan, mat_khau, sdt, dia_chi) VALUES (?,?,?,?,?)',
-                        (ho_ten, tai_khoan, mat_khau, sdt, dia_chi))
-            conn.commit()
-        except:
-            pass # Tránh lỗi nếu trùng tài khoản
-            
-    # LẤY DANH SÁCH HIỂN THỊ
-    khachs = conn.execute('''
-        SELECT k.id, k.ho_ten, k.sdt, k.tai_khoan, 
+        # Xử lý cập nhật/đổi mật khẩu khách từ Modal
+        kh_id = request.form.get('kh_id')
+        if kh_id: # Nếu có ID là Sửa
+            conn.execute('UPDATE khach_hang SET ho_ten=?, sdt=?, dia_chi=?, mat_khau=? WHERE id=?',
+                        (request.form['ho_ten'], request.form['sdt'], request.form['dia_chi'], request.form['mat_khau'], kh_id))
+        else: # Không có ID là Thêm mới
+            try:
+                conn.execute('INSERT INTO khach_hang (ho_ten, tai_khoan, mat_khau, sdt, dia_chi) VALUES (?,?,?,?,?)',
+                            (request.form['ho_ten'], request.form['tai_khoan'], request.form['mat_khau'], request.form['sdt'], request.form['dia_chi']))
+            except: pass
+        conn.commit()
+        return redirect(url_for('quan_ly_khach_hang'))
+
+    tu_khoa = request.args.get('tu_khoa', '')
+    query = '''
+        SELECT k.*, 
                COUNT(d.id) as so_don, 
                IFNULL(SUM(d.tong_tien), 0) as tong_mua, 
                IFNULL(SUM(d.tien_da_tra), 0) as da_tra
         FROM khach_hang k
         LEFT JOIN don_hang d ON k.id = d.khach_hang_id
-        GROUP BY k.id
-        ORDER BY k.id DESC
-    ''').fetchall()
-    
+    '''
+    params = []
+    if tu_khoa:
+        query += " WHERE k.ho_ten LIKE ? OR k.tai_khoan LIKE ? OR k.sdt LIKE ?"
+        params = [f'%{tu_khoa}%', f'%{tu_khoa}%', f'%{tu_khoa}%']
+        
+    query += " GROUP BY k.id ORDER BY k.id DESC"
+    khachs = conn.execute(query, params).fetchall()
     conn.close()
-    return render_template('quan_ly_khach.html', khachs=khachs)
+    return render_template('quan_ly_khach.html', khachs=khachs, tu_khoa=tu_khoa)
 
 
 # ================= XEM HỒ SƠ CHI TIẾT 1 KHÁCH HÀNG =================
@@ -901,36 +912,36 @@ def cai_dat_giao_dien():
 @app.route('/san-pham')
 def tat_ca_san_pham():
     conn = ket_noi_db()
-    
     danh_muc_loc = request.args.get('danh_muc', '')
     hang_loc = request.args.get('hang_sx', '')
+    kieu_loc = request.args.get('kieu_hang', '') # Mới
     page = request.args.get('page', 1, type=int)
-    per_page = 12 # 12 sản phẩm 1 trang
+    per_page = 12
     
     cau_lenh_base = ' FROM san_pham WHERE 1=1'
     dk = []
     
     if danh_muc_loc:
-        cau_lenh_base += ' AND the_loai = ?'
-        dk.append(danh_muc_loc)
+        cau_lenh_base += ' AND the_loai = ?'; dk.append(danh_muc_loc)
     if hang_loc:
-        cau_lenh_base += ' AND hang_sx = ?'
-        dk.append(hang_loc)
+        cau_lenh_base += ' AND hang_sx = ?'; dk.append(hang_loc)
+    if kieu_loc:
+        cau_lenh_base += ' AND kieu_hang = ?'; dk.append(kieu_loc)
         
     tong_sp = conn.execute('SELECT COUNT(id)' + cau_lenh_base, dk).fetchone()[0]
     tong_trang = (tong_sp + per_page - 1) // per_page
     
     cau_lenh = 'SELECT *' + cau_lenh_base + ' ORDER BY id DESC LIMIT ? OFFSET ?'
-    dk.extend([per_page, (page - 1) * per_page])
+    dk_limit = dk + [per_page, (page - 1) * per_page]
+    san_phams = conn.execute(cau_lenh, dk_limit).fetchall()
     
-    san_phams = conn.execute(cau_lenh, dk).fetchall()
-    
-    # Lấy danh sách bộ lọc
     danh_mucs = conn.execute('SELECT DISTINCT the_loai as ten_danh_muc FROM san_pham').fetchall()
     hangs = conn.execute('SELECT DISTINCT hang_sx as ten_hang FROM san_pham').fetchall()
     
     conn.close()
-    return render_template('tat_ca_san_pham.html', san_phams=san_phams, danh_mucs=danh_mucs, hangs=hangs, page=page, tong_trang=tong_trang, dm_chon=danh_muc_loc, hang_chon=hang_loc)
+    return render_template('tat_ca_san_pham.html', san_phams=san_phams, danh_mucs=danh_mucs, hangs=hangs, 
+                           page=page, tong_trang=tong_trang, dm_chon=danh_muc_loc, hang_chon=hang_loc, kieu_chon=kieu_loc)
+
 # ================= XỬ LÝ THANH TOÁN & ĐẶT HÀNG =================
 @app.route('/thanh-toan', methods=['GET', 'POST'])
 def thanh_toan():

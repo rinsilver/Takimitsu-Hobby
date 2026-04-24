@@ -281,6 +281,17 @@
                 <button class="btn btn-sm btn-outline-light rounded-pill"><i class="fas fa-download"></i> Xuất
                     Excel</button>
             </div>
+            <div class="admin-header-box mb-4">
+                <form method="GET" action="/admin" class="row g-2">
+                    <div class="col-md-10">
+                        <input type="text" name="tu_khoa" class="form-control rounded-pill px-4"
+                            placeholder="Tìm tên sản phẩm hoặc ID..." value="{{ tu_khoa }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold">TÌM KIẾM</button>
+                    </div>
+                </form>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table premium-table mb-0">

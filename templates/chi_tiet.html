@@ -44,21 +44,17 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top p-3 shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top p-3">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3" href="/">
-                {% if settings.logo_url %}<img src="{{ settings.logo_url }}" alt="Logo" height="40">{% else %}<span class="text-main">WOLVES</span> CLONE{% endif %}
+                {% if settings.logo_url %}<img src="{{ settings.logo_url }}" alt="Logo" height="40">{% else %}<span style="color:var(--main-color)">WOLVES</span> CLONE{% endif %}
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item dropdown mega-dropdown me-3">
-                        <a class="nav-link dropdown-toggle fw-bold text-white" href="#" data-bs-toggle="dropdown">
-                            <i class="fas fa-th-large text-main me-1"></i> DANH MỤC
-                        </a>
-                        <div class="dropdown-menu mega-menu">
+                        <a class="nav-link dropdown-toggle fw-bold text-white" href="#" data-bs-toggle="dropdown">DANH MỤC</a>
+                        <div class="dropdown-menu mega-menu shadow-lg">
                             <div class="container">
                                 <div class="row">
                                     <div class="col-md-4">
@@ -70,9 +66,9 @@
                                         <a href="/san-pham?hang_sx=Good Smile" class="mega-menu-item"><i class="fas fa-child"></i> <div><strong class="d-block">Good Smile</strong><small>Nendoroid, Figma</small></div></a>
                                     </div>
                                     <div class="col-md-4 text-center">
-                                        <div class="p-4 bg-light rounded-4 h-100 d-flex flex-column justify-content-center">
+                                        <div class="p-4 bg-light h-100 d-flex flex-column justify-content-center" style="border-radius: 15px;">
                                             <h6 class="fw-bold text-dark mb-3">TÌM KIẾM SẢN PHẨM</h6>
-                                            <a href="/san-pham" class="btn btn-main py-2 shadow-sm">XEM TẤT CẢ KHO HÀNG</a>
+                                            <a href="/san-pham" class="btn text-white fw-bold w-100 rounded-pill" style="background:var(--main-color)">XEM TẤT CẢ KHO HÀNG</a>
                                         </div>
                                     </div>
                                 </div>
@@ -81,15 +77,12 @@
                     </li>
                     <li class="nav-item"><a class="nav-link fw-bold text-white" href="/san-pham">SẢN PHẨM</a></li>
                     {% if is_admin or is_khach %}
-                        <li class="nav-item mx-3 d-flex align-items-center">
-                            <a href="/ho-so" class="text-decoration-none text-light fw-bold"><i class="fas fa-user-circle fs-5 me-1 text-main"></i> Chào, <span class="text-main">{{ khach_ten if khach_ten else 'Admin' }}</span></a>
-                        </li>
-                        {% if is_admin %}
-                            <li class="nav-item"><a class="btn btn-warning fw-bold rounded-pill mx-1 text-dark" href="/admin">QUẢN TRỊ</a></li>
-                        {% endif %}
-                        <li class="nav-item"><a class="btn btn-outline-danger rounded-pill ms-2" href="/dang-xuat"><i class="fas fa-sign-out-alt"></i></a></li>
+                        <li class="nav-item mx-3"><a href="/ho-so" class="text-decoration-none text-light fw-bold">Chào, <span style="color:var(--main-color)">{{ khach_ten }}</span></a></li>
+                        <li class="nav-item"><a href="/gio-hang" class="btn btn-outline-light rounded-pill position-relative me-2 px-3"><i class="fas fa-shopping-cart"></i>{% if so_luong_gio_hang > 0 %}<span class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill">{{ so_luong_gio_hang }}</span>{% endif %}</a></li>
+                        {% if is_admin %}<li class="nav-item"><a class="btn btn-warning fw-bold rounded-pill mx-1 text-dark px-4" href="/admin">QUẢN TRỊ</a></li>{% endif %}
+                        <li class="nav-item"><a class="btn btn-outline-danger rounded-pill ms-2 px-3" href="/dang-xuat"><i class="fas fa-sign-out-alt"></i></a></li>
                     {% else %}
-                        <li class="nav-item"><a class="btn btn-main px-4 ms-2 shadow-sm" href="/dang-nhap">ĐĂNG NHẬP</a></li>
+                        <li class="nav-item"><a class="btn px-4 ms-2 text-white fw-bold rounded-pill" style="background:var(--main-color)" href="/dang-nhap">ĐĂNG NHẬP</a></li>
                     {% endif %}
                 </ul>
             </div>
