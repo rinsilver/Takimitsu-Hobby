@@ -1,14 +1,14 @@
 {
     "ten_web": "Takimitsu Hobby",
-    "mau_chu_dao": "#e60000",
+    "mau_chu_dao": "#f91a1a",
     "thong_tin_footer": "",
-    "dia_chi": "",
-    "dien_thoai": "",
-    "email": "",
+    "dia_chi": "1223123",
+    "dien_thoai": "213",
+    "email": "rinsilver2000@gmail.com",
     "link_fb": "https://www.facebook.com/profile.php?id=61578402080021",
     "link_ig": "",
     "link_yt": "",
-    "logo_url": "",
+    "logo_url": "/static/uploads\\Logo.jpg",
     "banner_1": "https://images.unsplash.com/photo-1608178398319-48f814d0750c?q=80&w=2000&auto=format&fit=crop",
     "banner_2": "/static/uploads\\logo_chu.png"
 }

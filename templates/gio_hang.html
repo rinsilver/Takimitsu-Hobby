@@ -1,156 +1,125 @@
-<!DOCTYPE html>
-<html lang="vi">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Giỏ Hàng - Wolves Clone</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
+{% block title %}Giỏ Hàng{% endblock %}
 
-            /* Phải viết dính liền trên một dòng như thế này thì mới nhận màu sếp nhé */
-            --main-color: {
-                    {
-                    settings.mau_chu_dao
-                }
-            }
+{% block extra_css %}
+<style>
+    /* GIỮ NGUYÊN CSS GỐC CỦA SẾP CHO GIỎ HÀNG */
+    body {
+        background-color: #f8f9fa;
+    }
 
-            ;
-            --bg-dark: #121212;
-            --bg-card: #0a0a0a;
-        }
+    .cart-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
 
-        body {
-            background-color: #f8f9fa;
-        }
+    .qty-btn {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
 
-        .cart-card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="fw-bold mb-4"><i class="fas fa-shopping-cart text-primary"></i> Giỏ Hàng Của Bạn</h2>
 
-        .qty-btn {
-            width: 30px;
-            height: 30px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-weight: bold;
-        }
-    </style>
-</head>
-
-<body>
-    <nav class="navbar navbar-dark bg-dark shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
-                {% if settings.logo_url %}
-                <img src="{{ settings.logo_url }}" alt="Logo" height="40" class="me-2">
-                {% endif %}
-                <span style="color:var(--main-color)">{{ settings.ten_web }}</span>
-            </a>
-            <a href="/" class="btn btn-outline-light btn-sm rounded-pill"><i class="fas fa-arrow-left"></i> Tiếp tục mua
-                sắm</a>
-        </div>
-    </nav>
-
-    <div class="container mt-5 mb-5">
-        <h2 class="fw-bold mb-4"><i class="fas fa-shopping-cart text-primary"></i> Giỏ Hàng Của Bạn</h2>
-
-        {% if gio_hang %}
-        <div class="row g-4">
-            <div class="col-md-8">
-                <div class="card cart-card p-4">
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Sản phẩm</th>
-                                <th class="text-center">Đơn giá</th>
-                                <th class="text-center">Số lượng</th>
-                                <th class="text-end">Thành tiền</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for sp in gio_hang %}
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div
-                                            style="width: 60px; height: 60px; border-radius: 10px; overflow: hidden; background: #f1f3f5;">
-                                            <img src="{{ sp.hinh_anh }}"
-                                                style="width:100%; height:100%; object-fit:cover;">
-                                        </div>
-                                        <strong class="text-dark">{{ sp.ten }}</strong>
+    {% if gio_hang %}
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card cart-card p-4">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th class="text-center">Đơn giá</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Thành tiền</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sp in gio_hang %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div
+                                        style="width: 60px; height: 60px; border-radius: 10px; overflow: hidden; background: #f1f3f5;">
+                                        <img src="{{ sp.hinh_anh }}"
+                                            style="width:100%; height:100%; object-fit:cover;">
                                     </div>
-                                </td>
-                                <td class="text-center text-muted fw-bold">{{ "{:,.0f}".format(sp.gia) }}đ</td>
+                                    <strong class="text-dark">{{ sp.ten }}</strong>
+                                </div>
+                            </td>
+                            <td class="text-center text-muted fw-bold">{{ "{:,.0f}".format(sp.gia) }}đ</td>
 
-                                <td>
-                                    <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <a href="/cap-nhat-gio/{{ sp.cart_id | default(sp.id) }}/giam"
-                                            class="btn btn-sm btn-outline-secondary qty-btn"><i
-                                                class="fas fa-minus fa-xs"></i></a>
-                                        <span class="fw-bold mx-1" style="width: 20px; text-align: center;">{{
-                                            sp.so_luong }}</span>
-                                        <a href="/cap-nhat-gio/{{ sp.cart_id | default(sp.id) }}/tang"
-                                            class="btn btn-sm btn-outline-secondary qty-btn"><i
-                                                class="fas fa-plus fa-xs"></i></a>
-                                    </div>
+                            <td>
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <a href="/cap-nhat-gio/{{ sp.cart_id | default(sp.id) }}/giam"
+                                        class="btn btn-sm btn-outline-secondary qty-btn"><i
+                                            class="fas fa-minus fa-xs"></i></a>
+                                    <span class="fw-bold mx-1" style="width: 20px; text-align: center;">{{
+                                        sp.so_luong }}</span>
+                                    <a href="/cap-nhat-gio/{{ sp.cart_id | default(sp.id) }}/tang"
+                                        class="btn btn-sm btn-outline-secondary qty-btn"><i
+                                            class="fas fa-plus fa-xs"></i></a>
+                                </div>
 
-                                    {% if sp.error %}
-                                    <div class="text-danger small mt-2 fw-bold text-center">
-                                        <i class="fas fa-exclamation-triangle"></i> {{ sp.error }}
-                                    </div>
-                                    {% endif %}
-                                </td>
+                                {% if sp.error %}
+                                <div class="text-danger small mt-2 fw-bold text-center">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ sp.error }}
+                                </div>
+                                {% endif %}
+                            </td>
 
-                                <td class="text-end text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ
-                                </td>
-                                <td class="text-end">
-                                    <a href="/xoa-khoi-gio/{{ sp.cart_id | default(sp.id) }}"
-                                        class="btn btn-sm btn-outline-danger rounded-pill px-3"><i
-                                            class="fas fa-trash-alt"></i></a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card cart-card p-4 border-top border-primary border-4">
-                    <h5 class="fw-bold mb-4">Tóm tắt đơn hàng</h5>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Tổng phụ:</span>
-                        <span class="fw-bold">{{ "{:,.0f}".format(tong_tien) }}đ</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
-                        <span class="text-muted">Phí giao hàng:</span>
-                        <span class="text-success fw-bold">Miễn phí</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-4">
-                        <span class="fw-bold fs-5">TỔNG CỘNG:</span>
-                        <span class="text-danger fw-bold fs-4">{{ "{:,.0f}".format(tong_tien) }}đ</span>
-                    </div>
-                    <a href="/thanh-toan" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm fs-5">TIẾN
-                        HÀNH ĐẶT HÀNG <i class="fas fa-arrow-right ms-2"></i></a>
-                </div>
+                            <td class="text-end text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ
+                            </td>
+                            <td class="text-end">
+                                <a href="/xoa-khoi-gio/{{ sp.cart_id | default(sp.id) }}"
+                                    class="btn btn-sm btn-outline-danger rounded-pill px-3"><i
+                                        class="fas fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        {% else %}
-        <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-            <h1 class="display-1 text-muted mb-4"><i class="fas fa-shopping-basket"></i></h1>
-            <h4 class="text-muted mb-4">Giỏ hàng của sếp đang trống!</h4>
-            <a href="/" class="btn btn-dark rounded-pill px-5 py-3 fw-bold">ĐI MUA SẮM NGAY</a>
+
+        <div class="col-md-4">
+            <div class="card cart-card p-4 border-top border-primary border-4">
+                <h5 class="fw-bold mb-4">Tóm tắt đơn hàng</h5>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Tổng phụ:</span>
+                    <span class="fw-bold">{{ "{:,.0f}".format(tong_tien) }}đ</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
+                    <span class="text-muted">Phí giao hàng:</span>
+                    <span class="text-success fw-bold">Miễn phí</span>
+                </div>
+                <div class="d-flex justify-content-between mb-4">
+                    <span class="fw-bold fs-5">TỔNG CỘNG:</span>
+                    <span class="text-danger fw-bold fs-4">{{ "{:,.0f}".format(tong_tien) }}đ</span>
+                </div>
+                <a href="/thanh-toan" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm fs-5">TIẾN
+                    HÀNH ĐẶT HÀNG <i class="fas fa-arrow-right ms-2"></i></a>
+            </div>
         </div>
-        {% endif %}
     </div>
-</body>
-
-</html>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+        <h1 class="display-1 text-muted mb-4"><i class="fas fa-shopping-basket"></i></h1>
+        <h4 class="text-muted mb-4">Giỏ hàng của sếp đang trống!</h4>
+        <a href="/" class="btn btn-dark rounded-pill px-5 py-3 fw-bold">ĐI MUA SẮM NGAY</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

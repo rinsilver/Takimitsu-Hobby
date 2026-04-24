@@ -1,557 +1,323 @@
-<!DOCTYPE html>
-<html lang="vi">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ sp.ten }} - {{ settings.ten_web }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% block title %}{{ sp.ten }} - {{ settings.ten_web }}{% endblock %}
 
-    <style>
-        :root {
+{% block extra_css %}
+<style>
+    /* GIỮ NGUYÊN 100% CSS GỐC CỦA SẾP */
+    .product-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        padding: 30px;
+        border-radius: 15px;
+    }
 
-            /* Phải viết dính liền trên một dòng như thế này thì mới nhận màu sếp nhé */
-            --main-color: {
-                    {
-                    settings.mau_chu_dao
-                }
-            }
+    .main-img-box {
+        height: 500px;
+        background-color: #f8f9fa;
+        border: 1px solid #eee;
+        cursor: zoom-in;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+    }
 
-            ;
-            --bg-dark: #121212;
-            --bg-card: #0a0a0a;
-        }
+    .main-img-box img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: transform 0.3s;
+        padding: 10px;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background-color: #f8f9fa;
-            /* Trả về xám nhạt để nổi bật khung trắng theo ảnh cũ */
-            color: #111;
-            overflow-x: hidden;
-        }
+    .main-img-box:hover img {
+        transform: scale(1.05);
+    }
 
-        /* NAVBAR & MEGA MENU CHUẨN ĐỒNG BỘ */
-        .navbar {
-            border-bottom: 2px solid var(--main-color) !important;
-            background-color: #111 !important;
-        }
+    .thumb-box {
+        width: 80px;
+        height: 80px;
+        border: 2px solid #eee;
+        cursor: pointer;
+        overflow: hidden;
+        background: #fff;
+        transition: 0.2s;
+        padding: 2px;
+        border-radius: 8px;
+    }
 
-        .mega-dropdown {
-            position: static !important;
-        }
+    .thumb-box:hover,
+    .thumb-box.active {
+        border-color: var(--main-color);
+    }
 
-        .mega-menu {
-            width: 100%;
-            left: 0;
-            right: 0;
-            padding: 20px;
-            border-radius: 0 0 15px 15px;
-            border: none;
-            border-top: 2px solid var(--main-color);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-top: 0;
-        }
+    .thumb-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
 
-        .mega-menu-title {
-            font-weight: 800;
-            text-transform: uppercase;
-            color: var(--main-color);
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
+    .variant-btn {
+        border: 2px solid #ddd;
+        background: #fff;
+        color: #333;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 8px 22px;
+        transition: 0.2s;
+        cursor: pointer;
+        border-radius: 30px;
+    }
 
-        .mega-menu-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            color: #333;
-            text-decoration: none;
-            transition: 0.2s;
-            border-radius: 10px;
-        }
+    .variant-btn:hover {
+        border-color: #111;
+    }
 
-        .mega-menu-item:hover {
-            background: #f8f9fa;
-            color: var(--main-color);
-        }
+    .variant-btn.active {
+        background: #111;
+        color: #fff;
+        border-color: #111;
+    }
 
-        .mega-menu-item i {
-            font-size: 1.5rem;
-            margin-right: 15px;
-            color: #666;
-            width: 30px;
-            text-align: center;
-        }
+    .price-text-dynamic {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: #e60012;
+        margin: 20px 0;
+    }
 
-        /* GIAO DIỆN CHI TIẾT SẢN PHẨM */
-        .product-card {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            padding: 30px;
-            border-radius: 15px;
-        }
+    .text-main {
+        color: var(--main-color) !important;
+    }
 
-        /* KHU VỰC ẢNH */
-        .main-img-box {
-            height: 500px;
-            background-color: #f8f9fa;
-            border: 1px solid #eee;
-            cursor: zoom-in;
-            /* Đổi icon chuột thành kính lúp */
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-        }
+    .bg-main {
+        background-color: var(--main-color) !important;
+        color: white !important;
+    }
 
-        .main-img-box img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            transition: transform 0.3s;
-            padding: 10px;
-        }
+    #imageZoomModal .modal-content {
+        background-color: transparent;
+        border: none;
+    }
 
-        .main-img-box:hover img {
-            transform: scale(1.05);
-        }
+    #imageZoomModal img {
+        max-height: 90vh;
+        object-fit: contain;
+    }
+</style>
+{% endblock %}
 
-        .thumb-box {
-            width: 80px;
-            height: 80px;
-            border: 2px solid #eee;
-            cursor: pointer;
-            overflow: hidden;
-            background: #fff;
-            transition: 0.2s;
-            padding: 2px;
-            border-radius: 8px;
-        }
-
-        .thumb-box:hover,
-        .thumb-box.active {
-            border-color: var(--main-color);
-        }
-
-        .thumb-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        /* NÚT PHÂN LOẠI GIÁ (ĐÃ BO TRÒN THEO YÊU CẦU) */
-        .variant-btn {
-            border: 2px solid #ddd;
-            background: #fff;
-            color: #333;
-            font-weight: 700;
-            font-size: 0.9rem;
-            padding: 8px 22px;
-            transition: 0.2s;
-            cursor: pointer;
-            border-radius: 30px;
-        }
-
-        .variant-btn:hover {
-            border-color: #111;
-        }
-
-        .variant-btn.active {
-            background: #111;
-            color: #fff;
-            border-color: #111;
-        }
-
-        .price-text-dynamic {
-            font-size: 2.2rem;
-            font-weight: 900;
-            color: #e60012;
-            margin: 20px 0;
-        }
-
-        /* TIỆN ÍCH CHUNG */
-        .text-main {
-            color: var(--main-color) !important;
-        }
-
-        .bg-main {
-            background-color: var(--main-color) !important;
-            color: white !important;
-        }
-
-        /* FOOTER ĐỒNG BỘ */
-        footer {
-            background-color: #111;
-            padding: 60px 0 30px 0;
-            color: #fff;
-            border-top: 2px solid var(--main-color);
-            margin-top: 60px;
-        }
-
-        .hover-main:hover {
-            color: var(--main-color) !important;
-        }
-
-        /* CSS Phóng to hình */
-        #imageZoomModal .modal-content {
-            background-color: transparent;
-            border: none;
-        }
-
-        #imageZoomModal img {
-            max-height: 90vh;
-            object-fit: contain;
-        }
-    </style>
-</head>
-
-<body>
-
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top p-3 shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
-                {% if settings.logo_url %}
-                <img src="{{ settings.logo_url }}" alt="Logo" height="40" class="me-2">
-                {% endif %}
-                <span style="color:var(--main-color)">{{ settings.ten_web }}</span>
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarNav"><span class="navbar-toggler-icon"
-                    style="filter: invert(1);"></span></button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item dropdown mega-dropdown me-3">
-                        <a class="nav-link dropdown-toggle fw-bold text-white" href="#" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">DANH MỤC</a>
-                        <div class="dropdown-menu mega-menu shadow-lg">
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <h5 class="mega-menu-title">Bandai Spirits</h5>
-                                        <a href="/san-pham?hang_sx=Bandai" class="mega-menu-item"><i
-                                                class="fas fa-robot"></i>
-                                            <div><strong class="d-block">S.H.Figuarts</strong><small>Mô hình khớp cử
-                                                    động</small></div>
-                                        </a>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <h5 class="mega-menu-title">Thương Hiệu Khác</h5>
-                                        <a href="/san-pham?hang_sx=Good Smile" class="mega-menu-item"><i
-                                                class="fas fa-child"></i>
-                                            <div><strong class="d-block">Good Smile</strong><small>Nendoroid,
-                                                    Figma</small></div>
-                                        </a>
-                                    </div>
-                                    <div class="col-md-4 text-center">
-                                        <div class="p-4 bg-light h-100 d-flex flex-column justify-content-center"
-                                            style="border-radius: 15px;">
-                                            <h6 class="fw-bold text-dark mb-3">TÌM KIẾM SẢN PHẨM</h6>
-                                            <a href="/san-pham" class="btn text-white fw-bold w-100 rounded-pill"
-                                                style="background:var(--main-color)">XEM TẤT CẢ KHO HÀNG</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item"><a class="nav-link fw-bold text-white" href="/san-pham">SẢN PHẨM</a></li>
-                    {% if is_admin or is_khach %}
-                    <li class="nav-item mx-3"><a href="/ho-so" class="text-decoration-none text-light fw-bold">Chào,
-                            <span style="color:var(--main-color)">{{ khach_ten }}</span></a></li>
-                    <li class="nav-item"><a href="/gio-hang"
-                            class="btn btn-outline-light rounded-pill position-relative me-2 px-3"><i
-                                class="fas fa-shopping-cart"></i>{% if so_luong_gio_hang > 0 %}<span
-                                class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-circle">{{
-                                so_luong_gio_hang }}</span>{% endif %}</a></li>
-                    {% if is_admin %}<li class="nav-item"><a
-                            class="btn btn-warning fw-bold rounded-pill mx-1 text-dark px-4" href="/admin">QUẢN TRỊ</a>
-                    </li>{% endif %}
-                    <li class="nav-item"><a class="btn btn-outline-danger rounded-pill ms-2 px-3" href="/dang-xuat"><i
-                                class="fas fa-sign-out-alt"></i></a></li>
-                    {% else %}
-                    <li class="nav-item"><a class="btn px-4 ms-2 text-white fw-bold rounded-pill"
-                            style="background:var(--main-color)" href="/dang-nhap">ĐĂNG NHẬP</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+{% block content %}
+<div class="container mt-5 mb-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted fw-bold">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/san-pham" class="text-decoration-none text-muted fw-bold">Sản phẩm</a></li>
+            <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">{{ sp.ten }}</li>
+        </ol>
     </nav>
 
-    <div class="container mt-5 mb-5">
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted fw-bold">Trang chủ</a>
-                </li>
-                <li class="breadcrumb-item"><a href="/san-pham" class="text-decoration-none text-muted fw-bold">Sản
-                        phẩm</a></li>
-                <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">{{ sp.ten }}</li>
-            </ol>
-        </nav>
-
-        <div class="product-card mb-5 shadow-sm">
-            <div class="row g-5">
-
-                <div class="col-md-6">
-                    <div class="main-img-box mb-3" onclick="zoomImage()">
-                        <img id="mainImage" src="{{ sp.hinh_anh }}">
+    <div class="product-card mb-5 shadow-sm">
+        <div class="row g-5">
+            <div class="col-md-6">
+                <div class="main-img-box mb-3" onclick="zoomImage()">
+                    <img id="mainImage" src="{{ sp.hinh_anh }}">
+                </div>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <div class="thumb-box active" onclick="changeImage('{{ sp.hinh_anh }}', 0, this)">
+                        <img src="{{ sp.hinh_anh }}">
                     </div>
-                    <div class="d-flex gap-2 justify-content-center flex-wrap">
-                        <div class="thumb-box active" onclick="changeImage('{{ sp.hinh_anh }}', 0, this)">
-                            <img src="{{ sp.hinh_anh }}">
+                    {% for anh in anh_phu %}
+                    <div class="thumb-box" onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)">
+                        <img src="{{ anh.du_ong_dan }}">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge px-3 py-2 text-uppercase"
+                        style="background-color: #f1f1f1; color: #555; font-weight: 700; font-size: 0.75rem; border-radius: 4px; letter-spacing: 0.5px; border: 1px solid #e0e0e0;">
+                        <i class="fas fa-industry me-1"></i> {{ sp.hang_sx }}
+                    </span>
+                    <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
+                    <span class="badge px-3 py-2 text-uppercase shadow-sm"
+                        style="background-color: #e60012; color: #ffffff !important; font-weight: 800; font-size: 0.75rem; border-radius: 4px; letter-spacing: 0.5px;">
+                        <i class="fas fa-tag me-1"></i> {{ sp.the_loai }}
+                    </span>
+                </div>
+                <h2 class="fw-bold mb-3 text-dark">{{ sp.ten }}</h2>
+
+                <div class="mb-4 mt-4">
+                    <div class="mb-3">
+                        <span class="text-muted d-block mb-2 fw-bold small text-uppercase">Hình thức mua:</span>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="variant-btn hinh-thuc-btn active" data-val="san">Hàng có sẵn</button>
+                            <button type="button" class="variant-btn hinh-thuc-btn" data-val="order">Hàng order</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-muted d-block mb-2 fw-bold small text-uppercase">Tình trạng:</span>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="variant-btn loai-btn active" data-val="new">New seal</button>
+                            <button type="button" class="variant-btn loai-btn" data-val="likenew">Like new</button>
+                        </div>
+                    </div>
+
+                    <div class="price-text-dynamic" id="hien_thi_gia">Đang tải giá...</div>
+
+                    <ul class="list-unstyled text-muted small lh-lg my-4 p-3 bg-light border" style="border-radius: 10px;">
+                        <li><i class="fas fa-hand-point-right text-warning"></i> Chào mừng bạn đến với {{ settings.ten_web }}!</li>
+                        <li><i class="fas fa-hand-point-right text-warning"></i> Để đảm bảo trải nghiệm mua sắm tốt nhất và tránh sai sót, vui lòng <b>LIÊN HỆ TRỰC TIẾP ADMIN</b> qua Fanpage để xác nhận tình trạng hàng và đặt đơn.</li>
+                    </ul>
+
+                    <form id="addCartForm" action="/them-vao-gio/{{ sp.id }}" method="GET">
+                        <input type="hidden" name="hinh_thuc" id="input_hinh_thuc" value="san">
+                        <input type="hidden" name="loai" id="input_loai" value="new">
+
+                        {% if is_admin %}
+                        <button type="submit" id="btn_add_cart"
+                            class="btn btn-danger text-white w-100 py-3 fw-bold fs-5 rounded-pill shadow-sm mb-2"
+                            style="display: none;">
+                            <i class="fas fa-shopping-cart me-2"></i> THÊM VÀO GIỎ HÀNG (QUYỀN ADMIN)
+                        </button>
+                        {% endif %}
+
+                        <a href="{{ settings.link_fb }}" target="_blank" id="btn_contact"
+                            class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill shadow-sm"
+                            style="display: none;">
+                            <i class="fab fa-facebook-messenger me-2"></i> LIÊN HỆ ADMIN ĐỂ MUA HÀNG
+                        </a>
+                    </form>
+                </div>
+
+                <h6 class="fw-bold border-bottom pb-2 mb-3 mt-5"><i class="fas fa-align-left text-muted"></i> MÔ TẢ SẢN PHẨM</h6>
+                <p class="text-muted lh-lg mb-4" style="white-space: pre-line; font-size: 0.95rem;">{{ sp.mo_ta if sp.mo_ta else 'Đang cập nhật thông tin chi tiết.' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content" style="background: transparent; border: none;">
+            <div class="modal-body p-0 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                    data-bs-dismiss="modal" style="z-index: 1060;"></button>
+
+                <div id="zoomCarousel" class="carousel slide carousel-fade" data-bs-ride="false">
+                    <div class="carousel-inner text-center">
+                        <div class="carousel-item active" data-index="0">
+                            <img src="{{ sp.hinh_anh }}" class="img-fluid rounded" style="max-height: 90vh;">
                         </div>
                         {% for anh in anh_phu %}
-                        <div class="thumb-box" onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)">
-                            <img src="{{ anh.du_ong_dan }}">
+                        <div class="carousel-item" data-index="{{ loop.index }}">
+                            <img src="{{ anh.du_ong_dan }}" class="img-fluid rounded" style="max-height: 90vh;">
                         </div>
                         {% endfor %}
                     </div>
-                </div>
 
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <span class="badge px-3 py-2 text-uppercase"
-                            style="background-color: #f1f1f1; color: #555; font-weight: 700; font-size: 0.75rem; border-radius: 4px; letter-spacing: 0.5px; border: 1px solid #e0e0e0;">
-                            <i class="fas fa-industry me-1"></i> {{ sp.hang_sx }}
-                        </span>
-
-                        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-
-                        <span class="badge px-3 py-2 text-uppercase shadow-sm"
-                            style="background-color: #e60012; color: #ffffff !important; font-weight: 800; font-size: 0.75rem; border-radius: 4px; letter-spacing: 0.5px;">
-                            <i class="fas fa-tag me-1"></i> {{ sp.the_loai }}
-                        </span>
-                    </div>
-                    <h2 class="fw-bold mb-3 text-dark">{{ sp.ten }}</h2>
-
-                    <div class="mb-4 mt-4">
-                        <div class="mb-3">
-                            <span class="text-muted d-block mb-2 fw-bold small text-uppercase">Hình thức mua:</span>
-                            <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="variant-btn hinh-thuc-btn active" data-val="san">Hàng có
-                                    sẵn</button>
-                                <button type="button" class="variant-btn hinh-thuc-btn" data-val="order">Hàng
-                                    order</button>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <span class="text-muted d-block mb-2 fw-bold small text-uppercase">Tình trạng:</span>
-                            <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="variant-btn loai-btn active" data-val="new">New
-                                    seal</button>
-                                <button type="button" class="variant-btn loai-btn" data-val="likenew">Like new</button>
-                            </div>
-                        </div>
-
-                        <div class="price-text-dynamic" id="hien_thi_gia">Đang tải giá...</div>
-
-                        <ul class="list-unstyled text-muted small lh-lg my-4 p-3 bg-light border"
-                            style="border-radius: 10px;">
-                            <li><i class="fas fa-hand-point-right text-warning"></i> Chào mừng bạn đến với {{
-                                settings.ten_web }}!</li>
-                            <li><i class="fas fa-hand-point-right text-warning"></i> Để đảm bảo trải nghiệm mua sắm tốt
-                                nhất và tránh sai sót, vui lòng <b>LIÊN HỆ TRỰC TIẾP ADMIN</b> qua Fanpage để xác nhận
-                                tình trạng hàng và đặt đơn.</li>
-                        </ul>
-
-                        <form id="addCartForm" action="/them-vao-gio/{{ sp.id }}" method="GET">
-                            <input type="hidden" name="hinh_thuc" id="input_hinh_thuc" value="san">
-                            <input type="hidden" name="loai" id="input_loai" value="new">
-
-                            {% if is_admin %}
-                            <button type="submit" id="btn_add_cart"
-                                class="btn btn-danger text-white w-100 py-3 fw-bold fs-5 rounded-pill shadow-sm mb-2"
-                                style="display: none;">
-                                <i class="fas fa-shopping-cart me-2"></i> THÊM VÀO GIỎ HÀNG (QUYỀN ADMIN)
-                            </button>
-                            {% endif %}
-
-                            <a href="{{ settings.link_fb }}" target="_blank" id="btn_contact"
-                                class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill shadow-sm"
-                                style="display: none;">
-                                <i class="fab fa-facebook-messenger me-2"></i> LIÊN HỆ ADMIN ĐỂ MUA HÀNG
-                            </a>
-                        </form>
-                    </div>
-
-                    <h6 class="fw-bold border-bottom pb-2 mb-3 mt-5"><i class="fas fa-align-left text-muted"></i> MÔ TẢ
-                        SẢN PHẨM</h6>
-                    <p class="text-muted lh-lg mb-4" style="white-space: pre-line; font-size: 0.95rem;">{{ sp.mo_ta if
-                        sp.mo_ta else 'Đang cập nhật thông tin chi tiết.' }}</p>
+                    {% if anh_phu %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#zoomCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 3rem; height: 3rem;"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#zoomCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true" style="width: 3rem; height: 3rem;"></span>
+                    </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content" style="background: transparent; border: none;">
-                <div class="modal-body p-0 position-relative">
-                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
-                        data-bs-dismiss="modal" style="z-index: 1060;"></button>
+{% block scripts %}
+<script>
+    /* GIỮ NGUYÊN 100% LOGIC JS GỐC CỦA SẾP */
+    const prices = {
+        'san_new': Number('{{ sp.gia_san_new | default(0) }}') || 0,
+        'san_likenew': Number('{{ sp.gia_san_likenew | default(0) }}') || 0,
+        'order_new': Number('{{ sp.gia_order_new | default(0) }}') || 0,
+        'order_likenew': Number('{{ sp.gia_order_likenew | default(0) }}') || 0
+    };
 
-                    <div id="zoomCarousel" class="carousel slide carousel-fade" data-bs-ride="false">
-                        <div class="carousel-inner text-center">
-                            <div class="carousel-item active" data-index="0">
-                                <img src="{{ sp.hinh_anh }}" class="img-fluid rounded" style="max-height: 90vh;">
-                            </div>
-                            {% for anh in anh_phu %}
-                            <div class="carousel-item" data-index="{{ loop.index }}">
-                                <img src="{{ anh.du_ong_dan }}" class="img-fluid rounded" style="max-height: 90vh;">
-                            </div>
-                            {% endfor %}
-                        </div>
-
-                        {% if anh_phu %}
-                        <button class="carousel-control-prev" type="button" data-bs-target="#zoomCarousel"
-                            data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"
-                                style="width: 3rem; height: 3rem;"></span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#zoomCarousel"
-                            data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"
-                                style="width: 3rem; height: 3rem;"></span>
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <div class="container text-center text-md-start">
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <h3 class="fw-bold mb-3" style="color:var(--main-color)">{{ settings.ten_web }}</h3>
-                    <p class="text-secondary mb-2">{{ settings.thong_tin_footer }}</p>
-                    <div class="small text-secondary">
-                        <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i><strong>Địa chỉ:</strong> {{
-                            settings.dia_chi }}</p>
-                        <p class="mb-1"><i class="fas fa-phone-alt me-2"></i><strong>Điện thoại:</strong> {{
-                            settings.dien_thoai }}</p>
-                        <p class="mb-1"><i class="fas fa-envelope me-2"></i><strong>Email:</strong> {{ settings.email }}
-                        </p>
-                    </div>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <h5 class="fw-bold mb-4">KẾT NỐI VỚI CHÚNG TÔI</h5>
-                    <div class="fs-2">
-                        <a href="{{ settings.link_fb }}" class="text-white me-4 text-decoration-none"
-                            onmouseover="this.style.color='var(--main-color)'" onmouseout="this.style.color='#fff'"><i
-                                class="fab fa-facebook"></i></a>
-                        <a href="{{ settings.link_ig }}" class="text-white me-4 text-decoration-none"
-                            onmouseover="this.style.color='var(--main-color)'" onmouseout="this.style.color='#fff'"><i
-                                class="fab fa-instagram"></i></a>
-                        <a href="{{ settings.link_yt }}" class="text-white text-decoration-none"
-                            onmouseover="this.style.color='var(--main-color)'" onmouseout="this.style.color='#fff'"><i
-                                class="fab fa-youtube"></i></a>
-                    </div>
-                </div>
-            </div>
-            <hr class="my-4 border-secondary">
-            <p class="text-center text-secondary small mb-0">&copy; 2026 {{ settings.ten_web }}. Điểm đến cho đam mê mô
-                hình.</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        const prices = {
-            'san_new': Number('{{ sp.gia_san_new | default(0) }}') || 0,
-            'san_likenew': Number('{{ sp.gia_san_likenew | default(0) }}') || 0,
-            'order_new': Number('{{ sp.gia_order_new | default(0) }}') || 0,
-            'order_likenew': Number('{{ sp.gia_order_likenew | default(0) }}') || 0
-        };
-
-        document.querySelectorAll('.hinh-thuc-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.hinh-thuc-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById('input_hinh_thuc').value = this.dataset.val;
-                updateVariantUI();
-            });
+    document.querySelectorAll('.hinh-thuc-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.hinh-thuc-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('input_hinh_thuc').value = this.dataset.val;
+            updateVariantUI();
         });
+    });
 
-        document.querySelectorAll('.loai-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.loai-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById('input_loai').value = this.dataset.val;
-                updateVariantUI();
-            });
+    document.querySelectorAll('.loai-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.loai-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('input_loai').value = this.dataset.val;
+            updateVariantUI();
         });
+    });
 
-        function updateVariantUI() {
-            let ht = document.getElementById('input_hinh_thuc').value;
-            let l = document.getElementById('input_loai').value;
-            let price = prices[ht + '_' + l];
+    function updateVariantUI() {
+        let ht = document.getElementById('input_hinh_thuc').value;
+        let l = document.getElementById('input_loai').value;
+        let price = prices[ht + '_' + l];
 
-            let priceDisplay = document.getElementById('hien_thi_gia');
-            let btnCart = document.getElementById('btn_add_cart');
-            let btnContact = document.getElementById('btn_contact');
+        let priceDisplay = document.getElementById('hien_thi_gia');
+        let btnCart = document.getElementById('btn_add_cart');
+        let btnContact = document.getElementById('btn_contact');
 
-            let isAdmin = ('{{ "true" if is_admin else "false" }}' === 'true');
+        let isAdmin = ('{{ "true" if is_admin else "false" }}' === 'true');
 
-            if (price > 0) {
-                priceDisplay.innerText = price.toLocaleString('vi-VN') + 'đ';
-                priceDisplay.style.color = '#e60012';
+        if (price > 0) {
+            priceDisplay.innerText = price.toLocaleString('vi-VN') + 'đ';
+            priceDisplay.style.color = '#e60012';
 
-                if (isAdmin) {
-                    if (btnCart) btnCart.style.display = 'block';
-                    if (btnContact) btnContact.style.display = 'none';
-                } else {
-                    if (btnCart) btnCart.style.display = 'none';
-                    if (btnContact) btnContact.style.display = 'block';
-                }
+            if (isAdmin) {
+                if (btnCart) btnCart.style.display = 'block';
+                if (btnContact) btnContact.style.display = 'none';
             } else {
-                priceDisplay.innerText = 'Vui lòng liên hệ';
-                priceDisplay.style.color = '#555';
-
                 if (btnCart) btnCart.style.display = 'none';
                 if (btnContact) btnContact.style.display = 'block';
             }
+        } else {
+            priceDisplay.innerText = 'Vui lòng liên hệ';
+            priceDisplay.style.color = '#555';
+
+            if (btnCart) btnCart.style.display = 'none';
+            if (btnContact) btnContact.style.display = 'block';
         }
+    }
 
-        updateVariantUI();
+    updateVariantUI();
 
-        function changeImage(src, slideIndex, element) {
-            document.getElementById('mainImage').src = src;
-            let thumbs = document.querySelectorAll('.thumb-box');
-            thumbs.forEach(t => t.classList.remove('active'));
-            element.classList.add('active');
-        }
+    let currentSlideIndex = 0;
 
-        // Biến lưu trữ vị trí ảnh hiện tại
-        let currentSlideIndex = 0;
+    function changeImage(src, slideIndex, element) {
+        document.getElementById('mainImage').src = src;
+        currentSlideIndex = slideIndex;
+        let thumbs = document.querySelectorAll('.thumb-box');
+        thumbs.forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+    }
 
-        // Cập nhật hàm đổi ảnh để đồng bộ index
-        function changeImage(src, slideIndex, element) {
-            document.getElementById('mainImage').src = src;
-            currentSlideIndex = slideIndex; // Lưu lại index sếp vừa bấm
-            let thumbs = document.querySelectorAll('.thumb-box');
-            thumbs.forEach(t => t.classList.remove('active'));
-            element.classList.add('active');
-        }
+    function zoomImage() {
+        const zoomModalEl = document.getElementById('imageZoomModal');
+        const myModal = new bootstrap.Modal(zoomModalEl);
+        const carouselEl = document.getElementById('zoomCarousel');
+        const carousel = new bootstrap.Carousel(carouselEl);
 
-        // Logic phóng to hình và nhảy đến slide tương ứng
-        function zoomImage() {
-            const zoomModalEl = document.getElementById('imageZoomModal');
-            const myModal = new bootstrap.Modal(zoomModalEl);
-            const carouselEl = document.getElementById('zoomCarousel');
-            const carousel = new bootstrap.Carousel(carouselEl);
-
-            // Nhảy đến đúng vị trí ảnh sếp đang xem
-            carousel.to(currentSlideIndex);
-            myModal.show();
-        }
-    </script>
-</body>
-
-</html>
+        carousel.to(currentSlideIndex);
+        myModal.show();
+    }
+</script>
+{% endblock %}

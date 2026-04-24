@@ -1,135 +1,108 @@
-<!DOCTYPE html>
-<html lang="vi">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Thanh Toán - Wolves Clone</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
+{% block title %}Thanh Toán{% endblock %}
 
-            /* Phải viết dính liền trên một dòng như thế này thì mới nhận màu sếp nhé */
-            --main-color: {
-                    {
-                    settings.mau_chu_dao
-                }
-            }
+{% block extra_css %}
+<style>
+    /* GIỮ NGUYÊN CSS GỐC CỦA SẾP CHO TRANG THANH TOÁN */
+    body {
+        background-color: #f4f5f7;
+    }
 
-            ;
-            --bg-dark: #121212;
-            --bg-card: #0a0a0a;
-        }
+    .checkout-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        background: #fff;
+    }
 
-        body {
-            background-color: #f4f5f7;
-        }
+    .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+    }
 
-        .checkout-card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            background: #fff;
-        }
+    .form-control:focus {
+        border-color: #111;
+        box-shadow: none;
+    }
+</style>
+{% endblock %}
 
-        .form-control {
-            border-radius: 10px;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-        }
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row g-5">
+        <div class="col-md-7">
+            <div class="checkout-card p-5">
+                <h3 class="fw-bold border-bottom pb-3 mb-4"><i class="fas fa-shipping-fast text-danger"></i> THÔNG
+                    TIN GIAO HÀNG</h3>
 
-        .form-control:focus {
-            border-color: #111;
-            box-shadow: none;
-        }
-    </style>
-</head>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="fw-bold mb-2">Họ và Tên người nhận</label>
+                        <input type="text" name="ten" class="form-control" placeholder="VD: Monkey D. Luffy"
+                            value="{{ session.get('khach_ten', '') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold mb-2">Số điện thoại</label>
+                        <input type="text" name="sdt" class="form-control" placeholder="Để shop gọi chốt đơn..."
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="fw-bold mb-2">Địa chỉ giao hàng chi tiết</label>
+                        <textarea name="dia_chi" class="form-control" rows="3"
+                            placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố..."
+                            required></textarea>
+                    </div>
 
-<body>
-    <nav class="navbar navbar-dark bg-dark py-3 shadow-sm">
-        <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
-            {% if settings.logo_url %}
-            <img src="{{ settings.logo_url }}" alt="Logo" height="40" class="me-2">
-            {% endif %}
-            <span style="color:var(--main-color)">{{ settings.ten_web }}</span>
-        </a>
-    </nav>
+                    <div class="alert alert-warning border-0 rounded-3 text-dark">
+                        <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Với hàng Pre-order, shop sẽ liên
+                        hệ qua Zalo/SĐT để xác nhận tiền cọc trước khi chốt đơn chính thức.
+                    </div>
 
-    <div class="container mt-5 mb-5">
-        <div class="row g-5">
-            <div class="col-md-7">
-                <div class="checkout-card p-5">
-                    <h3 class="fw-bold border-bottom pb-3 mb-4"><i class="fas fa-shipping-fast text-danger"></i> THÔNG
-                        TIN GIAO HÀNG</h3>
-
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label class="fw-bold mb-2">Họ và Tên người nhận</label>
-                            <input type="text" name="ten" class="form-control" placeholder="VD: Monkey D. Luffy"
-                                value="{{ session.get('khach_ten', '') }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-2">Số điện thoại</label>
-                            <input type="text" name="sdt" class="form-control" placeholder="Để shop gọi chốt đơn..."
-                                required>
-                        </div>
-                        <div class="mb-4">
-                            <label class="fw-bold mb-2">Địa chỉ giao hàng chi tiết</label>
-                            <textarea name="dia_chi" class="form-control" rows="3"
-                                placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố..."
-                                required></textarea>
-                        </div>
-
-                        <div class="alert alert-warning border-0 rounded-3 text-dark">
-                            <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Với hàng Pre-order, shop sẽ liên
-                            hệ qua Zalo/SĐT để xác nhận tiền cọc trước khi chốt đơn chính thức.
-                        </div>
-
-                        <button type="submit" class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill mt-3 shadow">
-                            XÁC NHẬN ĐẶT HÀNG <i class="fas fa-check-circle ms-2"></i>
-                        </button>
-                    </form>
-                </div>
+                    <button type="submit" class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill mt-3 shadow">
+                        XÁC NHẬN ĐẶT HÀNG <i class="fas fa-check-circle ms-2"></i>
+                    </button>
+                </form>
             </div>
+        </div>
 
-            <div class="col-md-5">
-                <div class="checkout-card p-5 border-top border-danger border-5 bg-light">
-                    <h4 class="fw-bold mb-4">TÓM TẮT ĐƠN HÀNG</h4>
+        <div class="col-md-5">
+            <div class="checkout-card p-5 border-top border-danger border-5 bg-light">
+                <h4 class="fw-bold mb-4">TÓM TẮT ĐƠN HÀNG</h4>
 
-                    <ul class="list-group list-group-flush mb-4 bg-transparent">
-                        {% for sp in gio_hang %}
-                        <li class="list-group-item bg-transparent px-0 py-3 d-flex justify-content-between lh-sm">
-                            <div class="d-flex gap-3">
-                                <img src="{{ sp.hinh_anh }}"
-                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"
-                                    class="shadow-sm">
-                                <div>
-                                    <h6 class="my-0 text-dark fw-bold">{{ sp.ten }}</h6>
-                                    <small class="text-muted">SL: {{ sp.so_luong }}</small>
-                                </div>
+                <ul class="list-group list-group-flush mb-4 bg-transparent">
+                    {% for sp in gio_hang %}
+                    <li class="list-group-item bg-transparent px-0 py-3 d-flex justify-content-between lh-sm">
+                        <div class="d-flex gap-3">
+                            <img src="{{ sp.hinh_anh }}"
+                                style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"
+                                class="shadow-sm">
+                            <div>
+                                <h6 class="my-0 text-dark fw-bold">{{ sp.ten }}</h6>
+                                <small class="text-muted">SL: {{ sp.so_luong }}</small>
                             </div>
-                            <span class="text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
+                        </div>
+                        <span class="text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ</span>
+                    </li>
+                    {% endfor %}
+                </ul>
 
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Tạm tính</span>
-                        <strong>{{ "{:,.0f}".format(tong_tien) }}đ</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
-                        <span class="text-muted">Phí ship</span>
-                        <span class="text-success fw-bold">Tính sau</span>
-                    </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Tạm tính</span>
+                    <strong>{{ "{:,.0f}".format(tong_tien) }}đ</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
+                    <span class="text-muted">Phí ship</span>
+                    <span class="text-success fw-bold">Tính sau</span>
+                </div>
 
-                    <div class="d-flex justify-content-between mt-3">
-                        <span class="fw-bold fs-4">TỔNG CỘNG</span>
-                        <span class="text-danger fw-bold fs-3">{{ "{:,.0f}".format(tong_tien) }}đ</span>
-                    </div>
+                <div class="d-flex justify-content-between mt-3">
+                    <span class="fw-bold fs-4">TỔNG CỘNG</span>
+                    <span class="text-danger fw-bold fs-3">{{ "{:,.0f}".format(tong_tien) }}đ</span>
                 </div>
             </div>
         </div>
     </div>
-</body>
-
-</html>
+</div>
+{% endblock %}
