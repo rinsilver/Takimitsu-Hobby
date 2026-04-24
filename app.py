@@ -909,38 +909,52 @@ def cai_dat_giao_dien():
     return render_template('cai_dat.html')
 
 # ================= TRANG KHÁCH: TẤT CẢ SẢN PHẨM =================
+# ================= TRANG KHÁCH: TẤT CẢ SẢN PHẨM (CÓ TÌM THEO TÊN) =================
 @app.route('/san-pham')
 def tat_ca_san_pham():
     conn = ket_noi_db()
+    
+    # Lấy các tham số từ URL
+    tu_khoa = request.args.get('tu_khoa', '') # Thêm lấy từ khóa
     danh_muc_loc = request.args.get('danh_muc', '')
     hang_loc = request.args.get('hang_sx', '')
-    kieu_loc = request.args.get('kieu_hang', '') # Mới
+    kieu_loc = request.args.get('kieu_hang', '')
     page = request.args.get('page', 1, type=int)
-    per_page = 12
+    per_page = 12 
     
     cau_lenh_base = ' FROM san_pham WHERE 1=1'
     dk = []
     
+    # Ghép điều kiện tìm kiếm
+    if tu_khoa:
+        cau_lenh_base += ' AND ten LIKE ?'
+        dk.append(f'%{tu_khoa}%')
     if danh_muc_loc:
-        cau_lenh_base += ' AND the_loai = ?'; dk.append(danh_muc_loc)
+        cau_lenh_base += ' AND the_loai = ?'
+        dk.append(danh_muc_loc)
     if hang_loc:
-        cau_lenh_base += ' AND hang_sx = ?'; dk.append(hang_loc)
+        cau_lenh_base += ' AND hang_sx = ?'
+        dk.append(hang_loc)
     if kieu_loc:
-        cau_lenh_base += ' AND kieu_hang = ?'; dk.append(kieu_loc)
+        cau_lenh_base += ' AND kieu_hang = ?'
+        dk.append(kieu_loc)
         
     tong_sp = conn.execute('SELECT COUNT(id)' + cau_lenh_base, dk).fetchone()[0]
     tong_trang = (tong_sp + per_page - 1) // per_page
     
     cau_lenh = 'SELECT *' + cau_lenh_base + ' ORDER BY id DESC LIMIT ? OFFSET ?'
-    dk_limit = dk + [per_page, (page - 1) * per_page]
-    san_phams = conn.execute(cau_lenh, dk_limit).fetchall()
+    dk.extend([per_page, (page - 1) * per_page])
     
+    san_phams = conn.execute(cau_lenh, dk).fetchall()
+    
+    # Lấy danh sách bộ lọc
     danh_mucs = conn.execute('SELECT DISTINCT the_loai as ten_danh_muc FROM san_pham').fetchall()
     hangs = conn.execute('SELECT DISTINCT hang_sx as ten_hang FROM san_pham').fetchall()
     
     conn.close()
     return render_template('tat_ca_san_pham.html', san_phams=san_phams, danh_mucs=danh_mucs, hangs=hangs, 
-                           page=page, tong_trang=tong_trang, dm_chon=danh_muc_loc, hang_chon=hang_loc, kieu_chon=kieu_loc)
+                           page=page, tong_trang=tong_trang, 
+                           dm_chon=danh_muc_loc, hang_chon=hang_loc, kieu_chon=kieu_loc, tu_khoa=tu_khoa)
 
 # ================= XỬ LÝ THANH TOÁN & ĐẶT HÀNG =================
 @app.route('/thanh-toan', methods=['GET', 'POST'])

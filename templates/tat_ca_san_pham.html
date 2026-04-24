@@ -14,9 +14,9 @@
         /* NAVBAR & MEGA MENU CHUẨN TỪ INDEX */
         .navbar { border-bottom: 2px solid var(--main-color); background-color: #111 !important; }
         .mega-dropdown { position: static !important; }
-        .mega-menu { position: absolute; width: 100%; left: 0; right: 0; padding: 20px; border-radius: 0; border: none; border-top: 2px solid var(--main-color); box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 0; }
+        .mega-menu { position: absolute; width: 100%; left: 0; right: 0; padding: 20px; border-radius: 0 0 15px 15px; border: none; border-top: 2px solid var(--main-color); box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 0; }
         .mega-menu-title { font-weight: 800; text-transform: uppercase; color: var(--main-color); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        .mega-menu-item { display: flex; align-items: center; padding: 10px; color: #333; text-decoration: none; transition: 0.2s; }
+        .mega-menu-item { display: flex; align-items: center; padding: 10px; color: #333; text-decoration: none; transition: 0.2s; border-radius: 8px;}
         .mega-menu-item:hover { background: #f8f9fa; color: var(--main-color); }
         .mega-menu-item i { font-size: 1.5rem; margin-right: 15px; color: #666; width: 30px; text-align: center; }
 
@@ -40,8 +40,8 @@
         .filter-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 0; }
         .filter-card h6 { border-bottom: 2px solid #111; padding-bottom: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* ÉP VUÔNG VỨC CÁC NÚT VÀ INPUT TÌM KIẾM */
-        .form-select, .btn { border-radius: 0 !important; }
+        /* CHỈ ÉP VUÔNG VỨC SELECT BOX, ĐỂ CÁC NÚT ĐƯỢC BO TRÒN */
+        .form-select { border-radius: 0 !important; }
 
         /* FOOTER ĐỒNG BỘ */
         footer { background-color: #111; padding: 60px 0 30px 0; color: #fff; border-top: 2px solid var(--main-color); margin-top: 60px; }
@@ -50,7 +50,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top p-3">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top p-3 shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3" href="/">
                 {% if settings.logo_url %}<img src="{{ settings.logo_url }}" alt="Logo" height="40">{% else %}<span style="color:var(--main-color)">WOLVES</span> CLONE{% endif %}
@@ -72,9 +72,9 @@
                                         <a href="/san-pham?hang_sx=Good Smile" class="mega-menu-item"><i class="fas fa-child"></i> <div><strong class="d-block">Good Smile</strong><small>Nendoroid, Figma</small></div></a>
                                     </div>
                                     <div class="col-md-4 text-center">
-                                        <div class="p-4 bg-light h-100 d-flex flex-column justify-content-center">
+                                        <div class="p-4 bg-light h-100 d-flex flex-column justify-content-center" style="border-radius: 15px;">
                                             <h6 class="fw-bold text-dark mb-3">TÌM KIẾM SẢN PHẨM</h6>
-                                            <a href="/san-pham" class="btn text-white fw-bold w-100 rounded-0" style="background:var(--main-color)">XEM TẤT CẢ KHO HÀNG</a>
+                                            <a href="/san-pham" class="btn text-white fw-bold w-100 rounded-pill" style="background:var(--main-color)">XEM TẤT CẢ KHO HÀNG</a>
                                         </div>
                                     </div>
                                 </div>
@@ -84,11 +84,11 @@
                     <li class="nav-item"><a class="nav-link fw-bold text-white" href="/san-pham">SẢN PHẨM</a></li>
                     {% if is_admin or is_khach %}
                         <li class="nav-item mx-3"><a href="/ho-so" class="text-decoration-none text-light fw-bold">Chào, <span style="color:var(--main-color)">{{ khach_ten }}</span></a></li>
-                        <li class="nav-item"><a href="/gio-hang" class="btn btn-outline-light rounded-0 position-relative me-2"><i class="fas fa-shopping-cart"></i>{% if so_luong_gio_hang > 0 %}<span class="position-absolute top-0 start-100 translate-middle badge bg-danger">{{ so_luong_gio_hang }}</span>{% endif %}</a></li>
-                        {% if is_admin %}<li class="nav-item"><a class="btn btn-warning fw-bold rounded-0 mx-1 text-dark" href="/admin">QUẢN TRỊ</a></li>{% endif %}
-                        <li class="nav-item"><a class="btn btn-outline-danger rounded-0 ms-2" href="/dang-xuat"><i class="fas fa-sign-out-alt"></i></a></li>
+                        <li class="nav-item"><a href="/gio-hang" class="btn btn-outline-light rounded-pill position-relative me-2 px-3"><i class="fas fa-shopping-cart"></i>{% if so_luong_gio_hang > 0 %}<span class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-circle">{{ so_luong_gio_hang }}</span>{% endif %}</a></li>
+                        {% if is_admin %}<li class="nav-item"><a class="btn btn-warning fw-bold rounded-pill mx-1 px-3 text-dark" href="/admin">QUẢN TRỊ</a></li>{% endif %}
+                        <li class="nav-item"><a class="btn btn-outline-danger rounded-pill ms-2 px-3" href="/dang-xuat"><i class="fas fa-sign-out-alt"></i></a></li>
                     {% else %}
-                        <li class="nav-item"><a class="btn px-4 ms-2 text-white fw-bold rounded-0" style="background:var(--main-color)" href="/dang-nhap">ĐĂNG NHẬP</a></li>
+                        <li class="nav-item"><a class="btn px-4 ms-2 text-white fw-bold rounded-pill" style="background:var(--main-color)" href="/dang-nhap">ĐĂNG NHẬP</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -103,6 +103,11 @@
                 <form method="GET" class="filter-card p-4 shadow-sm">
                     <h6 class="mb-4"><i class="fas fa-filter me-2"></i> TÌM KIẾM CHI TIẾT</h6>
                     
+                    <div class="mb-3">
+                        <label class="small fw-bold mb-2 text-muted">TỪ KHÓA TÊN SP</label>
+                        <input type="text" name="tu_khoa" class="form-control border-secondary rounded-1" placeholder="Nhập tên mô hình..." value="{{ tu_khoa }}">
+                    </div>
+
                     <div class="mb-3">
                         <label class="small fw-bold mb-2 text-muted">DANH MỤC</label>
                         <select name="danh_muc" class="form-select border-secondary">
@@ -132,8 +137,8 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-dark w-100 fw-bold py-2 mb-2 shadow-sm">ÁP DỤNG LỌC</button>
-                    <a href="/san-pham" class="btn btn-outline-secondary w-100 fw-bold py-2">XÓA BỘ LỌC</a>
+                    <button type="submit" class="btn btn-dark w-100 fw-bold py-2 mb-2 rounded-0">ÁP DỤNG LỌC</button>
+                    <a href="/san-pham" class="btn btn-outline-secondary w-100 fw-bold py-2 rounded-0">XÓA BỘ LỌC</a>
                 </form>
             </div>
 
@@ -170,7 +175,7 @@
                     {% for p in range(1, tong_trang + 1) %}
                     <li class="page-item {% if p == page %}active{% endif %}">
                         <a class="page-link text-dark fw-bold border-dark rounded-0 {% if p == page %}bg-dark text-white{% endif %}" 
-                           href="?page={{ p }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}">
+                           href="?page={{ p }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}">
                            {{ p }}
                         </a>
                     </li>
