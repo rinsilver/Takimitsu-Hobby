@@ -1132,7 +1132,10 @@ def thanh_toan():
         return redirect(url_for('xem_gio_hang')) # Giỏ trống thì đuổi về
         
     tong_tien = sum(item['gia'] * item['so_luong'] for item in gio_hang)
-    
+    conn = ket_noi_db()
+    # Lấy danh sách khách hàng để hiện vào ô chọn
+    danh_sach_khach = conn.execute('SELECT id, ho_ten, sdt FROM khach_hang ORDER BY ho_ten ASC').fetchall()
+    conn.close()
     # Nếu khách bấm Nút ĐẶT HÀNG
     if request.method == 'POST':
         ten_khach = request.form['ten']
@@ -1166,7 +1169,24 @@ def thanh_toan():
         return f"<script>alert('Tuyệt vời! Sếp đã đặt hàng thành công. Mã đơn: #{don_id}'); window.location.href='/';</script>"
 
     # Nếu truy cập bình thường thì mở giao diện Thanh toán
-    return render_template('thanh_toan.html', gio_hang=gio_hang, tong_tien=tong_tien)
+    return render_template('thanh_toan.html', 
+                       gio_hang=gio_hang, 
+                       tong_tien=tong_tien, 
+                       khachs=danh_sach_khach) # Thêm khachs vào đây sếp nhé
+
+# 2. THÊM ROUTE MỚI ĐỂ LẤY THÔNG TIN KHÁCH KHI CHỌN
+@app.route('/api/get-khach-info/<int:id>')
+def get_khach_info(id):
+    conn = ket_noi_db()
+    kh = conn.execute('SELECT ho_ten, sdt, dia_chi FROM khach_hang WHERE id = ?', (id,)).fetchone()
+    conn.close()
+    if kh:
+        return {
+            "ho_ten": kh['ho_ten'],
+            "sdt": kh['sdt'],
+            "dia_chi": kh['dia_chi']
+        }
+    return {"error": "Không tìm thấy"}, 404
 
 if __name__ == '__main__':
     Timer(1.5, lambda: webbrowser.open_new('http://127.0.0.1:5000/')).start()

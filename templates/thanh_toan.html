@@ -26,6 +26,15 @@
         border-color: #111;
         box-shadow: none;
     }
+
+    .customer-item:hover {
+        background-color: #f8f9fa;
+        color: var(--main-color);
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
 </style>
 {% endblock %}
 
@@ -38,21 +47,52 @@
                     TIN GIAO HÀNG</h3>
 
                 <form method="POST">
+                    {% if is_admin %}
+                    <div class="mb-4 p-3 bg-light rounded-3 border position-relative">
+                        <label class="small fw-bold text-primary mb-2 text-uppercase">
+                            <i class="fas fa-search"></i> Tìm nhanh khách hàng cũ:
+                        </label>
+
+                        <input type="text" id="customerSearchInput" class="form-control rounded-pill shadow-sm"
+                            placeholder="Gõ tên hoặc số điện thoại để tìm..." oninput="filterCustomers(this.value)"
+                            onfocus="showCustomerResults()" autocomplete="off">
+
+                        <div id="customerResults"
+                            class="shadow-lg border rounded-3 position-absolute w-100 mt-1 bg-white overflow-auto"
+                            style="max-height: 250px; z-index: 1050; display: none; left: 0; right: 0;">
+                            {% for kh in khachs %}
+                            <div class="customer-item p-2 border-bottom cursor-pointer hover-bg-light"
+                                style="cursor: pointer;"
+                                onclick="selectCustomer('{{ kh.id }}', '{{ kh.ho_ten }}', '{{ kh.sdt }}')">
+                                <div class="fw-bold text-dark">{{ kh.ho_ten }}</div>
+                                <div class="small text-muted"><i class="fas fa-phone-alt"></i> {{ kh.sdt }}</div>
+                            </div>
+                            {% endfor %}
+                            <div id="noCustomerFound" class="p-3 text-center text-muted small" style="display: none;">
+                                Không tìm thấy khách hàng này...
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Sếp gõ từ khóa, chọn khách, hệ thống tự điền thông
+                            tin.</small>
+                    </div>
+                    {% endif %}
+
                     <div class="mb-3">
                         <label class="fw-bold mb-2">Họ và Tên người nhận</label>
-                        <input type="text" name="ten" class="form-control" placeholder="VD: Monkey D. Luffy"
-                            value="{{ session.get('khach_ten', '') }}" required>
+                        <input type="text" name="ten" id="input_ho_ten" class="form-control"
+                            placeholder="VD: Monkey D. Luffy" value="{{ session.get('khach_ten', '') }}" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="fw-bold mb-2">Số điện thoại</label>
-                        <input type="text" name="sdt" class="form-control" placeholder="Để shop gọi chốt đơn..."
-                            required>
+                        <input type="text" name="sdt" id="input_sdt" class="form-control"
+                            placeholder="Để shop gọi chốt đơn..." required>
                     </div>
+
                     <div class="mb-4">
                         <label class="fw-bold mb-2">Địa chỉ giao hàng chi tiết</label>
-                        <textarea name="dia_chi" class="form-control" rows="3"
-                            placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố..."
-                            required></textarea>
+                        <textarea name="dia_chi" id="input_dia_chi" class="form-control" rows="3"
+                            placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố..." required></textarea>
                     </div>
 
                     <div class="alert alert-warning border-0 rounded-3 text-dark">
@@ -105,4 +145,92 @@
         </div>
     </div>
 </div>
+<script>
+    // HÀM TỰ ĐỘNG ĐIỀN THÔNG TIN
+    // LOGIC LỌC KHÁCH HÀNG KHI GÕ PHÍM
+    function filterCustomers(val) {
+        const results = document.getElementById('customerResults');
+        const items = document.querySelectorAll('.customer-item');
+        const noFound = document.getElementById('noCustomerFound');
+        let hasMatch = false;
+
+        val = val.toLowerCase().trim();
+        results.style.display = 'block'; // Hiện bảng kết quả khi gõ
+
+        items.forEach(item => {
+            const text = item.innerText.toLowerCase();
+            if (text.includes(val)) {
+                item.style.display = 'block';
+                hasMatch = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        noFound.style.display = hasMatch ? 'none' : 'block';
+    }
+
+    // KHI CHỌN MỘT KHÁCH TỪ DANH SÁCH
+    function selectCustomer(id, name, phone) {
+        // 1. Điền tên vào ô search để sếp biết mình đã chọn ai
+        document.getElementById('customerSearchInput').value = name + " - " + phone;
+        document.getElementById('customerResults').style.display = 'none';
+
+        // 2. Gọi hàm Autofill thần thánh từ app.py
+        autoFillCustomer(id);
+    }
+
+    // Hiện bảng khi focus vào ô input
+    function showCustomerResults() {
+        const val = document.getElementById('customerSearchInput').value;
+        if (val.length >= 0) {
+            document.getElementById('customerResults').style.display = 'block';
+        }
+    }
+
+    // Đóng bảng kết quả khi bấm ra ngoài
+    document.addEventListener('click', function (e) {
+        const searchArea = document.querySelector('.position-relative');
+        const results = document.getElementById('customerResults');
+        if (searchArea && !searchArea.contains(e.target)) {
+            results.style.display = 'none';
+        }
+    });
+
+    // HÀM AUTOFILL (Giữ nguyên logic fetch từ Route /api/get-khach-info sếp đã viết)
+    function autoFillCustomer(khId) {
+        fetch('/api/get-khach-info/' + khId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) return;
+                document.getElementById('input_ho_ten').value = data.ho_ten;
+                document.getElementById('input_sdt').value = data.sdt;
+                document.getElementById('input_dia_chi').value = data.dia_chi;
+            });
+    }
+    function autoFillCustomer(khId) {
+        if (!khId) return; // Nếu sếp chọn lại ô trống thì thôi
+
+        // "Hỏi" server thông tin của khách có ID này
+        fetch('/api/get-khach-info/' + khId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) return;
+
+                // Tự động đổ dữ liệu vào các ô nhập liệu
+                document.getElementById('input_ho_ten').value = data.ho_ten;
+                document.getElementById('input_sdt').value = data.sdt;
+
+                // Nếu địa chỉ là textarea, nó vẫn hoạt động tốt
+                const addrInput = document.getElementById('input_dia_chi')
+                    || document.querySelector('textarea[name="dia_chi"]');
+                if (addrInput) addrInput.value = data.dia_chi;
+
+                // Hiệu ứng thông báo nhẹ cho sếp
+                console.log("Đã điền thông tin của: " + data.ho_ten);
+            })
+            .catch(err => console.error("Lỗi lấy thông tin khách:", err));
+    }
+</script>
+
 {% endblock %}
