@@ -28,6 +28,7 @@
                     <h5 class="fw-bold mb-3 text-danger"><i class="fas fa-user-secret"></i> Nguồn Nhập Bí Mật</h5>
                     <p class="small text-muted mb-3">Dữ liệu này chỉ dành cho sếp quản lý, khách không bao giờ thấy.</p>
                     <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="text" name="ten_nguon" class="form-control mb-3 rounded-pill" placeholder="Ví dụ: AmiAmi, Tokyo Otaku..." required>
                         <button class="btn btn-danger w-100 rounded-pill fw-bold shadow-sm">THÊM NGUỒN</button>
                     </form>
@@ -50,6 +51,7 @@
                                 <td class="fw-bold text-dark">{{ n.ten_nguon }}</td>
                                 <td class="text-center">
                                     <form action="/xoa-nguon/{{ n.id }}" method="POST" class="m-0" onsubmit="return confirm('Xóa nguồn này sẽ mất dấu vết nhập hàng của sếp. Sếp chắc chứ?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold">
                                             <i class="fas fa-trash-alt"></i> Xóa
                                         </button>

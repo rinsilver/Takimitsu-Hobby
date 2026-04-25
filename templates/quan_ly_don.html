@@ -208,6 +208,7 @@
 
                         <td class="pe-4 text-end">
                             <form method="POST" action="/admin/don-hang" class="d-inline-block" style="width: 180px;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="don_id" value="{{ dh.id }}">
                                 <div class="input-group input-group-sm mb-1">
                                     <input type="number" name="tien_da_tra" class="form-control"

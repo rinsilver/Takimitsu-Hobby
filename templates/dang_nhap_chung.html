@@ -62,6 +62,7 @@
         </h3>
         
         <form method="POST" action="/dang-nhap">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
                 <label class="form-label small fw-bold text-muted text-uppercase">Tài khoản</label>
                 <input type="text" name="tai_khoan" class="form-control" placeholder="admin hoặc tên khách" required>

@@ -1,16 +1,19 @@
 import os, webbrowser, sqlite3
 from threading import Timer
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from werkzeug.utils import secure_filename
+# Sửa lại dòng import từ flask để có đầy đủ các hàm sếp đang dùng
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+from werkzeug.security import generate_password_hash, check_password_hash # Thêm dòng này để mã hóa bảo mật
 import json
+from flask_wtf.csrf import CSRFProtect
 import os
-from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'wolves_master_system_ultimate_v7'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+csrf = CSRFProtect(app)
 
 # --- HỆ THỐNG QUẢN LÝ CÀI ĐẶT GIAO DIỆN (JSON) ---
 SETTINGS_FILE = 'settings.json'
@@ -90,7 +93,8 @@ def tao_bang():
         pass # Nếu cột đã tồn tại thì bỏ qua
     
     if conn.execute("SELECT COUNT(*) FROM khach_hang WHERE vai_tro = 'admin'").fetchone()[0] == 0:
-        conn.execute("INSERT INTO khach_hang (tai_khoan, mat_khau, ho_ten, vai_tro) VALUES ('admin', '123', 'Quản trị viên', 'admin')")
+        hashed_pw = generate_password_hash('123') # Biến '123' thành chuỗi bảo mật
+        conn.execute("INSERT INTO khach_hang (tai_khoan, mat_khau, ho_ten, vai_tro) VALUES ('admin', ?, 'Quản trị viên', 'admin')", (hashed_pw,))
     conn.commit(); conn.close()
 
 def cap_nhat_db_phan_loai():
@@ -241,24 +245,31 @@ def chi_tiet_sp(id):
 def dang_nhap():
     if request.method == 'POST':
         conn = ket_noi_db()
-        u = conn.execute('SELECT * FROM khach_hang WHERE tai_khoan=? AND mat_khau=?', (request.form['tai_khoan'], request.form['mat_khau'])).fetchone()
+        # Lấy user dựa trên tài khoản trước
+        u = conn.execute('SELECT * FROM khach_hang WHERE tai_khoan=?', (request.form['tai_khoan'],)).fetchone()
         conn.close()
-        if u:
+        
+        # Kiểm tra mật khẩu đã mã hóa bằng hàm chuyên dụng
+        if u and check_password_hash(u['mat_khau'], request.form['mat_khau']):
             session.clear()
             if u['vai_tro'] == 'admin': session['admin_id'] = u['id']
             else: session['khach_id'] = u['id']
             session['khach_ten'] = u['ho_ten']
             return redirect(url_for('index'))
-        return "Sai tài khoản hoặc mật khẩu!"
+        else:
+            flash('Sai tài khoản hoặc mật khẩu rồi', 'danger')
+            return redirect(url_for('dang_nhap'))
     return render_template('dang_nhap_chung.html')
 
 @app.route('/dang-ky', methods=['GET', 'POST'])
 def dang_ky():
     if request.method == 'POST':
         conn = ket_noi_db()
+        # MÃ HÓA mật khẩu khách nhập vào
+        hashed_pw = generate_password_hash(request.form['mat_khau'])
         try:
             conn.execute('INSERT INTO khach_hang (tai_khoan, mat_khau, ho_ten, sdt, dia_chi) VALUES (?,?,?,?,?)', 
-                         (request.form['tai_khoan'], request.form['mat_khau'], request.form['ho_ten'], request.form['sdt'], request.form['dia_chi']))
+                         (request.form['tai_khoan'], hashed_pw, request.form['ho_ten'], request.form['sdt'], request.form['dia_chi']))
             conn.commit()
             return redirect(url_for('dang_nhap'))
         except: return "Lỗi: Tài khoản đã tồn tại!"
@@ -1165,8 +1176,8 @@ def thanh_toan():
         session['gio_hang'] = []
         session.modified = True
         
-        # Trả về trang thông báo thành công
-        return f"<script>alert('Tuyệt vời! Sếp đã đặt hàng thành công. Mã đơn: #{don_id}'); window.location.href='/';</script>"
+        flash(f'Tuyệt vời! Sếp đã đặt hàng thành công. Mã đơn: #{don_id}', 'success')
+        return redirect(url_for('index'))
 
     # Nếu truy cập bình thường thì mở giao diện Thanh toán
     return render_template('thanh_toan.html', 
@@ -1187,6 +1198,29 @@ def get_khach_info(id):
             "dia_chi": kh['dia_chi']
         }
     return {"error": "Không tìm thấy"}, 404
+
+# API TÌM KIẾM SẢN PHẨM NHANH (BẢN NÂNG CẤP)
+@app.route('/api/search-products')
+def search_products_api():
+    tu_khoa = request.args.get('tu_khoa', '').strip()
+    if len(tu_khoa) < 1: return jsonify([])
+        
+    conn = ket_noi_db()
+    # Kéo thêm trường kieu_hang để hiện Badge
+    query = "SELECT id, ten, hinh_anh, gia_ban, kieu_hang FROM san_pham WHERE ten LIKE ? LIMIT 5"
+    sps = conn.execute(query, (f'%{tu_khoa}%',)).fetchall()
+    conn.close()
+    
+    ket_qua = []
+    for sp in sps:
+        ket_qua.append({
+            "id": sp['id'],
+            "ten": sp['ten'],
+            "hinh_anh": sp['hinh_anh'],
+            "gia": "{:,.0f}".format(sp['gia_ban']),
+            "status": sp['kieu_hang'] # 'Co san' hoặc 'Pre-order'
+        })
+    return jsonify(ket_qua)
 
 if __name__ == '__main__':
     Timer(1.5, lambda: webbrowser.open_new('http://127.0.0.1:5000/')).start()

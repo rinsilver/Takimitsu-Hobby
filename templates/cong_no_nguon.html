@@ -197,6 +197,7 @@
                         </td>
                         <td style="min-width: 380px;">
                             <form action="/admin/cap-nhat-tra-tien/{{sp.id}}" method="POST" class="m-0">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <div class="d-flex flex-column gap-2">
 
                                     <div class="d-flex gap-2">

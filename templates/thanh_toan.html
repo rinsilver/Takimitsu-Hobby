@@ -47,6 +47,7 @@
                     TIN GIAO HÀNG</h3>
 
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% if is_admin %}
                     <div class="mb-4 p-3 bg-light rounded-3 border position-relative">
                         <label class="small fw-bold text-primary mb-2 text-uppercase">

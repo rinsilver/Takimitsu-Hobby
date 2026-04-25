@@ -5,6 +5,7 @@
     <div class="card shadow p-4" style="width: 450px;">
         <h3 class="text-center fw-bold mb-4 text-danger">ĐĂNG KÝ TÀI KHOẢN</h3>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3"><input type="text" name="tai_khoan" class="form-control" placeholder="Tên đăng nhập viết liền không dấu" required></div>
             <div class="mb-3"><input type="password" name="mat_khau" class="form-control" placeholder="Mật khẩu" required></div>
             <div class="mb-3"><input type="text" name="ho_ten" class="form-control" placeholder="Họ và tên của bạn" required></div>

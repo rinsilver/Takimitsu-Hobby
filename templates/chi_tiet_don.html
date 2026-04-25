@@ -71,6 +71,7 @@
             {% if session.get('admin_id') %}
             <div class="col-md-4">
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="card border-0 shadow-sm rounded-4 p-4 border-top border-primary border-4">
                         <h5 class="fw-bold mb-4">CẬP NHẬT ĐƠN HÀNG</h5>
                         
