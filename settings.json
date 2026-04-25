@@ -10,5 +10,9 @@
     "link_yt": "",
     "logo_url": "/static/uploads\\Logo.jpg",
     "banner_1": "https://images.unsplash.com/photo-1608178398319-48f814d0750c?q=80&w=2000&auto=format&fit=crop",
-    "banner_2": "/static/uploads\\logo_chu.png"
+    "banner_2": "/static/uploads\\logo_chu.png",
+    "cs_cua_hang": "dff",
+    "cs_doi_tra": "g",
+    "cs_van_chuyen": "g",
+    "hd_mua_hang": "g"
 }

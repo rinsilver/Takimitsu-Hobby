@@ -22,7 +22,9 @@ def get_settings():
             "banner_1": "", "banner_2": "", 
             "thong_tin_footer": "Shop online chuyên sản phẩm mô hình chính hãng",
             "dia_chi": "TP. Hồ Chí Minh", "dien_thoai": "091.416.5278", "email": "0914165278",
-            "link_fb": "#", "link_ig": "#", "link_yt": "#"
+            "link_fb": "#", "link_ig": "#", "link_yt": "#",
+            # THÊM 4 DÒNG NÀY ĐỂ TẠO CHỖ CHỨA CHÍNH SÁCH
+            "cs_cua_hang": "", "cs_doi_tra": "", "cs_van_chuyen": "", "hd_mua_hang": ""
         }
         save_settings(default_settings)
     with open(SETTINGS_FILE, 'r', encoding='utf-8') as f: return json.load(f)
@@ -134,19 +136,45 @@ def index():
     danh_sach_hang = [h['hang_sx'] for h in hang_sxs_raw]
     
     # 2. Lấy thêm dữ liệu cho 2 khối Tamashii mới
-    hang_co_san = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Co san' ORDER BY id DESC LIMIT 5").fetchall()
-    hang_order = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Pre-order' ORDER BY id DESC LIMIT 5").fetchall()
+    hang_co_san = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Co san' ORDER BY id DESC LIMIT 12").fetchall()
+    hang_order = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Pre-order' ORDER BY id DESC LIMIT 12").fetchall()
     
     conn.close()
     return render_template('index.html', san_phams=san_phams, hang_sxs=danh_sach_hang, 
                            hang_co_san=hang_co_san, hang_order=hang_order)
 
+@app.route('/thong-tin/<slug>')
+def trang_thong_tin(slug):
+    settings = get_settings() # Lấy từ JSON cực nhanh
+
+    # Ánh xạ đường dẫn URL với Key trong file JSON
+    danh_sach_trang = {
+        'chinh-sach-cua-hang': {'title': 'Chính sách cửa hàng', 'json_key': 'cs_cua_hang'},
+        'chinh-sach-doi-tra': {'title': 'Chính sách đổi trả', 'json_key': 'cs_doi_tra'},
+        'chinh-sach-van-chuyen': {'title': 'Chính sách vận chuyển', 'json_key': 'cs_van_chuyen'},
+        'huong-dan-mua-hang': {'title': 'Hướng dẫn mua hàng', 'json_key': 'hd_mua_hang'}
+    }
+
+    if slug not in danh_sach_trang:
+        return "Không tìm thấy trang", 404
+
+    thong_tin_trang = danh_sach_trang[slug]
+    noi_dung = settings.get(thong_tin_trang['json_key'], '')
+    
+    if not noi_dung:
+        noi_dung = "Nội dung đang được cập nhật."
+
+    return render_template('trang_thong_tin.html', tieu_de=thong_tin_trang['title'], noi_dung=noi_dung, settings=settings)
+
 # ================= TRANG CHI TIẾT SẢN PHẨM =================
 @app.route('/san-pham/<int:id>')
 def chi_tiet_sp(id):
+    # Kiểm tra admin nếu cần (tùy sếp)
+    # if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
+    
     conn = ket_noi_db()
     
-    # 1. TỰ ĐỘNG TẠO BẢNG ẢNH PHỤ NẾU SẾP CHƯA TẠO (Sửa lỗi mất nhiều ảnh)
+    # 1. TỰ ĐỘNG TẠO BẢNG ẢNH PHỤ (Giữ nguyên của sếp)
     conn.execute('''
         CREATE TABLE IF NOT EXISTS anh_san_pham (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -161,19 +189,53 @@ def chi_tiet_sp(id):
         conn.close()
         return "Không tìm thấy sản phẩm", 404
     
-    # Kéo danh sách ảnh phụ bình thường
+    # Kéo danh sách ảnh phụ (Giữ nguyên của sếp)
     anh_phu = conn.execute('SELECT * FROM hinh_anh_sp WHERE san_pham_id = ?', (id,)).fetchall()
     
-    # 2. Logic Sản phẩm gợi ý thông minh
-    sp_lien_quan = conn.execute('SELECT * FROM san_pham WHERE hang_sx = ? AND id != ? LIMIT 4', (sp['hang_sx'], id)).fetchall()
+    # 2. LOGIC SẢN PHẨM LIÊN QUAN (Nâng cấp từ code của sếp)
+    san_pham_lien_quan = conn.execute('SELECT * FROM san_pham WHERE hang_sx = ? AND id != ? LIMIT 4', (sp['hang_sx'], id)).fetchall()
     tieu_de_goi_y = "SẢN PHẨM CÙNG HÃNG"
     
-    if not sp_lien_quan:
-        sp_lien_quan = conn.execute('SELECT * FROM san_pham WHERE id != ? ORDER BY id DESC LIMIT 4', (id,)).fetchall()
+    if not san_pham_lien_quan:
+        san_pham_lien_quan = conn.execute('SELECT * FROM san_pham WHERE id != ? ORDER BY id DESC LIMIT 4', (id,)).fetchall()
         tieu_de_goi_y = "GỢI Ý SẢN PHẨM KHÁC"
         
+    # 3. LOGIC "SẢN PHẨM VỪA XEM" (Phần marketing tôi thêm cho sếp)
+    da_xem_ids = session.get('da_xem', [])
+    san_pham_da_xem = []
+    
+    # Lấy danh sách các sản phẩm đã xem từ DB (trừ cái đang xem hiện tại)
+    if da_xem_ids:
+        # Lọc bỏ ID hiện tại ra khỏi danh sách hiển thị "đã xem"
+        ids_to_fetch = [idx for idx in da_xem_ids if idx != id]
+        if ids_to_fetch:
+            # Tạo chuỗi ?,?,? cho SQL
+            placeholders = ','.join(['?'] * len(ids_to_fetch))
+            query_dx = f'SELECT * FROM san_pham WHERE id IN ({placeholders})'
+            sp_da_xem_db = conn.execute(query_dx, ids_to_fetch).fetchall()
+            # Sắp xếp đúng thứ tự khách đã xem (gần nhất hiện lên trước)
+            san_pham_da_xem = sorted(sp_da_xem_db, key=lambda x: ids_to_fetch.index(x['id']))
+
+    # Cập nhật ID sản phẩm hiện tại vào lịch sử session
+    if id in da_xem_ids:
+        da_xem_ids.remove(id) # Xóa vị trí cũ nếu có
+    da_xem_ids.insert(0, id)  # Đưa lên đầu danh sách
+    
+    if len(da_xem_ids) > 11:   
+        da_xem_ids.pop()
+        
+    session['da_xem'] = da_xem_ids
+    session.modified = True # Ép Flask phải lưu session ngay
+
     conn.close()
-    return render_template('chi_tiet.html', sp=sp, anh_phu=anh_phu, sp_lien_quan=sp_lien_quan, tieu_de_goi_y=tieu_de_goi_y)
+    
+    # TRẢ VỀ ĐẦY ĐỦ BIẾN CHO CHI_TIET.HTML
+    return render_template('chi_tiet.html', 
+                           sp=sp, 
+                           anh_phu=anh_phu, 
+                           san_pham_lien_quan=san_pham_lien_quan, 
+                           tieu_de_goi_y=tieu_de_goi_y,
+                           san_pham_da_xem=san_pham_da_xem)
 
 @app.route('/dang-nhap', methods=['GET', 'POST'])
 def dang_nhap():
@@ -481,15 +543,18 @@ def xoa_san_pham(id):
     return redirect(url_for('admin'))
 
 # ==================== QUẢN LÝ CÔNG NỢ & NGUỒN ====================
-
 @app.route('/admin/cong-no-nguon')
 def cong_no_nguon():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
     nguons = conn.execute('SELECT * FROM nguon_nhap').fetchall()
+    
+    # 1. NHẬN CÁC BIẾN TỪ BỘ LỌC
     nguon_id = request.args.get('nguon_id', '')
     kieu_hang = request.args.get('kieu_hang', '')
+    trang_thai_loc = request.args.get('trang_thai_loc', '') # Thêm dòng này để bắt Trạng thái
+    
     page = request.args.get('page', 1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
@@ -497,10 +562,13 @@ def cong_no_nguon():
     query = "SELECT sp.*, n.ten_nguon FROM san_pham sp LEFT JOIN nguon_nhap n ON sp.nguon_nhap_id = n.id WHERE 1=1"
     params = []
     
+    # 2. GẮN ĐIỀU KIỆN LỌC VÀO TRUY VẤN
     if nguon_id:
         query += " AND sp.nguon_nhap_id = ?"; params.append(nguon_id)
     if kieu_hang:
         query += " AND sp.kieu_hang = ?"; params.append(kieu_hang)
+    if trang_thai_loc: # Thêm khối này để lọc Database
+        query += " AND sp.trang_thai_nhap = ?"; params.append(trang_thai_loc)
         
     total_items = conn.execute("SELECT COUNT(*) FROM (" + query + ")", params).fetchone()[0]
     total_pages = (total_items + per_page - 1) // per_page
@@ -521,8 +589,11 @@ def cong_no_nguon():
     tong_no = tong_no_result if tong_no_result else 0
     
     conn.close()
+    
+    # 3. TRUYỀN ĐÚNG TÊN BIẾN RA HTML (page, tong_trang, trang_thai_loc)
     return render_template('cong_no_nguon.html', items=items, nguons=nguons, tong_no=tong_no, 
-                           current_page=page, total_pages=total_pages, nguon_chon=nguon_id, kieu_chon=kieu_hang)
+                           page=page, tong_trang=total_pages, # Đã đổi tên biến để khớp với giao diện
+                           nguon_chon=nguon_id, kieu_chon=kieu_hang, trang_thai_loc=trang_thai_loc)
 
 @app.route('/admin/cap-nhat-tra-tien/<int:id>', methods=['POST'])
 def cap_nhat_tra_tien(id):
@@ -928,7 +999,7 @@ def cai_dat_giao_dien():
                 return '/' + filepath
             return file_cu
 
-        # Dùng .get() để tránh lỗi BadRequestKeyError nếu thiếu ô nhập liệu
+        # ... (đoạn trên giữ nguyên)
         new_settings = {
             "ten_web": request.form.get('ten_web', settings.get('ten_web')),
             "mau_chu_dao": request.form.get('mau_chu_dao', settings.get('mau_chu_dao')),
@@ -941,7 +1012,13 @@ def cai_dat_giao_dien():
             "link_yt": request.form.get('link_yt', '#'),
             "logo_url": xu_ly_anh('logo_file', settings.get('logo_url')),
             "banner_1": xu_ly_anh('banner_1_file', settings.get('banner_1')),
-            "banner_2": xu_ly_anh('banner_2_file', settings.get('banner_2'))
+            "banner_2": xu_ly_anh('banner_2_file', settings.get('banner_2')),
+            
+            # CHỈ CẦN THÊM 4 DÒNG NÀY ĐỂ LƯU LẠI KHI BẤM NÚT "LƯU CÀI ĐẶT"
+            "cs_cua_hang": request.form.get('cs_cua_hang', settings.get('cs_cua_hang', '')),
+            "cs_doi_tra": request.form.get('cs_doi_tra', settings.get('cs_doi_tra', '')),
+            "cs_van_chuyen": request.form.get('cs_van_chuyen', settings.get('cs_van_chuyen', '')),
+            "hd_mua_hang": request.form.get('hd_mua_hang', settings.get('hd_mua_hang', ''))
         }
         save_settings(new_settings)
         return redirect(url_for('cai_dat_giao_dien'))

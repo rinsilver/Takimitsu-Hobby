@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tieu_de }} - {{ settings.ten_web }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="min-height: 60vh;">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted fw-bold">Trang chủ</a></li>
+            <li class="breadcrumb-item active fw-bold text-dark">{{ tieu_de }}</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm border-0" style="border-radius: 15px;">
+        <div class="card-body p-4 p-md-5">
+            <h2 class="fw-bold mb-4 text-uppercase" style="border-bottom: 2px solid var(--main-color); padding-bottom: 15px; display: inline-block;">{{ tieu_de }}</h2>
+            
+            <div class="lh-lg text-dark" style="font-size: 1rem;">
+                {{ noi_dung | safe }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

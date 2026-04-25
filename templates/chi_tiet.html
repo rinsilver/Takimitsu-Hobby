@@ -107,6 +107,94 @@
         max-height: 90vh;
         object-fit: contain;
     }
+
+    /* === PHẦN CSS MỚI THÊM CHO KHỐI "SẢN PHẨM LIÊN QUAN / ĐÃ XEM" === */
+    .tms-card {
+        display: block;
+        text-decoration: none;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .tms-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        border-color: var(--main-color);
+    }
+
+    .tms-img-wrap {
+        background-color: #fff;
+        aspect-ratio: 1/1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        position: relative;
+    }
+
+    .tms-img-wrap img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .tms-info {
+        padding: 15px;
+        background-color: #fff;
+    }
+
+    .tms-name {
+        color: #111;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 12px;
+        height: 2.8em;
+    }
+
+    .tms-price {
+        color: #e60012;
+        font-weight: 800;
+        font-size: 1.1rem;
+    }
+
+    .section-title {
+        font-weight: 900;
+        text-transform: uppercase;
+        border-bottom: 2px solid #111;
+        padding-bottom: 10px;
+        margin-bottom: 25px;
+        font-size: 1.25rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* CSS CHO THẺ TAG GIỐNG TRANG INDEX VÀ TẤT CẢ SẢN PHẨM */
+    .badge-item {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        margin-right: 4px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .bg-brand {
+        background-color: #f1f1f1;
+        color: #555;
+    }
+
+    .bg-cat {
+        background-color: #eee;
+        color: #888;
+    }
 </style>
 {% endblock %}
 
@@ -115,7 +203,8 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted fw-bold">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="/san-pham" class="text-decoration-none text-muted fw-bold">Sản phẩm</a></li>
+            <li class="breadcrumb-item"><a href="/san-pham" class="text-decoration-none text-muted fw-bold">Sản phẩm</a>
+            </li>
             <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">{{ sp.ten }}</li>
         </ol>
     </nav>
@@ -156,7 +245,8 @@
                     <div class="mb-3">
                         <span class="text-muted d-block mb-2 fw-bold small text-uppercase">Hình thức mua:</span>
                         <div class="d-flex flex-wrap gap-2">
-                            <button type="button" class="variant-btn hinh-thuc-btn active" data-val="san">Hàng có sẵn</button>
+                            <button type="button" class="variant-btn hinh-thuc-btn active" data-val="san">Hàng có
+                                sẵn</button>
                             <button type="button" class="variant-btn hinh-thuc-btn" data-val="order">Hàng order</button>
                         </div>
                     </div>
@@ -171,9 +261,13 @@
 
                     <div class="price-text-dynamic" id="hien_thi_gia">Đang tải giá...</div>
 
-                    <ul class="list-unstyled text-muted small lh-lg my-4 p-3 bg-light border" style="border-radius: 10px;">
-                        <li><i class="fas fa-hand-point-right text-warning"></i> Chào mừng bạn đến với {{ settings.ten_web }}!</li>
-                        <li><i class="fas fa-hand-point-right text-warning"></i> Để đảm bảo trải nghiệm mua sắm tốt nhất và tránh sai sót, vui lòng <b>LIÊN HỆ TRỰC TIẾP ADMIN</b> qua Fanpage để xác nhận tình trạng hàng và đặt đơn.</li>
+                    <ul class="list-unstyled text-muted small lh-lg my-4 p-3 bg-light border"
+                        style="border-radius: 10px;">
+                        <li><i class="fas fa-hand-point-right text-warning"></i> Chào mừng bạn đến với {{
+                            settings.ten_web }}!</li>
+                        <li><i class="fas fa-hand-point-right text-warning"></i> Để đảm bảo trải nghiệm mua sắm tốt nhất
+                            và tránh sai sót, vui lòng <b>LIÊN HỆ TRỰC TIẾP ADMIN</b> qua Fanpage để xác nhận tình trạng
+                            hàng và đặt đơn.</li>
                     </ul>
 
                     <form id="addCartForm" action="/them-vao-gio/{{ sp.id }}" method="GET">
@@ -189,20 +283,118 @@
                         {% endif %}
 
                         <a href="{{ settings.link_fb }}" target="_blank" id="btn_contact"
-                            class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill shadow-sm"
-                            style="display: none;">
+                            class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill shadow-sm" style="display: none;">
                             <i class="fab fa-facebook-messenger me-2"></i> LIÊN HỆ ADMIN ĐỂ MUA HÀNG
                         </a>
                     </form>
                 </div>
 
-                <h6 class="fw-bold border-bottom pb-2 mb-3 mt-5"><i class="fas fa-align-left text-muted"></i> MÔ TẢ SẢN PHẨM</h6>
-                <p class="text-muted lh-lg mb-4" style="white-space: pre-line; font-size: 0.95rem;">{{ sp.mo_ta if sp.mo_ta else 'Đang cập nhật thông tin chi tiết.' }}</p>
+                <h6 class="fw-bold border-bottom pb-2 mb-3 mt-5"><i class="fas fa-align-left text-muted"></i> MÔ TẢ SẢN
+                    PHẨM</h6>
+                <p class="text-muted lh-lg mb-4" style="white-space: pre-line; font-size: 0.95rem;">{{ sp.mo_ta if
+                    sp.mo_ta else 'Đang cập nhật thông tin chi tiết.' }}</p>
             </div>
         </div>
     </div>
-</div>
+    {% if san_pham_lien_quan %}
+    <div class="mt-5 mb-5 px-3">
+        <h4 class="section-title"><i class="fas fa-box-open me-2 text-danger"></i> {{ tieu_de_goi_y }}</h4>
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+            {% for sp_lq in san_pham_lien_quan %}
+            <div class="col">
+                <a href="/san-pham/{{ sp_lq.id }}" class="tms-card shadow-sm h-100"
+                    style="font-size: 0.9rem; outline: none;">
 
+                    <div class="tms-img-wrap" style="height: 220px; aspect-ratio: auto; padding: 10px;">
+                        <img src="{{ sp_lq.hinh_anh }}">
+                    </div>
+
+                    <div class="tms-info" style="padding: 10px;">
+                        <div class="mb-2 d-flex flex-wrap gap-1">
+                            <span class="badge-item bg-brand" style="font-size: 0.6rem;">{{ sp_lq.hang_sx }}</span>
+                            <span class="badge-item bg-cat" style="font-size: 0.6rem;">{{ sp_lq.the_loai }}</span>
+                            <span
+                                class="badge-item {% if sp_lq.kieu_hang == 'Co san' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}"
+                                style="font-size: 0.6rem;">
+                                {{ 'SẴN' if sp_lq.kieu_hang == 'Co san' else 'ORD' }}
+                            </span>
+                        </div>
+
+                        <div class="tms-name" style="font-size: 0.85rem; margin-bottom: 5px; height: 2.5em;">{{
+                            sp_lq.ten }}</div>
+                        <div class="tms-meta">
+                            <span class="tms-price" style="font-size: 0.95rem;">{{ "{:,.0f}".format(sp_lq.gia_ban |
+                                default(0)) }}đ</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if san_pham_da_xem %}
+    <div class="mt-5 mb-5 px-3">
+        <h4 class="section-title"><i class="fas fa-history me-2 text-secondary"></i> Sản phẩm sếp vừa xem</h4>
+
+        <div class="position-relative">
+            <button type="button"
+                onclick="document.getElementById('sliderDaXem').scrollBy({left: -250, behavior: 'smooth'})"
+                class="btn btn-dark position-absolute top-50 start-0 translate-middle-y rounded-circle shadow d-flex align-items-center justify-content-center"
+                style="width:40px; height:40px; z-index: 10; margin-left: -15px;">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div id="sliderDaXem" class="d-flex gap-3 py-3"
+                style="overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none;">
+                <style>
+                    #sliderDaXem::-webkit-scrollbar {
+                        display: none;
+                    }
+                </style>
+
+                {% for sp_dx in san_pham_da_xem %}
+                <div style="flex: 0 0 calc(20% - 13px); min-width: 200px;">
+                    <a href="/san-pham/{{ sp_dx.id }}" class="tms-card shadow-sm h-100"
+                        style="font-size: 0.9rem; outline: none;">
+                        <div class="tms-img-wrap" style="padding: 10px;">
+                            <img src="{{ sp_dx.hinh_anh }}">
+                        </div>
+                        <div class="tms-info" style="padding: 10px;">
+                            <div class="mb-2 d-flex flex-wrap gap-1">
+                                <span class="badge-item bg-brand" style="font-size: 0.6rem;">{{ sp_dx.hang_sx }}</span>
+                                <span class="badge-item bg-cat" style="font-size: 0.6rem;">{{ sp_dx.the_loai }}</span>
+                                <span
+                                    class="badge-item {% if sp_dx.kieu_hang == 'Co san' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}"
+                                    style="font-size: 0.6rem;">
+                                    {{ 'SẴN' if sp_dx.kieu_hang == 'Co san' else 'ORD' }}
+                                </span>
+                            </div>
+
+                            <div class="tms-name" style="font-size: 0.85rem; margin-bottom: 5px; height: 2.5em;">{{
+                                sp_dx.ten }}</div>
+                            <div class="tms-meta">
+                                <span class="tms-price" style="font-size: 0.95rem;">{{ "{:,.0f}".format(sp_dx.gia_ban |
+                                    default(0)) }}đ</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="button"
+                onclick="document.getElementById('sliderDaXem').scrollBy({left: 250, behavior: 'smooth'})"
+                class="btn btn-dark position-absolute top-50 end-0 translate-middle-y rounded-circle shadow d-flex align-items-center justify-content-center"
+                style="width:40px; height:40px; z-index: 10; margin-right: -15px;">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
 <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content" style="background: transparent; border: none;">
@@ -225,11 +417,13 @@
                     {% if anh_phu %}
                     <button class="carousel-control-prev" type="button" data-bs-target="#zoomCarousel"
                         data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 3rem; height: 3rem;"></span>
+                        <span class="carousel-control-prev-icon" aria-hidden="true"
+                            style="width: 3rem; height: 3rem;"></span>
                     </button>
                     <button class="carousel-control-next" type="button" data-bs-target="#zoomCarousel"
                         data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true" style="width: 3rem; height: 3rem;"></span>
+                        <span class="carousel-control-next-icon" aria-hidden="true"
+                            style="width: 3rem; height: 3rem;"></span>
                     </button>
                     {% endif %}
                 </div>

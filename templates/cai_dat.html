@@ -99,6 +99,28 @@
                                 class="form-control" value="{{ settings.link_yt }}"></div>
                     </div>
                 </div>
+
+                <h5 class="fw-bold mt-5 mb-3 border-bottom pb-2"><i class="fas fa-file-signature text-secondary"></i>
+                    NỘI DUNG CHÍNH SÁCH</h5>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Chính sách cửa hàng</label>
+                        <textarea name="cs_cua_hang" class="form-control" rows="5">{{ settings.cs_cua_hang }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Chính sách đổi trả</label>
+                        <textarea name="cs_doi_tra" class="form-control" rows="5">{{ settings.cs_doi_tra }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Chính sách vận chuyển</label>
+                        <textarea name="cs_van_chuyen" class="form-control"
+                            rows="5">{{ settings.cs_van_chuyen }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Hướng dẫn mua hàng</label>
+                        <textarea name="hd_mua_hang" class="form-control" rows="5">{{ settings.hd_mua_hang }}</textarea>
+                    </div>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary w-100 py-3 mt-4 fw-bold fs-5 rounded-pill shadow">LƯU CÀI
                 ĐẶT</button>

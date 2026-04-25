@@ -205,7 +205,7 @@
             <div class="service-box bg-blue-light"><i class="fas fa-shipping-fast text-primary"></i>
                 <div>
                     <h6>Giao hàng toàn quốc</h6>
-                    <p>Cọc full Freeship</p>
+                    <p>Ship an tâm</p>
                 </div>
             </div>
         </div>
@@ -228,8 +228,8 @@
         <div class="col-md-3">
             <div class="service-box bg-green-light"><i class="fas fa-headset text-success"></i>
                 <div>
-                    <h6>Hotline: 0914165278</h6>
-                    <p>Facebook: Wolves Store</p>
+                    <h6>Hotline: 0901436292</h6>
+                    <p>Facebook: Takimitsu Hobby</p>
                 </div>
             </div>
         </div>
@@ -308,60 +308,64 @@
 
 <div class="pre-order-divider"></div>
 
-<section class="section-light" style="padding: 40px 0;">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold text-uppercase">HÀNG <span style="color: #e60012;">PRE-ORDER</span></h2>
+<section class="section-light" style="padding: 10px 0;">
+    <div class="container py-4">
+    <h2 class="text-center fw-bold mb-3">HÀNG <span class="text-danger">PRE-ORDER</span></h2>
+    
+    <div class="row align-items-center gx-0"> <div class="col-auto">
+            <button type="button" 
+                    onclick="scrollPreOrder(-1)" 
+                    class="btn btn-dark rounded-circle shadow-lg d-flex align-items-center justify-content-center" 
+                    style="width: 45px; height: 45px; margin-right: 10px; z-index: 10;">
+                <i class="fas fa-chevron-left"></i>
+            </button>
         </div>
-        <div id="preOrderCarousel" class="carousel slide">
-            <div class="carousel-inner">
-                {% for sp_group in hang_order|batch(4) %}
-                <div class="carousel-item {% if loop.first %}active{% endif %}">
-                    <div class="row g-4">
-                        {% for sp in sp_group %}
-                        <div class="col-md-3">
-                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
-                                <div
-                                    style="height: 250px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 10px;">
-                                    <img src="{{ sp.hinh_anh }}"
-                                        style="max-height: 100%; max-width: 100%; object-fit: contain;"></div>
-                                <div class="card-body p-3">
-                                    <div class="mb-2 d-flex flex-wrap gap-1"><span class="badge-item bg-brand">{{
-                                            sp.hang_sx }}</span><span class="badge-item bg-cat">{{ sp.the_loai
-                                            }}</span><span class="badge-item bg-warning text-dark">ORD</span></div>
-                                    <h6 class="fw-bold text-dark mb-2" style="font-size: 0.95rem;">{{ sp.ten }}</h6>
-                                    <p class="text-muted small mb-3"
-                                        style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                        {{ sp.mo_ta|striptags if sp.mo_ta else 'Liên hệ để đặt trước.' }}</p>
-                                    <div class="d-flex justify-content-between align-items-center"><small
-                                            class="text-muted"><i class="far fa-clock"></i> Sắp về</small><strong
-                                            style="color: #e60012;">{{ "{:,.0f}".format(sp.gia_ban) }}đ</strong></div>
-                                </div>
-                                <a href="/san-pham/{{ sp.id }}" class="stretched-link"></a>
+
+        <div class="col overflow-hidden">
+            <div id="preOrderSlider" class="d-flex py-3" 
+                 style="overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none;">
+                <style>#preOrderSlider::-webkit-scrollbar { display: none; }</style>
+                
+                {% for sp in hang_order %}
+                <div class="px-2" style="flex: 0 0 25%; scroll-snap-align: start;">
+                    <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm h-100 text-decoration-none bg-white d-block rounded-4 overflow-hidden border">
+                        <div class="tms-img-wrap" style="height: 250px; padding: 20px; display: flex; align-items: center; justify-content: center; background: #fff;">
+                            <img src="{{ sp.hinh_anh }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                        </div>
+                        <div class="p-3 border-top">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-muted border" style="font-size: 0.65rem;">{{ sp.hang_sx }}</span>
+                                <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">ORD</span>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1 text-truncate">{{ sp.ten }}</h6>
+                            <p class="small text-muted mb-3">Liên hệ để đặt trước.</p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <span class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock"></i> Sắp về</span>
+                                <span class="text-danger fw-bold fs-5">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</span>
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
+                    </a>
                 </div>
                 {% endfor %}
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#preOrderCarousel"
-                data-bs-slide="prev"><span class="fas fa-chevron-left"
-                    style="background: #111; color: #fff; padding: 15px 10px; border-radius: 0 5px 5px 0;"></span></button>
-            <button class="carousel-control-next" type="button" data-bs-target="#preOrderCarousel"
-                data-bs-slide="next"><span class="fas fa-chevron-right"
-                    style="background: #111; color: #fff; padding: 15px 10px; border-radius: 5px 0 0 5px;"></span></button>
         </div>
-        <div class="text-center mt-5">
-            <a href="/san-pham?kieu_hang=Pre-order"
-                class="btn btn-outline-dark px-5 py-2 fw-bold rounded-pill shadow-sm"
-                style="border: 2px solid #111; transition: 0.3s;"
-                onmouseover="this.style.backgroundColor='#111'; this.style.color='#fff';"
-                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#111';">
-                XEM TẤT CẢ <i class="fas fa-arrow-right ms-2"></i>
-            </a>
+
+        <div class="col-auto">
+            <button type="button" 
+                    onclick="scrollPreOrder(1)" 
+                    class="btn btn-dark rounded-circle shadow-lg d-flex align-items-center justify-content-center" 
+                    style="width: 45px; height: 45px; margin-left: 10px; z-index: 10;">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     </div>
+
+    <div class="text-center mt-5">
+        <a href="/san-pham?kieu_hang=Pre-order" class="btn btn-outline-dark rounded-pill px-5 fw-bold py-2 shadow-sm">
+            XEM TẤT CẢ <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+</div>
 </section>
 {% endblock %}
 
@@ -379,5 +383,17 @@
             }
         });
     }
+</script>
+
+<script>
+function scrollPreOrder(direction) {
+    const slider = document.getElementById('preOrderSlider');
+    // Tính toán chiều rộng của 1 "trang" (đúng bằng chiều rộng vùng đang hiển thị)
+    const scrollAmount = slider.offsetWidth; 
+    slider.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+    });
+}
 </script>
 {% endblock %}
