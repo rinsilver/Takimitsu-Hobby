@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Quản lý Khách Hàng - V6 Premium</title>
@@ -7,12 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
-        .premium-card { background: #fff; border-radius: 15px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .premium-card { background: #fff; border-radius: 15px; border: none; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05); }
         .premium-table thead th { background-color: #212529 !important; color: white !important; text-transform: uppercase; font-size: 0.8rem; padding: 15px; }
         .premium-table tbody td { padding: 15px; vertical-align: middle; border-bottom: 1px solid #eee; }
         .nav-btn-group .btn { border-radius: 30px; font-weight: 600; padding: 10px 20px; }
     </style>
 </head>
+
 <body>
     <div class="container-fluid px-4 mt-4 mb-5">
         <div class="btn-group w-100 shadow-sm mb-4 nav-btn-group">
@@ -25,7 +27,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold m-0"><i class="fas fa-address-book text-primary"></i> HỒ SƠ TÀI CHÍNH KHÁCH HÀNG</h4>
-            <button class="btn btn-dark fw-bold rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalThemKhach">
+            <button class="btn btn-dark fw-bold rounded-pill shadow-sm" onclick="showModalThem()">
                 <i class="fas fa-plus-circle me-1"></i> TẠO KHÁCH HÀNG MỚI
             </button>
         </div>
@@ -34,7 +36,8 @@
             <div class="card-body p-4">
                 <form method="GET" class="row g-2">
                     <div class="col-md-10">
-                        <input type="text" name="tu_khoa" class="form-control rounded-pill px-4" placeholder="Tìm tên, SĐT, hoặc Tài khoản khách..." value="{{ tu_khoa }}">
+                        <input type="text" name="tu_khoa" class="form-control rounded-pill px-4"
+                            placeholder="Tìm tên, SĐT, hoặc Tài khoản khách..." value="{{ tu_khoa }}">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold">TÌM KIẾM</button>
@@ -49,14 +52,15 @@
                     <tr>
                         <th class="ps-4">Khách hàng</th>
                         <th>Thông tin liên hệ</th>
-                        <th>Mật khẩu</th>
+                        <th class="text-center">Mật khẩu</th>
                         <th class="text-center">Số đơn</th>
                         <th>Tổng mua</th>
                         <th class="text-end pe-4">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for kh in khachs %} <tr>
+                    {% for kh in khachs %} 
+                    <tr>
                         <td class="ps-4">
                             <a href="/admin/khach-hang/{{ kh.id }}" class="fw-bold text-primary text-decoration-none fs-5">
                                 {{ kh.ho_ten }}
@@ -67,17 +71,25 @@
                             <small class="d-block text-dark fw-bold"><i class="fas fa-phone me-1"></i> {{ kh.sdt }}</small>
                             <small class="d-block text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ kh.dia_chi }}</small>
                         </td>
-                        <td><code class="text-danger fw-bold">{{ kh.mat_khau }}</code></td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border">********</span>
+                        </td>
                         <td class="text-center fw-bold">{{ kh.so_don }}</td>
                         <td class="fw-bold text-success">{{ "{:,.0f}".format(kh.tong_mua) }}đ</td>
                         <td class="text-end pe-4">
-                            <button class="btn btn-sm btn-outline-dark rounded-pill px-3" onclick="editKhach('{{kh.id}}','{{kh.ho_ten}}','{{kh.sdt}}','{{kh.dia_chi}}','{{kh.mat_khau}}')">Sửa/Đổi Pass</button>
+                            <div class="btn-group shadow-sm">
+                                <button class="btn btn-sm btn-white border"
+                                    onclick="editKhach('{{ kh.id }}', '{{ kh.ho_ten }}', '{{ kh.tai_khoan }}', '{{ kh.sdt }}', '{{ kh.dia_chi }}', '{{ kh.mat_khau }}')">
+                                    <i class="fas fa-edit text-primary"></i>
+                                </button>
+                                <a href="/admin/xoa-khach-hang/{{ kh.id }}" class="btn btn-sm btn-white border"
+                                    onclick="return confirm('Sếp chắc chắn muốn xóa tài khoản này không?')">
+                                    <i class="fas fa-trash text-danger"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
-                    {% if not khachs %}
-                    <tr><td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu khách hàng.</td></tr>
-                    {% endif %}
                 </tbody>
             </table>
         </div>
@@ -87,33 +99,34 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="fw-bold">HỒ SƠ KHÁCH HÀNG</h5>
+                    <h5 class="fw-bold" id="modalTitle">HỒ SƠ KHÁCH HÀNG</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="small fw-bold">Họ tên khách:</label>
-                            <input type="text" name="ho_ten" class="form-control rounded-pill" placeholder="Tên thật để gửi hàng" required>
+                            <input type="text" name="ho_ten" class="form-control rounded-pill" required>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="small fw-bold">Tên tài khoản:</label>
-                                <input type="text" name="tai_khoan" class="form-control rounded-pill" placeholder="Dùng khi thêm mới">
+                                <input type="text" name="tai_khoan" class="form-control rounded-pill" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="small fw-bold">Mật khẩu:</label>
-                                <input type="text" name="mat_khau" class="form-control rounded-pill" value="123456" required>
+                                <input type="text" name="mat_khau" class="form-control rounded-pill" required>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label class="small fw-bold">Số điện thoại:</label>
-                            <input type="text" name="sdt" class="form-control rounded-pill" placeholder="090..." required>
+                            <input type="text" name="sdt" class="form-control rounded-pill" required>
                         </div>
                         <div class="mb-3">
                             <label class="small fw-bold">Địa chỉ:</label>
-                            <textarea name="dia_chi" class="form-control rounded-3" rows="2" placeholder="Số nhà, đường..."></textarea>
+                            <textarea name="dia_chi" class="form-control rounded-3" rows="2"></textarea>
                         </div>
+                        <input type="hidden" name="kh_id" id="edit_kh_id">
                     </div>
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
@@ -126,26 +139,28 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // JS truyền dữ liệu vào Modal khi bấm nút Sửa
-    function editKhach(id, ten, sdt, dc, pass) {
-        document.querySelector('input[name="ho_ten"]').value = ten;
-        document.querySelector('input[name="sdt"]').value = sdt;
-        document.querySelector('textarea[name="dia_chi"]').value = dc;
-        document.querySelector('input[name="mat_khau"]').value = pass;
-        
-        // Tạo input ẩn chứa ID để báo cho server biết đây là lệnh Cập nhật
-        let form = document.querySelector('#modalThemKhach form');
-        if(!document.getElementById('edit_kh_id')){
-            let input = document.createElement('input');
-            input.type = 'hidden'; 
-            input.name = 'kh_id'; 
-            input.id = 'edit_kh_id';
-            form.appendChild(input);
+        // Hàm để reset Modal khi bấm Thêm mới
+        function showModalThem() {
+            document.getElementById('modalTitle').innerText = "TẠO KHÁCH HÀNG MỚI";
+            document.getElementById('edit_kh_id').value = "";
+            document.querySelector('form').reset();
+            document.querySelector('input[name="mat_khau"]').value = "123456";
+            new bootstrap.Modal(document.getElementById('modalThemKhach')).show();
         }
-        document.getElementById('edit_kh_id').value = id;
-        
-        new bootstrap.Modal(document.getElementById('modalThemKhach')).show();
-    }
+
+        // Hàm truyền dữ liệu vào Modal khi bấm nút Sửa - ĐÃ FIX
+        function editKhach(id, ten, tk, sdt, dc, pass) {
+            document.getElementById('modalTitle').innerText = "CẬP NHẬT HỒ SƠ KHÁCH";
+            document.getElementById('edit_kh_id').value = id;
+            document.querySelector('input[name="ho_ten"]').value = ten;
+            document.querySelector('input[name="tai_khoan"]').value = tk;
+            document.querySelector('input[name="sdt"]').value = sdt;
+            document.querySelector('textarea[name="dia_chi"]').value = dc;
+            document.querySelector('input[name="mat_khau"]').value = pass;
+
+            new bootstrap.Modal(document.getElementById('modalThemKhach')).show();
+        }
     </script>
 </body>
+
 </html>

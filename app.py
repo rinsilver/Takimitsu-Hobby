@@ -1,6 +1,6 @@
 import os, webbrowser, sqlite3
 from threading import Timer
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename
 import json
 import os
@@ -658,7 +658,7 @@ def quan_ly_don_hang():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
-    # 1. XỬ LÝ LƯU CẬP NHẬT NHANH
+    # 1. XỬ LÝ LƯU CẬP NHẬT NHANH (Mã đơn và Tiền trả)
     if request.method == 'POST':
         don_id = request.form['don_id']
         trang_thai = request.form['trang_thai']
@@ -669,53 +669,76 @@ def quan_ly_don_hang():
         conn.commit()
         return redirect(url_for('quan_ly_don_hang'))
 
-    # 2. XỬ LÝ LỌC, SẮP XẾP VÀ PHÂN TRANG
+    # 2. LẤY THAM SỐ LỌC & TÌM KIẾM
+    tu_khoa = request.args.get('tu_khoa', '') # Thêm ô tìm kiếm
     trang_thai_loc = request.args.get('trang_thai', '')
     sap_xep = request.args.get('sap_xep', 'moi_nhat')
     page = request.args.get('page', 1, type=int)
-    per_page = 10 # Cài đặt hiển thị 10 đơn / 1 trang
+    per_page = 10 
     
-    cau_lenh_base = ' FROM don_hang'
+    # Xây dựng câu lệnh điều kiện (Dùng WHERE 1=1 để dễ nối chuỗi)
+    cau_lenh_base = ' FROM don_hang WHERE 1=1'
     dk = []
     
-    if trang_thai_loc:
-        cau_lenh_base += ' WHERE trang_thai = ?'
-        dk.append(trang_thai_loc)
+    if tu_khoa:
+        cau_lenh_base += ' AND (ten_khach LIKE ? OR sdt LIKE ? OR id LIKE ?)'
+        dk.extend([f'%{tu_khoa}%', f'%{tu_khoa}%', f'%{tu_khoa}%'])
         
-    # Tính toán số trang
+    if trang_thai_loc:
+        cau_lenh_base += ' AND trang_thai = ?'
+        dk.append(trang_thai_loc)
+
+    # --- 3. TÍNH TOÁN THỐNG KÊ (GIẢI QUYẾT LỖI GẠCH ĐỎ) ---
+    # Tính Tổng doanh thu từ các đơn đã Hoàn thành
+    total_rev = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai = 'Hoàn thành'").fetchone()[0] or 0
+    # Tính Tổng tiền nợ khách (Các đơn chưa hủy)
+    total_debt = conn.execute("SELECT SUM(tong_tien - tien_da_tra) FROM don_hang WHERE trang_thai != 'Đã hủy'").fetchone()[0] or 0
+    # Đếm số đơn chờ xử lý
+    pending_count = conn.execute("SELECT COUNT(id) FROM don_hang WHERE trang_thai = 'Chờ xử lý'").fetchone()[0] or 0
+
+    # Tính toán số trang cho phân trang
     tong_don = conn.execute('SELECT COUNT(id)' + cau_lenh_base, dk).fetchone()[0]
     tong_trang = (tong_don + per_page - 1) // per_page
 
-    # Lấy dữ liệu của đúng trang hiện tại
+    # 4. LẤY DỮ LIỆU PHÂN TRANG
     cau_lenh = 'SELECT *' + cau_lenh_base
     if sap_xep == 'moi_nhat': cau_lenh += ' ORDER BY id DESC'
     elif sap_xep == 'cu_nhat': cau_lenh += ' ORDER BY id ASC'
+    elif sap_xep == 'tien_cao': cau_lenh += ' ORDER BY tong_tien DESC'
     
     cau_lenh += ' LIMIT ? OFFSET ?'
     dk.extend([per_page, (page - 1) * per_page])
     
     don_hangs = conn.execute(cau_lenh, dk).fetchall()
-    
-    # Kéo thêm chi tiết từng món đồ
+        # Kéo thêm chi tiết từng món đồ
     don_hangs_full = []
     for dh in don_hangs:
         dh_dict = dict(dh)
-        items = conn.execute('''
+        # Truy vấn lấy các món trong đơn
+        cac_mon = conn.execute('''
             SELECT c.*, s.ten, s.hinh_anh, s.kieu_hang, s.ngay_phat_hanh 
             FROM chi_tiet_don c 
             JOIN san_pham s ON c.san_pham_id = s.id 
             WHERE c.don_hang_id = ?
         ''', (dh['id'],)).fetchall()
-        dh_dict['items'] = items
+        
+        # ĐỔI TÊN Ở ĐÂY: Thay 'items' thành 'ds_mat_hang' để tránh trùng hàm hệ thống
+        dh_dict['ds_mat_hang'] = cac_mon 
         don_hangs_full.append(dh_dict)
 
     conn.close()
+
+    # 5. TRẢ VỀ TOÀN BỘ BIẾN CẦN THIẾT
     return render_template('quan_ly_don.html', 
                            don_hangs=don_hangs_full, 
                            trang_thai_chon=trang_thai_loc, 
                            sap_xep_chon=sap_xep,
+                           tu_khoa=tu_khoa,
                            page=page, 
-                           tong_trang=tong_trang)
+                           tong_trang=tong_trang,
+                           total_rev=total_rev, 
+                           total_debt=total_debt, 
+                           pending_count=pending_count)
 
 # ==================== 2. HỒ SƠ KHÁCH HÀNG (THỐNG KÊ CHI TIẾT) ====================
 @app.route('/admin/khach-hang', methods=['GET', 'POST'])
@@ -724,12 +747,12 @@ def quan_ly_khach_hang():
     conn = ket_noi_db()
     
     if request.method == 'POST':
-        # Xử lý cập nhật/đổi mật khẩu khách từ Modal
         kh_id = request.form.get('kh_id')
-        if kh_id: # Nếu có ID là Sửa
-            conn.execute('UPDATE khach_hang SET ho_ten=?, sdt=?, dia_chi=?, mat_khau=? WHERE id=?',
-                        (request.form['ho_ten'], request.form['sdt'], request.form['dia_chi'], request.form['mat_khau'], kh_id))
-        else: # Không có ID là Thêm mới
+        if kh_id: 
+            # ĐÃ THÊM: tai_khoan=? vào câu lệnh UPDATE để sếp sửa được tên đăng nhập
+            conn.execute('UPDATE khach_hang SET ho_ten=?, tai_khoan=?, sdt=?, dia_chi=?, mat_khau=? WHERE id=?',
+                        (request.form['ho_ten'], request.form['tai_khoan'], request.form['sdt'], request.form['dia_chi'], request.form['mat_khau'], kh_id))
+        else: 
             try:
                 conn.execute('INSERT INTO khach_hang (ho_ten, tai_khoan, mat_khau, sdt, dia_chi) VALUES (?,?,?,?,?)',
                             (request.form['ho_ten'], request.form['tai_khoan'], request.form['mat_khau'], request.form['sdt'], request.form['dia_chi']))
@@ -756,6 +779,20 @@ def quan_ly_khach_hang():
     conn.close()
     return render_template('quan_ly_khach.html', khachs=khachs, tu_khoa=tu_khoa)
 
+@app.route('/admin/xoa-khach-hang/<int:id>')
+def xoa_khach_hang(id):
+    if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
+    conn = ket_noi_db()
+    # Không cho phép tự xóa tài khoản admin đang đăng nhập hoặc chính admin gốc
+    kh = conn.execute('SELECT vai_tro FROM khach_hang WHERE id = ?', (id,)).fetchone()
+    if kh and kh['vai_tro'] == 'admin':
+        conn.close()
+        return "<script>alert('Sếp không thể xóa tài khoản Admin ở đây!'); window.location.href='/admin/khach-hang';</script>"
+    
+    conn.execute('DELETE FROM khach_hang WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('quan_ly_khach_hang'))
 
 # ================= XEM HỒ SƠ CHI TIẾT 1 KHÁCH HÀNG =================
 @app.route('/admin/khach-hang/<int:id>')
@@ -861,13 +898,21 @@ def xoa_nguon(id):
 
 @app.route('/admin/chi-tiet-don/<int:id>')
 def chi_tiet_don_json(id):
-    if 'admin_id' not in session: return {"error": "Unauthorized"}, 401
+    if 'admin_id' not in session: 
+        return jsonify({"error": "Unauthorized"}), 401
+    
     conn = ket_noi_db()
+    # Ép kiểu dữ liệu trả về để tránh lỗi 500
+    conn.row_factory = sqlite3.Row 
     
-    # 1. Lấy thông tin đơn chính
-    dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
+    row = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
     
-    # 2. Lấy danh sách sản phẩm trong đơn
+    if not row:
+        conn.close()
+        return jsonify({"error": "Không tìm thấy đơn"}), 404
+        
+    dh = dict(row) # Chuyển dòng dữ liệu thành từ điển
+    
     items = conn.execute('''
         SELECT c.*, s.ten, s.hinh_anh 
         FROM chi_tiet_don c 
@@ -877,8 +922,8 @@ def chi_tiet_don_json(id):
     
     conn.close()
     
-    # Trả về dạng JSON để JavaScript hiển thị lên Modal
-    return {
+    # Sử dụng đúng tên biến ds_mat_hang đã thống nhất ở Frontend
+    return jsonify({
         "id": dh['id'],
         "ten_khach": dh['ten_khach'],
         "sdt": dh['sdt'],
@@ -886,8 +931,8 @@ def chi_tiet_don_json(id):
         "trang_thai": dh['trang_thai'],
         "tong_tien": dh['tong_tien'],
         "tien_da_tra": dh['tien_da_tra'],
-        "items": [{"ten": i['ten'], "so_luong": i['so_luong'], "gia": i['gia'], "hinh_anh": i['hinh_anh']} for i in items]
-    }
+        "ds_mat_hang": [{"ten": i['ten'], "so_luong": i['so_luong'], "gia": i['gia'], "hinh_anh": i['hinh_anh']} for i in items]
+    })
 
 # ================= XEM VÀ CHỈNH SỬA ĐƠN HÀNG =================
 @app.route('/admin/don-hang/<int:id>', methods=['GET', 'POST'])
