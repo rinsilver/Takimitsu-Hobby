@@ -15,6 +15,29 @@
         --bg-card: #0a0a0a;
     }
 
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* Chiều cao tối thiểu bằng 1 màn hình */
+        }
+
+        .content-wrapper {
+            flex: 1 0 auto;
+            /* Vùng này sẽ tự giãn ra để đẩy footer xuống chân trang */
+        }
+
+        footer {
+            flex-shrink: 0;
+            /* Đảm bảo footer không bị co lại */
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
             background-color: #f8f9fa;
@@ -43,6 +66,11 @@
             border-radius: 20px 0 0 20px !important;
             padding-left: 20px !important;
         }
+
+        .nav-search-input::placeholder {
+        color: #a4a2a2 !important; /* Màu xám sếp muốn */
+        opacity: 1; /* Hiện rõ trên mọi trình duyệt */
+    }
 
         .nav-search-btn {
             border-radius: 0 20px 20px 0 !important;
@@ -277,7 +305,7 @@
                     autocomplete="off">
                     <div class="input-group">
                         <input id="navSearchInput" class="form-control nav-search-input" type="text" name="tu_khoa"
-                            placeholder="Tìm mô hình sếp muốn..." required oninput="liveSearch(this.value)"
+                            placeholder="Tìm mô hình..." required oninput="liveSearch(this.value)"
                             onfocus="if(this.value) document.getElementById('navSearchResults').style.display='block'">
                         <button class="btn nav-search-btn" type="submit">
                             <i class="fas fa-search"></i>
@@ -366,10 +394,12 @@
             </div>
         </div>
     </nav>
-    <div style="position: fixed; top: 100px; right: 20px; z-index: 9999; width: auto; min-width: 300px; max-width: 450px;">
+
+    <div class="content-wrapper">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        <div class="container mt-3"> {% for category, message in messages %}
+        <div class="container mt-3">
+            {% for category, message in messages %}
             <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show shadow-sm border-0 rounded-pill px-4"
                 role="alert">
                 <i
@@ -381,8 +411,9 @@
         </div>
         {% endif %}
         {% endwith %}
+
+        {% block content %}{% endblock %}
     </div>
-    {% block content %}{% endblock %}
 
     <footer class="tms-footer mt-auto">
         <div class="container">

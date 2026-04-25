@@ -6,6 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash # Thê
 import json
 from flask_wtf.csrf import CSRFProtect
 import os
+from PIL import Image # Đảm bảo đã có dòng này ở đầu file app.py
+from werkzeug.utils import secure_filename # Để xử lý tên file an toàn
 
 app = Flask(__name__)
 app.secret_key = 'wolves_master_system_ultimate_v7'
@@ -48,12 +50,13 @@ def inject_data():
             if isinstance(item, dict) and 'so_luong' in item:
                 so_luong += item['so_luong']
 
+    # Trả về ĐẦY ĐỦ các biến cần thiết cho toàn web
     return dict(
         so_luong_gio_hang=so_luong, 
         is_admin='admin_id' in session, 
         is_khach='khach_id' in session, 
         khach_ten=session.get('khach_ten', ''),
-        settings=get_settings()
+        settings=get_settings() # ĐẢM BẢO DÒNG NÀY LUÔN TỒN TẠI
     )
 # --- CƠ SỞ DỮ LIỆU ---
 def ket_noi_db():
@@ -110,25 +113,6 @@ def cap_nhat_db_phan_loai():
 
 tao_bang()
 cap_nhat_db_phan_loai()
-
-# --- HÀM ĐẾM SỐ LƯỢNG GIỎ HÀNG TRÊN THANH MENU ---
-@app.context_processor
-def inject_data():
-    gio_hang = session.get('gio_hang', [])
-    so_luong = 0
-    
-    # Tính tổng số lượng từ danh sách giỏ hàng mới
-    if isinstance(gio_hang, list):
-        for item in gio_hang:
-            if isinstance(item, dict) and 'so_luong' in item:
-                so_luong += item['so_luong']
-
-    return dict(
-        so_luong_gio_hang=so_luong, 
-        is_admin='admin_id' in session, 
-        is_khach='khach_id' in session, 
-        khach_ten=session.get('khach_ten', '')
-    )
 
 # ================= TRANG CHỦ (STYLE TAMASHII) =================
 @app.route('/')
@@ -421,18 +405,30 @@ def them_san_pham():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     if request.method == 'POST':
+        # --- XỬ LÝ ẢNH CHÍNH SANG WEBP ---
         f = request.files['hinh_anh']
-        img = '/static/uploads/' + secure_filename(f.filename) if f and f.filename != '' else ''
-        if img: f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
+        img = ''
+        if f and f.filename != '':
+            filename = secure_filename(f.filename)
+            base_name = os.path.splitext(filename)[0]
+            webp_name = base_name + ".webp" # Đổi đuôi file
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], webp_name)
+            
+            # Mở ảnh và nén sang WebP
+            img_raw = Image.open(f)
+            img_raw.convert("RGB").save(save_path, "WEBP", quality=80) 
+            img = '/static/uploads/' + webp_name
+
         cur = conn.cursor()
         
-        # ĐÃ SỬA: Thêm cột so_luong_nhap, thêm một dấu ? vào VALUES, và lưu request.form['so_luong'] 2 lần
+        # Lấy giá và số lượng từ form
         gia_san_new = float(request.form.get('gia_san_new', 0) or 0)
         gia_san_likenew = float(request.form.get('gia_san_likenew', 0) or 0)
         gia_order_new = float(request.form.get('gia_order_new', 0) or 0)
         gia_order_likenew = float(request.form.get('gia_order_likenew', 0) or 0)
-        gia_ban = float(request.form.get('gia_ban', gia_san_new)) # Fallback
+        gia_ban = float(request.form.get('gia_ban', gia_san_new)) 
         
+        # Lưu vào Database
         cur.execute('''INSERT INTO san_pham (ten, the_loai, hang_sx, gia_nhap, gia_ban, so_luong, so_luong_nhap, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh, nguon_nhap_id, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve, gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew) 
                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', 
                     (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], 
@@ -446,12 +442,18 @@ def them_san_pham():
         
         sid = cur.lastrowid
         
-        # Lưu ảnh phụ
+        # --- XỬ LÝ ẢNH PHỤ SANG WEBP ---
         for pf in request.files.getlist('hinh_anh_phu'):
             if pf and pf.filename != '':
-                ten_file = secure_filename(pf.filename)
-                pf.save(os.path.join(app.config['UPLOAD_FOLDER'], ten_file))
-                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (sid, '/static/uploads/'+ten_file))
+                filename_phu = secure_filename(pf.filename)
+                base_name_phu = os.path.splitext(filename_phu)[0]
+                webp_name_phu = base_name_phu + "_" + str(sid) + ".webp" # Thêm ID để tránh trùng
+                save_path_phu = os.path.join(app.config['UPLOAD_FOLDER'], webp_name_phu)
+                
+                img_phu_raw = Image.open(pf)
+                img_phu_raw.convert("RGB").save(save_path_phu, "WEBP", quality=80)
+                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', 
+                             (sid, '/static/uploads/' + webp_name_phu))
         
         conn.commit(); conn.close(); return redirect(url_for('admin'))
     
@@ -872,14 +874,52 @@ def huy_don(id):
     conn.close()
     return redirect(request.referrer or url_for('quan_ly_don_hang'))
 
+# BÁO CÁO THỐNG KÊ CHUYÊN SÂU
 @app.route('/admin/thong-ke')
 def thong_ke():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
+    
+    # 1. Thống kê tổng quan
     dt = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai='Hoàn thành'").fetchone()[0] or 0
-    sd = conn.execute("SELECT COUNT(*) FROM don_hang WHERE trang_thai='Chờ xử lý'").fetchone()[0]
+    sd = conn.execute("SELECT COUNT(*) FROM don_hang WHERE trang_thai='Chờ xử lý'").fetchone()[0] or 0
+    
+    # 2. Lấy dữ liệu 7 ngày gần nhất để vẽ biểu đồ
+    ds_ngay = conn.execute('''
+        SELECT DATE(ngay_dat) as ngay, SUM(tong_tien) as doanh_thu 
+        FROM don_hang 
+        WHERE trang_thai='Hoàn thành' 
+        GROUP BY ngay 
+        ORDER BY ngay DESC LIMIT 7
+    ''').fetchall()
+    
+    # Sắp xếp lại dữ liệu theo đúng chiều thời gian để biểu đồ không bị ngược
+    chart_labels = [row['ngay'] for row in reversed(ds_ngay)]
+    chart_data = [row['doanh_thu'] for row in reversed(ds_ngay)]
+
+    # 3. Lấy Top 5 mô hình bán chạy nhất
+    top_products = conn.execute('''
+        SELECT s.ten, SUM(c.so_luong) as total_qty
+        FROM chi_tiet_don c
+        JOIN san_pham s ON c.san_pham_id = s.id
+        JOIN don_hang d ON c.don_hang_id = d.id
+        WHERE d.trang_thai = 'Hoàn thành'
+        GROUP BY s.id 
+        ORDER BY total_qty DESC LIMIT 5
+    ''').fetchall()
+
     conn.close()
-    return render_template('thong_ke.html', doanh_thu=dt, so_don_moi=sd, tien_loi=dt*0.3, thue_vat=dt*0.1)
+    
+    # TRUYỀN ĐỦ BIẾN RA HTML - Nếu thiếu một trong các biến này là lỗi ngay sếp nhé
+    return render_template('thong_ke.html', 
+                           doanh_thu=dt, 
+                           so_don_moi=sd, 
+                           tien_loi=dt*0.05, 
+                           thue_vat=dt*0.03,
+                           labels=json.dumps(chart_labels), # Biến cho biểu đồ
+                           values=json.dumps(chart_data),   # Biến cho biểu đồ
+                           top_sps=top_products)           # Biến cho danh sách Top 5
+
 # Xóa Danh mục
 @app.route('/xoa-danh-muc/<int:id>', methods=['POST'])
 def xoa_danh_muc(id):
