@@ -143,6 +143,15 @@
                     </select>
                 </div>
 
+                <div class="mb-3">
+                    <label class="fw-bold mb-1 small text-uppercase">Trạng thái kho</label>
+                    <select name="ton_kho" class="form-select shadow-sm" style="border-radius: 8px;">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="con_hang" {{ 'selected' if ton_kho_chon=='con_hang' }}>🟢 Còn hàng</option>
+                        <option value="het_hang" {{ 'selected' if ton_kho_chon=='het_hang' }}>🔴 Hết hàng</option>
+                    </select>
+                </div>
+
                 <div class="mb-4">
                     <label class="small fw-bold mb-2 text-muted">TÌNH TRẠNG</label>
                     <select name="kieu_hang" class="form-select border-secondary">
