@@ -10,34 +10,52 @@
         border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
     }
     
-    /* ĐÃ FIX: Thu nhỏ ảnh chính */
+    /* ĐÃ FIX: Chỉnh lại chiều cao cố định và nền Blur */
     .main-img-box {
-        height: 400px; background-color: #fff; border: 1px solid #eef0f2;
+        height: 480px; /* Chiều cao cố định vừa phải, không bị kéo dài */
+        background-color: #fafafa; border: 1px solid #eef0f2;
         cursor: zoom-in; overflow: hidden; display: flex; align-items: center; justify-content: center;
         border-radius: 15px; position: relative;
+        padding-bottom: 80px; 
     }
+    
+    /* CSS CHO LỚP NỀN BLUR MỚI */
+    .blur-bg {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-size: cover;
+        background-position: center;
+        filter: blur(20px); /* Độ mờ */
+        opacity: 0.5; /* Độ trong suốt */
+        transform: scale(1.1); /* Phóng to nhẹ để không bị lộ viền trắng khi blur */
+        z-index: 1;
+    }
+
     .main-img-box img {
         max-width: 100%; max-height: 100%; object-fit: contain;
         transition: transform 0.4s ease; padding: 10px;
+        z-index: 2; position: relative; /* Ép ảnh chính nổi lên trên lớp Blur */
     }
     .main-img-box:hover img { transform: scale(1.08); }
     
-    /* ĐÃ FIX: Xử lý dàn ảnh nhỏ vuốt ngang, không bị rớt dòng */
     .thumb-container {
-        display: flex; gap: 10px; overflow-x: auto; flex-wrap: nowrap; 
-        padding-bottom: 5px; scrollbar-width: none; /* Ẩn thanh cuộn Firefox */
+        position: absolute;
+        bottom: 15px; left: 0; width: 100%;
+        display: flex; gap: 12px; overflow-x: auto; flex-wrap: nowrap; 
+        justify-content: center; 
+        padding: 5px 20px; scrollbar-width: none; z-index: 10;
     }
-    .thumb-container::-webkit-scrollbar { display: none; /* Ẩn thanh cuộn Chrome/Safari */ }
+    .thumb-container::-webkit-scrollbar { display: none; }
     
     .thumb-box {
-        width: 65px; height: 65px; border: 2px solid #eef0f2; cursor: pointer;
-        overflow: hidden; background: #fff; transition: 0.3s; padding: 2px; border-radius: 10px;
-        flex-shrink: 0; /* Ép không bị méo ảnh */
+        width: 60px; height: 60px; border: 2px solid #fff; cursor: pointer;
+        overflow: hidden; background: #fff; transition: 0.3s; border-radius: 10px;
+        flex-shrink: 0; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
     }
-    .thumb-box:hover, .thumb-box.active { border-color: var(--main-color); transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.1); }
+    .thumb-box:hover, .thumb-box.active { border-color: var(--main-color); transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
     .thumb-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
 
-    /* ĐÃ FIX: Thu gọn nút bấm phân loại */
     .variant-btn {
         border: 2px solid #eef0f2; background: #fff; color: #555;
         font-weight: 700; font-size: 0.85rem; padding: 8px 18px;
@@ -49,12 +67,10 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
-    /* ĐÃ FIX: Giảm font size chữ Giá */
-    .price-text-dynamic { font-size: 2rem; font-weight: 900; color: #e60012; margin: 10px 0 15px 0; letter-spacing: -1px; }
-    
+    .price-text-dynamic { font-size: 2.2rem; font-weight: 900; color: #e60012; margin: 10px 0 15px 0; letter-spacing: -1px; }
     .section-title { font-weight: 900; text-transform: uppercase; padding-bottom: 10px; margin-bottom: 25px; font-size: 1.3rem; letter-spacing: 0.5px; border-bottom: 3px solid #111; display: inline-block;}
 
-    /* --- ĐỒNG BỘ CSS THẺ MÔ HÌNH PREMIUM TỪ TRANG CHỦ --- */
+    /* --- ĐỒNG BỘ CSS THẺ MÔ HÌNH --- */
     .tms-card {
         display: flex; flex-direction: column; text-decoration: none;
         background-color: #fff; border: 1px solid #eef0f2;
@@ -101,29 +117,40 @@
     </nav>
 
     <div class="product-card mb-5">
-        <div class="row g-5">
-            <div class="col-md-6">
-                <div class="main-img-box mb-3 shadow-sm" onclick="zoomImage()">
+        <div class="row g-4">
+            
+            <!-- CỘT TRÁI: HÌNH ẢNH -->
+            <div class="col-md-6 mb-4 mb-md-0">
+                <div class="main-img-box shadow-sm" onclick="zoomImage()">
+                    
+                    <!-- LỚP NỀN BLUR MỚI -->
+                    <div id="mainImageBlur" class="blur-bg" style="background-image: url('{{ sp.hinh_anh }}');"></div>
+
                     <span class="position-absolute top-0 start-0 m-3 badge {% if sp.kieu_hang == 'Co san' %}bg-danger{% else %}bg-warning text-dark{% endif %} shadow-sm px-3 py-2 rounded-pill z-3" style="font-size: 0.75rem;">
                         {{ 'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'PRE-ORDER' }}
                     </span>
+                    
                     <img id="mainImage" src="{{ sp.hinh_anh }}">
-                    <button class="btn btn-light position-absolute bottom-0 end-0 m-3 rounded-circle shadow" style="width: 35px; height: 35px; padding: 0;"><i class="fas fa-expand-arrows-alt"></i></button>
-                </div>
-                
-                <div class="thumb-container">
-                    <div class="thumb-box active" onclick="changeImage('{{ sp.hinh_anh }}', 0, this)">
-                        <img src="{{ sp.hinh_anh }}">
+                    
+                    <button class="btn btn-light position-absolute top-0 end-0 m-3 rounded-circle shadow" style="width: 35px; height: 35px; padding: 0; z-index: 10;" onclick="event.stopPropagation(); zoomImage();">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </button>
+                    
+                    <div class="thumb-container" onclick="event.stopPropagation()">
+                        <div class="thumb-box active" onclick="changeImage('{{ sp.hinh_anh }}', 0, this)">
+                            <img src="{{ sp.hinh_anh }}">
+                        </div>
+                        {% for anh in anh_phu %}
+                        <div class="thumb-box" onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)">
+                            <img src="{{ anh.du_ong_dan }}">
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% for anh in anh_phu %}
-                    <div class="thumb-box" onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)">
-                        <img src="{{ anh.du_ong_dan }}">
-                    </div>
-                    {% endfor %}
                 </div>
             </div>
 
-            <div class="col-md-6 d-flex flex-column">
+            <!-- CỘT PHẢI: THÔNG TIN -->
+            <div class="col-md-6 d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <span class="badge px-3 py-2 text-uppercase bg-brand text-dark shadow-sm border"><i class="fas fa-industry me-1"></i> {{ sp.hang_sx }}</span>
                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
@@ -173,7 +200,8 @@
                         </div>
                     </div>
 
-                    <form id="addCartForm" action="/them-vao-gio/{{ sp.id }}" method="GET" class="mt-4">
+                    <!-- Nút Thêm vào giỏ / Chat với Admin -->
+                    <form id="addCartForm" action="/them-vao-gio/{{ sp.id }}" method="GET" class="mt-4 mb-2">
                         <input type="hidden" name="hinh_thuc" id="input_hinh_thuc" value="san">
                         <input type="hidden" name="loai" id="input_loai" value="new">
 
@@ -187,24 +215,10 @@
                             <i class="fab fa-facebook-messenger me-2 text-primary"></i> CHAT VỚI ADMIN ĐỂ MUA
                         </a>
                     </form>
-                    
-                    <div class="d-flex justify-content-between align-items-center text-center mt-4 p-3 bg-light rounded-4 border">
-                        <div class="w-100 border-end">
-                            <i class="fas fa-shield-alt text-success fs-5 mb-1"></i>
-                            <div class="fw-bold small text-dark" style="font-size: 0.75rem;">100% Chính hãng</div>
-                        </div>
-                        <div class="w-100 border-end">
-                            <i class="fas fa-box-open text-primary fs-5 mb-1"></i>
-                            <div class="fw-bold small text-dark" style="font-size: 0.75rem;">Đổi trả 7 ngày</div>
-                        </div>
-                        <div class="w-100">
-                            <i class="fas fa-truck-fast text-danger fs-5 mb-1"></i>
-                            <div class="fw-bold small text-dark" style="font-size: 0.75rem;">Giao siêu tốc</div>
-                        </div>
-                    </div>
                 </div>
             </div>
             
+            <!-- CỘT FULL: MÔ TẢ CHI TIẾT -->
             <div class="col-12 mt-5 pt-4 border-top">
                 <div class="row justify-content-center">
                     <div class="col-md-10">
@@ -218,6 +232,7 @@
         </div>
     </div>
 
+    <!-- SẢN PHẨM LIÊN QUAN -->
     {% if san_pham_lien_quan %}
     <div class="mt-5 mb-5">
         <div class="text-center mb-4">
@@ -251,6 +266,7 @@
     </div>
     {% endif %}
 
+    <!-- SẢN PHẨM VỪA XEM -->
     {% if san_pham_da_xem %}
     <div class="mt-5 mb-5 pt-4 border-top">
         <div class="text-center mb-4">
@@ -287,6 +303,7 @@
     {% endif %}
 </div>
 
+<!-- Modal Zoom Ảnh -->
 <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content" style="background: transparent; border: none;">
@@ -383,8 +400,11 @@
     updateVariantUI();
 
     let currentSlideIndex = 0;
+    
+    // Cập nhật hàm changeImage để đổi luôn lớp nền Blur phía sau
     function changeImage(src, slideIndex, element) {
         document.getElementById('mainImage').src = src;
+        document.getElementById('mainImageBlur').style.backgroundImage = `url('${src}')`;
         currentSlideIndex = slideIndex;
         let thumbs = document.querySelectorAll('.thumb-box');
         thumbs.forEach(t => t.classList.remove('active'));
