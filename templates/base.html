@@ -9,11 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-        /* Phải viết dính liền trên một dòng như thế này mới không lỗi màu */
-        --main-color: {{ settings.mau_chu_dao }};
-        --bg-dark: #121212;
-        --bg-card: #0a0a0a;
-    }
+
+            /* Phải viết dính liền trên một dòng như thế này mới không lỗi màu */
+            --main-color: {
+                    {
+                    settings.mau_chu_dao
+                }
+            }
+
+            ;
+            --bg-dark: #121212;
+            --bg-card: #0a0a0a;
+        }
 
         html,
         body {
@@ -68,9 +75,11 @@
         }
 
         .nav-search-input::placeholder {
-        color: #a4a2a2 !important; /* Màu xám sếp muốn */
-        opacity: 1; /* Hiện rõ trên mọi trình duyệt */
-    }
+            color: #a4a2a2 !important;
+            /* Màu xám sếp muốn */
+            opacity: 1;
+            /* Hiện rõ trên mọi trình duyệt */
+        }
 
         .nav-search-btn {
             border-radius: 0 20px 20px 0 !important;
@@ -395,24 +404,49 @@
         </div>
     </nav>
 
-  
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="container mt-3">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show shadow-sm border-0 rounded-pill px-4"
-                role="alert">
-                <i
-                    class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
-                <strong>Thông báo:</strong> {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        {% endwith %}
 
-        {% block content %}{% endblock %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="floating-toast-container"
+        style="position: fixed; top: 85px; right: 20px; z-index: 9999; max-width: 380px; width: calc(100% - 40px);">
+        {% for category, message in messages %}
+        <div class="alert alert-dismissible fade show shadow-lg border-0 p-3 mb-2" role="alert"
+            style="border-radius: 12px; background: #ffffff; box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important; border-left: 5px solid {% if category == 'success' %}#27ae60{% elif category == 'danger' %}#e74c3c{% else %}#3498db{% endif %} !important;">
+            <div class="d-flex align-items-center">
+                <div class="me-3 fs-4">
+                    {% if category == 'success' %}
+                    <i class="fas fa-check-circle text-success"></i>
+                    {% elif category == 'danger' %}
+                    <i class="fas fa-exclamation-circle text-danger"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle text-primary"></i>
+                    {% endif %}
+                </div>
+                <div class="overflow-hidden">
+                    <strong class="d-block small text-uppercase text-muted"
+                        style="letter-spacing: 0.5px; font-size: 0.65rem;">Hệ thống thông báo</strong>
+                    <div class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.4;">{{ message }}</div>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
+                style="top: 50%; transform: translateY(-50%); right: 10px; padding: 0; width: 10px; height: 10px;"></button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        setTimeout(() => {
+            let floatingAlerts = document.querySelectorAll('.floating-toast-container .alert');
+            floatingAlerts.forEach(alert => {
+                let bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                if (bsAlert) bsAlert.close();
+            });
+        }, 4000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
 
 
     <footer class="tms-footer mt-auto">
@@ -526,15 +560,17 @@
         });
     </script>
 
-    <button onclick="topFunction()" id="backToTopBtn" class="btn btn-danger rounded-circle shadow-lg" title="Lên đầu trang" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; width: 45px; height: 45px;">
+    <button onclick="topFunction()" id="backToTopBtn" class="btn btn-danger rounded-circle shadow-lg"
+        title="Lên đầu trang"
+        style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; width: 45px; height: 45px;">
         <i class="fas fa-arrow-up"></i>
     </button>
 
     <script>
         // JS điều khiển nút lên đầu trang
         let mybutton = document.getElementById("backToTopBtn");
-        window.onscroll = function() { scrollFunction() };
-        
+        window.onscroll = function () { scrollFunction(); };
+
         function scrollFunction() {
             if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
                 mybutton.style.display = "block";
@@ -542,12 +578,12 @@
                 mybutton.style.display = "none";
             }
         }
-        
+
         function topFunction() {
-            window.scrollTo({top: 0, behavior: 'smooth'}); // Cuộn mượt
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Cuộn mượt
         }
     </script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
 
