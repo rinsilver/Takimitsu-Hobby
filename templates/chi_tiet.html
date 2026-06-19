@@ -10,31 +10,29 @@
         border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
     }
     
-    /* ĐÃ FIX: Chỉnh lại chiều cao cố định và nền Blur */
     .main-img-box {
-        height: 480px; /* Chiều cao cố định vừa phải, không bị kéo dài */
+        height: 480px; 
         background-color: #fafafa; border: 1px solid #eef0f2;
         cursor: zoom-in; overflow: hidden; display: flex; align-items: center; justify-content: center;
         border-radius: 15px; position: relative;
         padding-bottom: 80px; 
     }
     
-    /* CSS CHO LỚP NỀN BLUR MỚI */
     .blur-bg {
         position: absolute;
         top: 0; left: 0; width: 100%; height: 100%;
         background-size: cover;
         background-position: center;
-        filter: blur(20px); /* Độ mờ */
-        opacity: 0.5; /* Độ trong suốt */
-        transform: scale(1.1); /* Phóng to nhẹ để không bị lộ viền trắng khi blur */
+        filter: blur(20px); 
+        opacity: 0.5; 
+        transform: scale(1.1); 
         z-index: 1;
     }
 
     .main-img-box img {
         max-width: 100%; max-height: 100%; object-fit: contain;
         transition: transform 0.4s ease; padding: 10px;
-        z-index: 2; position: relative; /* Ép ảnh chính nổi lên trên lớp Blur */
+        z-index: 2; position: relative; 
     }
     .main-img-box:hover img { transform: scale(1.08); }
     
@@ -70,7 +68,6 @@
     .price-text-dynamic { font-size: 2.2rem; font-weight: 900; color: #e60012; margin: 10px 0 15px 0; letter-spacing: -1px; }
     .section-title { font-weight: 900; text-transform: uppercase; padding-bottom: 10px; margin-bottom: 25px; font-size: 1.3rem; letter-spacing: 0.5px; border-bottom: 3px solid #111; display: inline-block;}
 
-    /* --- ĐỒNG BỘ CSS THẺ MÔ HÌNH --- */
     .tms-card {
         display: flex; flex-direction: column; text-decoration: none;
         background-color: #fff; border: 1px solid #eef0f2;
@@ -119,11 +116,9 @@
     <div class="product-card mb-5">
         <div class="row g-4">
             
-            <!-- CỘT TRÁI: HÌNH ẢNH -->
             <div class="col-md-6 mb-4 mb-md-0">
                 <div class="main-img-box shadow-sm" onclick="zoomImage()">
                     
-                    <!-- LỚP NỀN BLUR MỚI -->
                     <div id="mainImageBlur" class="blur-bg" style="background-image: url('{{ sp.hinh_anh }}');"></div>
 
                     <span class="position-absolute top-0 start-0 m-3 badge {% if sp.kieu_hang == 'Co san' %}bg-danger{% else %}bg-warning text-dark{% endif %} shadow-sm px-3 py-2 rounded-pill z-3" style="font-size: 0.75rem;">
@@ -149,7 +144,6 @@
                 </div>
             </div>
 
-            <!-- CỘT PHẢI: THÔNG TIN -->
             <div class="col-md-6 d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <span class="badge px-3 py-2 text-uppercase bg-brand text-dark shadow-sm border"><i class="fas fa-industry me-1"></i> {{ sp.hang_sx }}</span>
@@ -173,7 +167,7 @@
                     <div class="product-meta-extra mb-4">
                         <div id="stock-area" style="display: none;" class="mb-2">
                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger shadow-sm py-2 px-3 rounded-pill" style="font-size: 0.8rem;">
-                                <i class="fas fa-fire-alt me-1"></i> Kho còn sẵn: <strong>{{ sp.so_luong }}</strong> hộp
+                                <i class="fas fa-fire-alt me-1"></i> Kho còn sẵn: <strong id="stock-qty">{{ sp.so_luong }}</strong> hộp
                             </span>
                         </div>
 
@@ -200,8 +194,7 @@
                         </div>
                     </div>
 
-                    <!-- Nút Thêm vào giỏ / Chat với Admin -->
-                    <form id="addCartForm" action="/them-vao-gio/{{ sp.id }}" method="GET" class="mt-4 mb-2">
+                    <form id="addCartForm" action="/them-vao-gio/{{ encode_id(sp.id) }}" method="GET" class="mt-4 mb-2">
                         <input type="hidden" name="hinh_thuc" id="input_hinh_thuc" value="san">
                         <input type="hidden" name="loai" id="input_loai" value="new">
 
@@ -218,7 +211,6 @@
                 </div>
             </div>
             
-            <!-- CỘT FULL: MÔ TẢ CHI TIẾT -->
             <div class="col-12 mt-5 pt-4 border-top">
                 <div class="row justify-content-center">
                     <div class="col-md-10">
@@ -232,7 +224,6 @@
         </div>
     </div>
 
-    <!-- SẢN PHẨM LIÊN QUAN -->
     {% if san_pham_lien_quan %}
     <div class="mt-5 mb-5">
         <div class="text-center mb-4">
@@ -266,7 +257,6 @@
     </div>
     {% endif %}
 
-    <!-- SẢN PHẨM VỪA XEM -->
     {% if san_pham_da_xem %}
     <div class="mt-5 mb-5 pt-4 border-top">
         <div class="text-center mb-4">
@@ -303,7 +293,6 @@
     {% endif %}
 </div>
 
-<!-- Modal Zoom Ảnh -->
 <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content" style="background: transparent; border: none;">
@@ -333,6 +322,7 @@
 
 {% block scripts %}
 <script>
+    const stockQty = Number('{{ sp.so_luong | default(0) }}'); // Lấy tồn kho thực tế
     const prices = {
         'san_new': Number('{{ sp.gia_san_new | default(0) }}') || 0,
         'san_likenew': Number('{{ sp.gia_san_likenew | default(0) }}') || 0,
@@ -379,6 +369,31 @@
             if (stockArea) stockArea.style.display = 'block';      
         }
 
+        // BẮT ĐẦU VÁ LỖI TỒN KHO = 0
+        if (ht === 'san' && stockQty <= 0) {
+            priceDisplay.innerText = 'Hết hàng sẵn';
+            priceDisplay.style.color = '#555';
+            
+            if (isAdmin && btnCart) {
+                btnCart.style.display = 'block';
+                btnCart.disabled = true; // KHÓA CỨNG NÚT BẤM
+                btnCart.innerHTML = '<i class="fas fa-times-circle me-2"></i> HẾT HÀNG';
+                btnCart.classList.remove('btn-danger');
+                btnCart.classList.add('btn-secondary'); // ĐỔI SANG MÀU XÁM
+            }
+            if (btnContact) btnContact.style.display = 'none';
+            return; // Dừng chạy code bên dưới
+        }
+
+        // PHỤC HỒI LẠI TRẠNG THÁI BÌNH THƯỜNG NẾU CÓ HÀNG
+        if (isAdmin && btnCart) {
+            btnCart.disabled = false;
+            btnCart.innerHTML = '<i class="fas fa-cart-plus me-2"></i> THÊM VÀO GIỎ (ADMIN)';
+            btnCart.classList.add('btn-danger');
+            btnCart.classList.remove('btn-secondary');
+        }
+        // KẾT THÚC VÁ LỖI
+
         if (price > 0) {
             priceDisplay.innerText = price.toLocaleString('vi-VN') + 'đ';
             priceDisplay.style.color = '#e60012';
@@ -401,7 +416,6 @@
 
     let currentSlideIndex = 0;
     
-    // Cập nhật hàm changeImage để đổi luôn lớp nền Blur phía sau
     function changeImage(src, slideIndex, element) {
         document.getElementById('mainImage').src = src;
         document.getElementById('mainImageBlur').style.backgroundImage = `url('${src}')`;

@@ -359,8 +359,14 @@ def dang_xuat():
 # ==================== GIỎ HÀNG & ĐẶT HÀNG ====================
 
 # 1. THÊM VÀO GIỎ HÀNG
-@app.route('/them-vao-gio/<int:id>')
-def them_vao_gio(id):
+@app.route('/them-vao-gio/<string:hash_id>')
+def them_vao_gio(hash_id):
+    # 1. Giải mã chuỗi lằng nhằng về lại ID số nguyên
+    decoded = hashids.decode(hash_id)
+    if not decoded:
+        return redirect(url_for('index'))
+    id = decoded[0] # Lấy ra ID thật sự
+
     conn = ket_noi_db()
     sp = conn.execute('SELECT * FROM san_pham WHERE id=?', (id,)).fetchone()
     conn.close()
@@ -373,9 +379,13 @@ def them_vao_gio(id):
     gia_chon = sp[key_gia] if key_gia in sp.keys() else sp['gia_ban']
         
     if gia_chon <= 0:
-        return redirect(url_for('chi_tiet_sp', hash_id=hashids.encode(id)))
+        return redirect(url_for('chi_tiet_sp', hash_id=hash_id))
 
-    # Đánh dấu Variant bằng ID chuỗi (vd: 1_san_new) để giỏ hàng không bị trùng
+    # Chặn đứng lỗi lủng kho: Nếu mua hàng CÓ SẴN mà kho <= 0 thì đuổi về ngay!
+    if hinh_thuc == 'san' and sp['so_luong'] <= 0:
+        flash('Mặt hàng này hiện đã hết hàng sẵn trong kho!', 'danger')
+        return redirect(url_for('chi_tiet_sp', hash_id=hash_id))
+
     ten_variant = f"{sp['ten']} ({'Có sẵn' if hinh_thuc=='san' else 'Order'} - {'New Seal' if loai=='new' else 'Like New'})"
     cart_item_id = f"{id}_{hinh_thuc}_{loai}"
 
@@ -387,8 +397,12 @@ def them_vao_gio(id):
     found = False
     for item in gio:
         if item.get('cart_id', str(item['id'])) == cart_item_id:
-            if item['so_luong'] < sp['so_luong']: item['so_luong'] += 1
-            else: item['error'] = f"Chỉ còn {sp['so_luong']} cái!"
+            # Nếu là hàng có sẵn thì chặn số lượng, hàng Order thì cho phép mua nhiều
+            if hinh_thuc == 'san':
+                if item['so_luong'] < sp['so_luong']: item['so_luong'] += 1
+                else: item['error'] = f"Kho chỉ còn tối đa {sp['so_luong']} hộp!"
+            else:
+                item['so_luong'] += 1 
             found = True; break
     
     if not found:
