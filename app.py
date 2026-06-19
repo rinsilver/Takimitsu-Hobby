@@ -1,4 +1,5 @@
 import os, webbrowser, sqlite3
+from hashids import Hashids
 from threading import Timer
 # Sửa lại dòng import từ flask để có đầy đủ các hàm sếp đang dùng
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
@@ -30,6 +31,9 @@ app.config['MAIL_DEFAULT_SENDER'] = ('TAKIMITSU HOBBY', 'duymx25092000@gmail.com
 
 mail = Mail(app)
 csrf = CSRFProtect(app)
+
+from hashids import Hashids
+hashids = Hashids(salt="takimitsu_hobby_sieu_bao_mat", min_length=8)
 
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -117,7 +121,8 @@ def inject_data():
         is_admin='admin_id' in session, 
         is_khach='khach_id' in session, 
         khach_ten=session.get('khach_ten', ''),
-        settings=get_settings() # ĐẢM BẢO DÒNG NÀY LUÔN TỒN TẠI
+        settings=get_settings(),
+        encode_id=lambda id: hashids.encode(id)
     )
 # --- CƠ SỞ DỮ LIỆU ---
 def ket_noi_db():
@@ -216,8 +221,14 @@ def trang_thong_tin(slug):
     return render_template('trang_thong_tin.html', tieu_de=thong_tin_trang['title'], noi_dung=noi_dung, settings=settings)
 
 # ================= TRANG CHI TIẾT SẢN PHẨM =================
-@app.route('/san-pham/<int:id>')
-def chi_tiet_sp(id):
+@app.route('/san-pham/<string:hash_id>')
+def chi_tiet_sp(hash_id):
+    # 0. Giải mã chuỗi lằng nhằng về lại ID số nguyên
+    decoded = hashids.decode(hash_id)
+    if not decoded:
+        return "Đường dẫn không hợp lệ sếp ơi!", 404
+    id = decoded[0] # Lấy ra ID thật sự
+    
     # Kiểm tra admin nếu cần (tùy sếp)
     # if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     
@@ -362,7 +373,7 @@ def them_vao_gio(id):
     gia_chon = sp[key_gia] if key_gia in sp.keys() else sp['gia_ban']
         
     if gia_chon <= 0:
-        return redirect(url_for('chi_tiet_sp', id=id))
+        return redirect(url_for('chi_tiet_sp', hash_id=hashids.encode(id)))
 
     # Đánh dấu Variant bằng ID chuỗi (vd: 1_san_new) để giỏ hàng không bị trùng
     ten_variant = f"{sp['ten']} ({'Có sẵn' if hinh_thuc=='san' else 'Order'} - {'New Seal' if loai=='new' else 'Like New'})"
@@ -449,7 +460,7 @@ def dat_hang():
             cur.execute('INSERT INTO chi_tiet_don (don_hang_id, san_pham_id, so_luong, gia) VALUES (?,?,?,?)', (did, sid, sl, p['gia_ban']))
             cur.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (sl, sid))
     conn.commit(); conn.close(); session.pop('gio_hang', None)
-    return redirect(url_for('lich_su_don_hang'))
+    return redirect(url_for('ho_so_khach'))
 
 @app.route('/lich-su-don-hang')
 def lich_su_don_hang():
@@ -1175,25 +1186,29 @@ def in_hoa_don(id):
     return render_template('in_hoa_don.html', dh=dh, items=items)
 
 # ================= HỒ SƠ KHÁCH HÀNG & LỊCH SỬ ĐƠN (CÁ NHÂN) =================
+# Thay thế toàn bộ hàm ho_so_khach() bằng đoạn này:
 @app.route('/ho-so')
 def ho_so_khach():
     # Kiểm tra xem có khách đăng nhập chưa
     khach_id = session.get('khach_id')
     if not khach_id:
-        # Nếu là Admin đang soi web thì đẩy thẳng về trang Quản lý khách của Admin
         if session.get('admin_id'):
             return redirect(url_for('quan_ly_khach_hang')) 
         return redirect(url_for('dang_nhap'))
         
+    page = request.args.get('page', 1, type=int)
+    per_page = 8 # Hiện 8 đơn 1 trang
+        
     conn = ket_noi_db()
-    
-    # 1. Lấy thông tin cá nhân của khách đó
     khach = conn.execute('SELECT * FROM khach_hang WHERE id = ?', (khach_id,)).fetchone()
     
-    # 2. Lấy danh sách lịch sử đơn hàng của họ
-    don_hangs = conn.execute('SELECT * FROM don_hang WHERE khach_hang_id = ? ORDER BY id DESC', (khach_id,)).fetchall()
+    # Tính toán phân trang
+    tong_don = conn.execute('SELECT COUNT(id) FROM don_hang WHERE khach_hang_id = ?', (khach_id,)).fetchone()[0]
+    tong_trang = (tong_don + per_page - 1) // per_page
     
-    # 3. Lấy thêm hình ảnh, chi tiết đồ trong từng đơn để khách xem cho trực quan
+    don_hangs = conn.execute('SELECT * FROM don_hang WHERE khach_hang_id = ? ORDER BY id DESC LIMIT ? OFFSET ?', 
+                             (khach_id, per_page, (page - 1) * per_page)).fetchall()
+    
     don_hangs_full = []
     for dh in don_hangs:
         dh_dict = dict(dh)
@@ -1207,7 +1222,8 @@ def ho_so_khach():
         don_hangs_full.append(dh_dict)
         
     conn.close()
-    return render_template('ho_so.html', khach=khach, don_hangs=don_hangs_full)
+    return render_template('ho_so.html', khach=khach, don_hangs=don_hangs_full, page=page, tong_trang=tong_trang)
+
 # ================= TRANG ADMIN: CÀI ĐẶT GIAO DIỆN =================
 
 @app.route('/admin/cai-dat', methods=['GET', 'POST'])

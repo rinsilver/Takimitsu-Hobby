@@ -160,7 +160,7 @@
         <div class="row row-cols-2 row-cols-md-4 g-4">
             {% for sp in hang_co_san[:4] %}
             <div class="col">
-                <a href="/san-pham/{{ sp.id }}" class="tms-card shadow border-0">
+                <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow border-0">
                     <div class="tms-img-wrap">
                         <img src="{{ sp.hinh_anh }}" loading="lazy">
                         <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">MUA NGAY</span></div>
@@ -203,7 +203,7 @@
         <div class="row row-cols-2 row-cols-md-4 g-4 text-start" id="topicsContainer">
             {% for sp in san_phams %}
             <div class="col topic-item brand-{{ sp.hang_sx }} {{ 'd-block' if loop.index <= 8 else 'd-none' }}">
-                <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm">
+                <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm">
                     <div class="tms-img-wrap">
                         <img src="{{ sp.hinh_anh }}" loading="lazy">
                         <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
@@ -254,7 +254,7 @@
                 <style>#preOrderSlider::-webkit-scrollbar { display: none; }</style>
                 {% for sp in hang_order %}
                 <div class="px-2" style="flex: 0 0 calc(100% / 4); min-width: 250px; scroll-snap-align: start;">
-                    <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm">
+                    <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm">
                         <div class="tms-img-wrap">
                             <span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark fw-bold rounded-pill z-3 shadow-sm" style="font-size: 0.7rem;"><i class="far fa-clock"></i> SẮP VỀ</span>
                             <img src="{{ sp.hinh_anh }}" loading="lazy">
@@ -290,7 +290,7 @@
                 <h3 class="fw-bold mb-4 text-uppercase"><i class="fas fa-fire text-warning me-2"></i> BẢNG XẾP HẠNG</h3>
                 <div class="bg-white shadow-sm rounded-4 border p-3">
                     {% for sp in san_phams[:5] %}
-                    <a href="/san-pham/{{ sp.id }}" class="trending-item d-flex align-items-center gap-3 p-2 mb-2 text-decoration-none text-dark border-bottom" style="transition: 0.3s;">
+                    <a href="/san-pham/{{ encode_id(sp.id) }}" class="trending-item d-flex align-items-center gap-3 p-2 mb-2 text-decoration-none text-dark border-bottom" style="transition: 0.3s;">
                         <!-- Màu Huy chương Vàng, Bạc, Đồng cho Top 3 -->
                         <div class="fw-black fs-4" style="color: {% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#C0C0C0{% elif loop.index == 3 %}#cd7f32{% else %}#ccc{% endif %}; width: 30px; text-align: center;">
                             #{{ loop.index }}

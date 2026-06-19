@@ -89,7 +89,7 @@
             <div class="row row-cols-2 row-cols-md-3 g-4">
                 {% for sp in san_phams %}
                 <div class="col">
-                    <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm">
+                    <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm">
                         <div class="tms-img-wrap">
                             <img src="{{ sp.hinh_anh }}" loading="lazy">
                             <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>

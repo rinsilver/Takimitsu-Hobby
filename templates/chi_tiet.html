@@ -241,7 +241,7 @@
         <div class="row row-cols-2 row-cols-md-4 g-4">
             {% for sp_lq in san_pham_lien_quan %}
             <div class="col">
-                <a href="/san-pham/{{ sp_lq.id }}" class="tms-card shadow-sm h-100">
+                <a href="/san-pham/{{ encode_id(sp_lq.id) }}" class="tms-card shadow-sm h-100">
                     <div class="tms-img-wrap" style="height: 250px;">
                         <img src="{{ sp_lq.hinh_anh }}" loading="lazy">
                         <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
@@ -280,7 +280,7 @@
                 <style>#sliderDaXem::-webkit-scrollbar { display: none; }</style>
                 {% for sp_dx in san_pham_da_xem %}
                 <div style="flex: 0 0 calc(25% - 12px); min-width: 220px; scroll-snap-align: start;">
-                    <a href="/san-pham/{{ sp_dx.id }}" class="tms-card shadow-sm h-100">
+                    <a href="/san-pham/{{ encode_id(sp_dx.id) }}" class="tms-card shadow-sm h-100">
                         <div class="tms-img-wrap" style="height: 220px;">
                             <img src="{{ sp_dx.hinh_anh }}" loading="lazy">
                         </div>

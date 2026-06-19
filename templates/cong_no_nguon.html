@@ -86,7 +86,7 @@
             {% set con_no = tong_nhap - sp.tien_da_tra_nguon %}
             <tr class="{{ 'row-done' if sp.trang_thai_nhap == 'Đã thanh toán' else '' }}">
                 <td class="ps-4">
-                    <a href="/san-pham/{{ sp.id }}" class="fw-bold fs-6 text-primary text-decoration-none" target="_blank">
+                    <a href="/san-pham/{{ encode_id(sp.id) }}" class="fw-bold fs-6 text-primary text-decoration-none" target="_blank">
                         <i class="fas fa-external-link-alt fa-sm"></i> {{ sp.ten }}
                     </a><br>
                     <span class="badge bg-secondary mt-2 rounded-pill"><i class="fas fa-truck"></i> {{ sp.ten_nguon if sp.ten_nguon else 'Chưa phân nguồn' }}</span>
