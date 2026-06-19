@@ -13,7 +13,9 @@
             <h3 class="fw-bold m-0"><i class="fas fa-file-invoice text-primary"></i> ĐƠN HÀNG #{{ dh.id }}</h3>
             <div>
                 <a href="javascript:history.back()" class="btn btn-outline-dark fw-bold rounded-pill me-2"><i class="fas fa-arrow-left"></i> Quay lại</a>
+                {% if is_admin or session.get('admin_id') %}
                 <a href="/admin/in-hoa-don/{{ dh.id }}" target="_blank" class="btn btn-dark fw-bold rounded-pill"><i class="fas fa-print"></i> IN HÓA ĐƠN</a>
+                {% endif %}
             </div>
         </div>
 

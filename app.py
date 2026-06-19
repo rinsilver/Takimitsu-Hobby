@@ -1155,7 +1155,7 @@ def xem_sua_don_hang(id):
                      (trang_thai, tien_da_tra, id))
         conn.commit()
         conn.close()
-        return redirect(url_for('xem_sua_don_hang', id=id))
+        return redirect(url_for('quan_ly_don_hang'))
 
     # Kéo dữ liệu món hàng
     items = conn.execute('''
@@ -1331,54 +1331,54 @@ def tat_ca_san_pham():
 def thanh_toan():
     gio_hang = session.get('gio_hang', [])
     if not gio_hang:
-        return redirect(url_for('xem_gio_hang')) # Giỏ trống thì đuổi về
+        return redirect(url_for('xem_gio_hang'))
         
     tong_tien = sum(item['gia'] * item['so_luong'] for item in gio_hang)
     conn = ket_noi_db()
-    # Lấy danh sách khách hàng để hiện vào ô chọn
     danh_sach_khach = conn.execute('SELECT id, ho_ten, sdt FROM khach_hang ORDER BY ho_ten ASC').fetchall()
-    conn.close()
-    # Nếu khách bấm Nút ĐẶT HÀNG
+    
     if request.method == 'POST':
         ten_khach = request.form['ten']
         sdt = request.form['sdt']
         dia_chi = request.form['dia_chi']
-        khach_id = session.get('khach_id', 0) # Bằng 0 nếu là khách vãng lai
         email_khach = request.form.get('email', '')
         
-        conn = ket_noi_db()
+        # --- BẮT ĐẦU FIX ---
+        khach_id = session.get('khach_id') # Mặc định lấy id khách nếu khách tự mua
+        
+        # Nếu Admin đang tạo đơn dùm khách, lấy ID từ cái ô Search ẩn
+        if session.get('admin_id'):
+            kh_chon = request.form.get('khach_id_duoc_chon')
+            if kh_chon: khach_id = kh_chon
+            
         cur = conn.cursor()
         
-        # 1. Tạo Đơn hàng chính
+        # Thêm 1 tầng bảo vệ: Tìm tự động theo Số điện thoại nếu khach_id vẫn trống
+        if not khach_id:
+            kh_db = cur.execute('SELECT id FROM khach_hang WHERE sdt = ?', (sdt,)).fetchone()
+            if kh_db: khach_id = kh_db['id']
+            else: khach_id = 0
+        # --- KẾT THÚC FIX ---
+
         cur.execute('INSERT INTO don_hang (khach_hang_id, ten_khach, sdt, dia_chi, tong_tien, trang_thai) VALUES (?, ?, ?, ?, ?, ?)', 
                     (khach_id, ten_khach, sdt, dia_chi, tong_tien, 'Chờ xử lý'))
         don_id = cur.lastrowid
         
-        # 2. Tạo Chi tiết đơn & Trừ tồn kho
         for item in gio_hang:
             cur.execute('INSERT INTO chi_tiet_don (don_hang_id, san_pham_id, so_luong, gia) VALUES (?, ?, ?, ?)', 
                         (don_id, item['id'], item['so_luong'], item['gia']))
-            # Trừ Tồn kho (so_luong) đi, giữ nguyên (so_luong_nhap)
             cur.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (item['so_luong'], item['id']))
             
-        # GỌI HÀM GỬI MAIL
         gui_email_thong_bao(don_id, ten_khach, email_khach, tong_tien, gio_hang)
 
-        conn.commit()
-        conn.close()
+        conn.commit(); conn.close()
+        session['gio_hang'] = []; session.modified = True
         
-        # 3. Xóa sạch giỏ hàng
-        session['gio_hang'] = []
-        session.modified = True
-        
-        flash(f'Tuyệt vời! Sếp đã đặt hàng thành công. Mã đơn: #{don_id}', 'success')
-        return redirect(url_for('index'))
+        flash(f'Tuyệt vời! Đã đặt hàng thành công. Mã đơn: #{don_id}', 'success')
+        return redirect(url_for('ho_so_khach' if khach_id else 'index'))
 
-    # Nếu truy cập bình thường thì mở giao diện Thanh toán
-    return render_template('thanh_toan.html', 
-                       gio_hang=gio_hang, 
-                       tong_tien=tong_tien, 
-                       khachs=danh_sach_khach) # Thêm khachs vào đây sếp nhé
+    conn.close()
+    return render_template('thanh_toan.html', gio_hang=gio_hang, tong_tien=tong_tien, khachs=danh_sach_khach)
 
 # 2. THÊM ROUTE MỚI ĐỂ LẤY THÔNG TIN KHÁCH KHI CHỌN
 @app.route('/api/get-khach-info/<int:id>')

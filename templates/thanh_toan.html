@@ -48,6 +48,7 @@
 
                 <form method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="khach_id_duoc_chon" id="khach_id_duoc_chon" value="">
                     {% if is_admin %}
                     <div class="mb-4 p-3 bg-light rounded-3 border position-relative">
                         <label class="small fw-bold text-primary mb-2 text-uppercase">
@@ -176,6 +177,7 @@
         // 1. Điền tên vào ô search để sếp biết mình đã chọn ai
         document.getElementById('customerSearchInput').value = name + " - " + phone;
         document.getElementById('customerResults').style.display = 'none';
+        document.getElementById('khach_id_duoc_chon').value = id;
 
         // 2. Gọi hàm Autofill thần thánh từ app.py
         autoFillCustomer(id);
