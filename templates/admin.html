@@ -1,372 +1,175 @@
-<!DOCTYPE html>
-<html lang="vi">
+{% extends "admin_base.html" %}
+{% set active_page = 'kho_hang' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wolves Clone - Premium ERP [Admin]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% block title %}Quản Lý Kho Hàng{% endblock %}
 
-    <style>
-        /* --- CSS TÙY CHỈNH - PHONG CÁCH PREMIUM --- */
-        body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
-        }
+{% block extra_css %}
+<style>
+    .dashboard-stat-card {
+        background: #fff; border-radius: 15px; border: none; padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); transition: transform 0.3s ease;
+    }
+    .dashboard-stat-card:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06); }
+    .stat-icon { font-size: 2.2rem; color: #343a40; opacity: 0.7; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; color: #1a1d20; }
+    .stat-label { font-size: 0.85rem; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }
+    .avatar-box { border-radius: 10px; overflow: hidden; width: 50px; height: 50px; background-color: #fff; display: inline-flex; justify-content: center; align-items: center; }
+    .img-sp-small { border-radius: 12px; transition: transform 0.3s ease; }
+    .img-sp-small:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+    .admin-header-box { background: #fff; padding: 10px 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03); margin-bottom: 15px; }
+</style>
+{% endblock %}
 
-        /* 1. Thanh Menu Điều hướng Premium */
-        .admin-nav {
-            background-color: #ffffff;
-            padding: 15px 20px;
-            border-bottom: 1px solid #eaeaea;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-        }
+{% block content %}
+<div class="admin-header-box d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0 fw-bold"><i class="fas fa-layer-group text-primary"></i> Chi tiết Kho hàng V6 Premium</h4>
+    <a href="/them" class="btn btn-success p-2 px-4 fw-bold rounded-pill shadow-sm"><i class="fas fa-plus"></i> THÊM SẢN PHẨM</a>
+</div>
 
-        .nav-btn-group .btn {
-            border-radius: 30px;
-            padding: 8px 20px;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-btn-group .btn-dark.active {
-            background-color: #343a40 !important;
-            color: #fff !important;
-            box-shadow: 0 4px 10px rgba(52, 58, 64, 0.3);
-        }
-
-        .nav-btn-group .btn-outline-dark:hover,
-        .nav-btn-group .btn-outline-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-btn-group .btn-outline-danger {
-            border-color: #dc3545;
-            color: #dc3545;
-        }
-
-        /* 2. Tiêu đề và Thống kê nhanh */
-        .dashboard-header {
-            margin: 25px 0 15px 0;
-        }
-
-        .dashboard-stat-card {
-            background: #fff;
-            border-radius: 15px;
-            border: none;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-            transition: transform 0.3s ease;
-        }
-
-        .dashboard-stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-        }
-
-        .stat-icon {
-            font-size: 2.2rem;
-            color: #343a40;
-            opacity: 0.7;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #1a1d20;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* 3. Phong cách ERP CARD-BASED (Bản Premium) */
-        .erp-card {
-            background: #fff;
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .erp-card-header {
-            background: #343a40;
-            color: #fff;
-            padding: 18px 25px;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            font-weight: 700;
-        }
-
-        /* 4. Table Premium - Bo góc, tối ưu khoảng cách */
-        .premium-table {
-            font-size: 0.95rem;
-        }
-
-        .premium-table thead th {
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.8rem;
-            padding: 15px 20px;
-            background-color: #212529 !important;
-            color: #ffffff !important;
-            border-bottom: 2px solid #373b3e;
-        }
-
-        .premium-table tbody td {
-            padding: 15px 20px;
-            vertical-align: middle;
-            border-bottom: 1px solid #f2f2f2;
-        }
-
-        .premium-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* 5. Avatar & Ảnh Sản phẩm */
-        .avatar-box {
-            border-radius: 10px;
-            overflow: hidden;
-            width: 50px;
-            height: 50px;
-            background-color: #fff;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .img-sp-small {
-            border-radius: 12px;
-            transition: transform 0.3s ease;
-        }
-
-        .img-sp-small:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* 6. Badges & Hiệu ứng nút */
-        .badge {
-            border-radius: 30px;
-            padding: 6px 12px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge- SHF {
-            background-color: #e3f2fd;
-            color: #1565c0;
-        }
-
-        .badge-pre {
-            background-color: #fff8e1;
-            color: #f9a825;
-        }
-
-        .btn-action-group .btn {
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.8rem;
-        }
-
-        /* 7. Dropdown & Header */
-        .admin-header-box {
-            background: #fff;
-            padding: 10px 20px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-            margin-bottom: 15px;
-        }
-    </style>
-</head>
-
-<body>
-
-    <nav class="admin-nav">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <div class="avatar-box shadow-sm"><i class="fas fa-user-shield fa-lg text-dark"></i></div>
-                <h5 class="mb-0 fw-bold">QUẢN TRỊ VIÊN: <span class="text-primary">{{ session.get('khach_ten', 'Sếp
-                        Lớn') }}</span></h5>
-            </div>
-
-            <div class="nav-btn-group d-flex gap-2 align-items-center">
-                <a href="/admin" class="btn btn-dark active"><i class="fas fa-boxes"></i> Kho hàng</a>
-                <a href="/admin/cong-no-nguon" class="btn btn-outline-dark"><i class="fas fa-file-invoice-dollar"></i>
-                    Nợ & Lịch Về</a>
-                <a href="/admin/thong-ke" class="btn btn-outline-primary fw-bold"><i class="fas fa-chart-pie"></i> Thống kê</a>
-                <a href="/admin/don-hang" class="btn btn-outline-dark"><i class="fas fa-shopping-basket"></i> Đơn
-                    khách</a>
-                <a href="/admin/khach-hang" class="btn btn-outline-dark"><i class="fas fa-users"></i> Khách hàng</a>
-                <a href="/danh-muc" class="btn btn-outline-dark"><i class="fas fa-folder"></i> Danh mục</a>
-                <a href="/admin/hang-sx" class="btn btn-outline-dark"><i class="fas fa-industry"></i> Hãng SX</a>
-                <a href="/admin/nguon-nhap" class="btn btn-outline-danger"><i class="fas fa-user-secret"></i> Nguồn</a>
-                <div class="vr mx-1"></div>
-
-                <a href="/admin/cai-dat" class="btn btn-outline-dark fw-bold" style="background-color: #f8f9fa;">
-                    <i class="fas fa-palette text-danger"></i> Giao diện
-                </a>
-
-                <a href="/" class="btn btn-warning fw-bold shadow-sm" target="_blank">
-                    <i class="fas fa-store"></i> Xem Web
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container-fluid px-4 py-3">
-        <div class="admin-header-box d-flex justify-content-between align-items-center">
-            <h4 class="mb-0 fw-bold"><i class="fas fa-layer-group"></i> Hệ thống Quản trị V6 (Premium)</h4>
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="dashboard-stat-card d-flex align-items-center gap-3">
+            <i class="stat-icon fas fa-tag"></i>
             <div>
-                <a href="/them" class="btn btn-success p-2 px-3 fw-bold rounded-pill shadow-sm"><i
-                        class="fas fa-plus"></i> THÊM SẢN PHẨM</a>
+                <div class="stat-value">SHF</div>
+                <div class="stat-label">Dòng hàng bán chạy</div>
             </div>
         </div>
-
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="dashboard-stat-card d-flex align-items-center gap-3">
-                    <i class="stat-icon fas fa-tag"></i>
-                    <div>
-                        <div class="stat-value">SHF</div>
-                        <div class="stat-label">Dòng hàng bán chạy nhất</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="dashboard-stat-card d-flex align-items-center gap-3">
-                    <i class="stat-icon fas fa-money-bill-wave text-success"></i>
-                    <div>
-                        <div class="stat-value text-success">480.0đ</div>
-                        <div class="stat-label">Giá nhập trung bình</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="dashboard-stat-card d-flex align-items-center gap-3">
-                    <i class="stat-icon fas fa-clock text-warning"></i>
-                    <div>
-                        <div class="stat-value text-warning">Bandai</div>
-                        <div class="stat-label">Hãng về hàng trễ</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="dashboard-stat-card d-flex align-items-center gap-3">
-                    <i class="stat-icon fas fa-clipboard-list text-primary"></i>
-                    <div>
-                        <div class="stat-value text-primary">{{ san_phams|length }}</div>
-                        <div class="stat-label">Tổng số SKU trong kho</div>
-                    </div>
-                </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-stat-card d-flex align-items-center gap-3">
+            <i class="stat-icon fas fa-money-bill-wave text-success"></i>
+            <div>
+                <div class="stat-value text-success">480.0đ</div>
+                <div class="stat-label">Giá nhập trung bình</div>
             </div>
         </div>
-
-
-        <div class="erp-card">
-            <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-database"></i> Chi tiết Kho hàng V6 Premium</h5>
-                <button class="btn btn-sm btn-outline-light rounded-pill"><i class="fas fa-download"></i> Xuất
-                    Excel</button>
-            </div>
-            <div class="admin-header-box mb-4">
-                <form method="GET" action="/admin" class="row g-2">
-                    <div class="col-md-10">
-                        <input type="text" name="tu_khoa" class="form-control rounded-pill px-4"
-                            placeholder="Tìm tên sản phẩm hoặc ID..." value="{{ tu_khoa }}">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold">TÌM KIẾM</button>
-                    </div>
-                </form>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table premium-table mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th class="text-center">ID</th>
-                                <th>Ảnh</th>
-                                <th>Sản Phẩm (SKU)</th>
-                                <th>Phân Loại</th>
-                                <th>Hãng SX</th>
-                                <th class="text-center">Tồn Kho</th>
-                                <th class="text-end">Giá Nhập</th>
-                                <th class="text-end">Giá Bán</th>
-                                <th class="text-end">Lợi Nhuận/SP</th>
-                                <th class="text-center">Thao Tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for sp in san_phams %}
-                            {% set tien_loi = sp.gia_ban - sp.gia_nhap %}
-                            <tr>
-                                <td class="text-center text-muted fw-bold">#{{ sp.id }}</td>
-                                <td>
-                                    <div class="avatar-box border shadow-sm">
-                                        <img src="{{ sp.hinh_anh }}" alt="{{ sp.ten }}" class="img-sp-small"
-                                            style="width: 100%; height: 100%; object-fit: cover;">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="fw-bold text-dark">{{ sp.ten }}</div>
-                                    <small class="text-muted">Mã: {{ sp. hang_sx }}-{{ sp.id }}</small>
-                                </td>
-                                <td>
-                                    <span class="badge bg-primary rounded-pill shadow-sm px-3 py-2 fw-bold"
-                                        style="letter-spacing: 0.5px;">
-                                        <i class="fas fa-tag fa-xs me-1"></i> {{ sp.the_loai if sp.the_loai else 'Chưa
-                                        phân loại' }}
-                                    </span>
-                                </td>
-                                <td><span class="badge bg-outline-dark border border-dark text-dark">{{ sp.hang_sx
-                                        }}</span></td>
-                                <td class="text-center">
-                                    <div class="fw-bold text-success fs-5">{{ sp.so_luong }}</div>
-                                    <small class="text-muted">món</small>
-                                </td>
-                                <td class="text-end fw-bold">{{ "{:,.1f}".format(sp.gia_nhap) }}đ</td>
-                                <td class="text-end fw-bold text-primary fs-5">{{ "{:,.1f}".format(sp.gia_ban) }}đ</td>
-                                <td class="text-end fw-bold text-success">{{ "{:,.1f}".format(tien_loi) }}đ</td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <a href="/sua/{{ sp.id }}"
-                                            class="btn btn-sm btn-dark px-3 rounded-pill fw-bold">
-                                            <i class="fas fa-edit fa-sm"></i> Sửa
-                                        </a>
-
-                                        <form action="/xoa/{{ sp.id }}" method="POST" class="m-0"
-                                            onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm vàng ròng này không?')">
-                                            <button class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-bold">
-                                                <i class="fas fa-trash fa-sm"></i> Xóa
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-stat-card d-flex align-items-center gap-3">
+            <i class="stat-icon fas fa-clock text-warning"></i>
+            <div>
+                <div class="stat-value text-warning">Bandai</div>
+                <div class="stat-label">Hãng về hàng trễ</div>
             </div>
         </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-stat-card d-flex align-items-center gap-3">
+            <i class="stat-icon fas fa-clipboard-list text-primary"></i>
+            <div>
+                <div class="stat-value text-primary">{{ san_phams|length }}</div>
+                <div class="stat-label">SKU Hiển thị</div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="premium-card">
+    <div class="p-3 bg-dark text-white rounded-top-4 d-flex justify-content-between align-items-center" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-database"></i> Danh sách Sản phẩm</h5>
+        <button class="btn btn-sm btn-outline-light rounded-pill"><i class="fas fa-download"></i> Xuất Excel</button>
+    </div>
+    
+    <div class="admin-header-box mb-4 m-3 border shadow-none">
+        <form method="GET" action="/admin" class="row g-2">
+            <div class="col-md-10">
+                <input type="text" name="tu_khoa" class="form-control rounded-pill px-4" placeholder="Tìm tên sản phẩm hoặc ID..." value="{{ tu_khoa }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold">TÌM KIẾM</button>
+            </div>
+        </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-
-</html>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table premium-table mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center">ID</th>
+                        <th>Ảnh</th>
+                        <th>Sản Phẩm (SKU)</th>
+                        <th>Phân Loại</th>
+                        <th>Hãng SX</th>
+                        <th class="text-center">Tồn Kho</th>
+                        <th class="text-end">Giá Nhập</th>
+                        <th class="text-end">Giá Bán</th>
+                        <th class="text-end">Lợi Nhuận</th>
+                        <th class="text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sp in san_phams %}
+                    {% set tien_loi = sp.gia_ban - sp.gia_nhap %}
+                    <tr>
+                        <td class="text-center text-muted fw-bold">#{{ sp.id }}</td>
+                        <td>
+                            <div class="avatar-box border shadow-sm">
+                                <img src="{{ sp.hinh_anh }}" alt="{{ sp.ten }}" class="img-sp-small" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ sp.ten }}</div>
+                            <small class="text-muted">Mã: {{ sp. hang_sx }}-{{ sp.id }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary rounded-pill shadow-sm px-3 py-2 fw-bold" style="letter-spacing: 0.5px;">
+                                <i class="fas fa-tag fa-xs me-1"></i> {{ sp.the_loai if sp.the_loai else 'Chưa phân loại' }}
+                            </span>
+                        </td>
+                        <td><span class="badge bg-outline-dark border border-dark text-dark">{{ sp.hang_sx }}</span></td>
+                        <td class="text-center">
+                            <div class="fw-bold text-success fs-5">{{ sp.so_luong }}</div>
+                            <small class="text-muted">món</small>
+                        </td>
+                        <td class="text-end fw-bold">{{ "{:,.0f}".format(sp.gia_nhap) }}đ</td>
+                        <td class="text-end fw-bold text-primary fs-5">{{ "{:,.0f}".format(sp.gia_ban) }}đ</td>
+                        <td class="text-end fw-bold text-success">{{ "{:,.0f}".format(tien_loi) }}đ</td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="/sua/{{ sp.id }}" class="btn btn-sm btn-dark px-3 rounded-pill fw-bold">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <form action="/xoa/{{ sp.id }}" method="POST" class="m-0" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-bold">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if tong_trang and tong_trang > 1 %}
+            <nav class="mt-4 mb-4">
+                <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto" style="width: fit-content;">
+                    <li class="page-item {{ 'disabled' if page == 1 }}">
+                        <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page=1&tu_khoa={{ tu_khoa }}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    {% for p in range(1, tong_trang + 1) %}
+                        {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
+                        <li class="page-item {{ 'active' if p == page }}">
+                            <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}" href="?page={{ p }}&tu_khoa={{ tu_khoa }}">{{ p }}</a>
+                        </li>
+                        {% elif p == page - 2 or p == page + 2 %}
+                        <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {{ 'disabled' if page == tong_trang }}">
+                        <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

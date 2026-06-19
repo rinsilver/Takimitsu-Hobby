@@ -1,261 +1,170 @@
-<!DOCTYPE html>
-<html lang="vi">
+{% extends "admin_base.html" %}
+{% set active_page = 'don_khach' %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Quản lý Đơn Khách - V6 Premium</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #f4f6f9;
-            font-family: 'Segoe UI', sans-serif;
-        }
+{% block title %}Quản lý Đơn Khách{% endblock %}
 
-        .premium-card {
-            background: #fff;
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-        }
+{% block extra_css %}
+<style>
+    .badge-cho { background-color: #f39c12; color: white; }
+    .badge-coc { background-color: #3498db; color: white; }
+    .badge-giao { background-color: #9b59b6; color: white; }
+    .badge-xong { background-color: #27ae60; color: white; }
+    .badge-huy { background-color: #e74c3c; color: white; }
+    .stat-card { border-left: 5px solid; transition: 0.3s; }
+    .stat-card:hover { transform: translateY(-5px); }
+</style>
+{% endblock %}
 
-        .nav-btn-group .btn {
-            border-radius: 30px;
-            font-weight: 600;
-            padding: 10px 20px;
-        }
-
-        .premium-table thead th {
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.8rem;
-            padding: 15px 20px;
-            background-color: #212529 !important;
-            color: #ffffff !important;
-            border-bottom: 2px solid #373b3e;
-        }
-
-        .premium-table tbody td {
-            padding: 15px 20px;
-            vertical-align: middle;
-            border-bottom: 1px solid #f2f2f2;
-        }
-
-        /* Màu sắc cho từng trạng thái */
-        .badge-cho {
-            background-color: #f39c12;
-            color: white;
-        }
-
-        .badge-coc {
-            background-color: #3498db;
-            color: white;
-        }
-
-        .badge-giao {
-            background-color: #9b59b6;
-            color: white;
-        }
-
-        .badge-xong {
-            background-color: #27ae60;
-            color: white;
-        }
-
-        .badge-huy {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .stat-card {
-            border-left: 5px solid;
-            transition: 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container-fluid px-4 mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="btn-group shadow-sm nav-btn-group">
-                <a href="/admin" class="btn btn-dark"><i class="fas fa-boxes"></i> Kho hàng</a>
-                <a href="/admin/cong-no-nguon" class="btn btn-outline-dark"><i class="fas fa-file-invoice-dollar"></i>
-                    Nợ Nguồn</a>
-                <a href="/admin/don-hang" class="btn btn-primary active"><i class="fas fa-shopping-basket"></i> Đơn
-                    khách</a>
-                <a href="/admin/khach-hang" class="btn btn-outline-dark"><i class="fas fa-users"></i> Khách hàng</a>
-                <a href="/danh-muc" class="btn btn-outline-dark"><i class="fas fa-folder"></i> Danh mục</a>
-            </div>
-            <a href="/" class="btn btn-warning fw-bold rounded-pill shadow-sm" target="_blank">
-                <i class="fas fa-store"></i> Xem Web Shop
-            </a>
-        </div>
-
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="premium-card p-3 stat-card" style="border-color: #27ae60;">
-                    <small class="text-muted fw-bold">TỔNG DOANH THU (HOÀN THÀNH)</small>
-                    <h3 class="fw-bold mb-0 text-success" id="stat-revenue">Loadiing...</h3>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="premium-card p-3 stat-card" style="border-color: #e74c3c;">
-                    <small class="text-muted fw-bold">TỔNG NỢ KHÁCH CẦN THU</small>
-                    <h3 class="fw-bold mb-0 text-danger" id="stat-debt">Loading...</h3>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="premium-card p-3 stat-card" style="border-color: #f39c12;">
-                    <small class="text-muted fw-bold">ĐƠN CHỜ XỬ LÝ</small>
-                    <h3 class="fw-bold mb-0 text-warning" id="stat-pending">Loading...</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="premium-card p-4 mb-4">
-            <form method="GET" action="/admin/don-hang" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="small fw-bold text-muted mb-1">Tìm kiếm đơn:</label>
-                    <input type="text" name="tu_khoa" class="form-control rounded-pill shadow-sm border-0 bg-light"
-                        placeholder="Tên, SĐT hoặc Mã đơn..." value="{{ tu_khoa }}">
-                </div>
-                <div class="col-md-3">
-                    <label class="small fw-bold text-muted mb-1">Trạng thái:</label>
-                    <select name="trang_thai" class="form-select rounded-pill shadow-sm border-0 bg-light">
-                        <option value="">-- Tất cả trạng thái --</option>
-                        <option value="Chờ xử lý" {{ 'selected' if trang_thai_chon=='Chờ xử lý' }}>⏳ Chờ xử lý</option>
-                        <option value="Đã cọc" {{ 'selected' if trang_thai_chon=='Đã cọc' }}>💰 Đã cọc</option>
-                        <option value="Đang giao" {{ 'selected' if trang_thai_chon=='Đang giao' }}>🚚 Đang giao</option>
-                        <option value="Hoàn thành" {{ 'selected' if trang_thai_chon=='Hoàn thành' }}>✅ Hoàn thành
-                        </option>
-                        <option value="Đã hủy" {{ 'selected' if trang_thai_chon=='Đã hủy' }}>❌ Đã hủy</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="small fw-bold text-muted mb-1">Sắp xếp:</label>
-                    <select name="sap_xep" class="form-select rounded-pill shadow-sm border-0 bg-light">
-                        <option value="moi_nhat" {{ 'selected' if sap_xep_chon=='moi_nhat' }}>Mới nhất</option>
-                        <option value="cu_nhat" {{ 'selected' if sap_xep_chon=='cu_nhat' }}>Cũ nhất</option>
-                        <option value="tien_cao" {{ 'selected' if sap_xep_chon=='tien_cao' }}>Tiền giảm dần</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold shadow-sm"><i
-                            class="fas fa-filter"></i> LỌC DỮ LIỆU</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="premium-card overflow-hidden mb-4">
-            <table class="table premium-table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4">Mã Đơn & Trạng Thái</th>
-                        <th>Thông tin SP & Lịch Về</th>
-                        <th>Tài Chính</th>
-                        <th class="text-end pe-4">Thao tác nhanh</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dh in don_hangs %}
-                    {% set khach_no = dh.tong_tien - dh.tien_da_tra %}
-                    <tr class="{{ 'opacity-75 bg-light' if dh.trang_thai in ['Hoàn thành', 'Đã hủy'] else '' }}">
-                        <td class="ps-4">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <a href="/admin/don-hang/{{ dh.id }}"
-                                    class="fw-bold fs-5 text-dark text-decoration-none">#{{ dh.id }}</a>
-                                <span
-                                    class="badge rounded-pill {% if dh.trang_thai=='Chờ xử lý' %}badge-cho{% elif dh.trang_thai=='Đã cọc' %}badge-coc{% elif dh.trang_thai=='Đang giao' %}badge-giao{% elif dh.trang_thai=='Hoàn thành' %}badge-xong{% else %}badge-huy{% endif %}">
-                                    {{ dh.trang_thai }}
-                                </span>
-                            </div>
-                            <span class="badge bg-dark rounded-pill mb-1"><i class="fas fa-user"></i> {{ dh.ten_khach
-                                }}</span><br>
-                            <small class="text-muted d-block"><i class="fas fa-phone-alt"></i> {{ dh.sdt }}</small>
-                            <small class="text-secondary d-block"><i class="fas fa-calendar-alt"></i> {{
-                                dh.ngay_dat[:16] }}</small>
-                        </td>
-
-                        <td>
-                            <ul class="list-unstyled m-0">
-                                {% for ct in dh.ds_mat_hang %} <li class="d-flex align-items-center gap-2 mb-1">
-                                    <img src="{{ ct.hinh_anh }}" class="rounded shadow-sm"
-                                        style="width: 35px; height: 35px; object-fit: cover;">
-                                    <div class="lh-1">
-                                        <small class="fw-bold d-block text-truncate" style="max-width: 200px;">{{ ct.ten
-                                            }}</small>
-                                        <small class="text-danger fw-bold" style="font-size: 0.75rem;">x{{ ct.so_luong
-                                            }} - {{ "{:,.0f}".format(ct.gia) }}đ</small>
-                                    </div>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </td>
-
-                        <td>
-                            <div class="small">Bill: <strong>{{ "{:,.0f}".format(dh.tong_tien) }}đ</strong></div>
-                            <div class="small text-success">Trả: <strong>{{ "{:,.0f}".format(dh.tien_da_tra)
-                                    }}đ</strong></div>
-                            {% if khach_no > 0 %}
-                            <div class="small text-danger fw-bold">Nợ: {{ "{:,.0f}".format(khach_no) }}đ</div>
-                            {% else %}<span class="badge bg-success rounded-pill" style="font-size: 0.6rem;">THU
-                                ĐỦ</span>{% endif %}
-                        </td>
-
-                        <td class="pe-4 text-end">
-                            <form method="POST" action="/admin/don-hang" class="d-inline-block" style="width: 180px;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="don_id" value="{{ dh.id }}">
-                                <div class="input-group input-group-sm mb-1">
-                                    <input type="number" name="tien_da_tra" class="form-control"
-                                        value="{{ dh.tien_da_tra }}" placeholder="Đã trả">
-                                </div>
-                                <div class="input-group input-group-sm">
-                                    <select name="trang_thai" class="form-select fw-bold border-primary">
-                                        <option value="Chờ xử lý" {% if dh.trang_thai=='Chờ xử lý' %}selected{% endif
-                                            %}>Chờ xử lý</option>
-                                        <option value="Đã cọc" {% if dh.trang_thai=='Đã cọc' %}selected{% endif %}>Đã
-                                            cọc</option>
-                                        <option value="Đang giao" {% if dh.trang_thai=='Đang giao' %}selected{% endif
-                                            %}>Đang giao</option>
-                                        <option value="Hoàn thành" {% if dh.trang_thai=='Hoàn thành' %}selected{% endif
-                                            %}>Hoàn thành</option>
-                                        <option value="Đã hủy" {% if dh.trang_thai=='Đã hủy' %}selected{% endif %}>Đã
-                                            hủy</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i></button>
-                                </div>
-                            </form>
-                            <div class="mt-2 d-flex justify-content-end gap-2">
-                                <a href="/admin/don-hang/{{ dh.id }}" class="btn btn-sm btn-outline-dark rounded-pill">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="/admin/in-hoa-don/{{ dh.id }}" target="_blank"
-                                    class="btn btn-sm btn-outline-info rounded-pill"><i class="fas fa-print"></i></a>
-                                <a href="/admin/huy-don/{{ dh.id }}" class="btn btn-sm btn-outline-danger rounded-pill"
-                                    onclick="return confirm('Hủy đơn?')"><i class="fas fa-trash"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+{% block content %}
+<div class="row g-3 mb-4 mt-2">
+    <div class="col-md-4">
+        <div class="premium-card p-3 stat-card" style="border-color: #27ae60;">
+            <small class="text-muted fw-bold">TỔNG DOANH THU (HOÀN THÀNH)</small>
+            <h3 class="fw-bold mb-0 text-success">{{ "{:,.0f}".format(total_rev) }}đ</h3>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="premium-card p-3 stat-card" style="border-color: #e74c3c;">
+            <small class="text-muted fw-bold">TỔNG NỢ KHÁCH CẦN THU</small>
+            <h3 class="fw-bold mb-0 text-danger">{{ "{:,.0f}".format(total_debt) }}đ</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="premium-card p-3 stat-card" style="border-color: #f39c12;">
+            <small class="text-muted fw-bold">ĐƠN CHỜ XỬ LÝ</small>
+            <h3 class="fw-bold mb-0 text-warning">{{ pending_count }} Đơn</h3>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // Tự động tính toán thống kê (Giả lập hoặc sếp truyền từ Python)
-        document.addEventListener('DOMContentLoaded', function () {
-            // Chỉ cần gán giá trị từ Python vào, không cần chạy vòng lặp ở đây nữa
-            document.getElementById('stat-revenue').innerText = '{{ "{:,.0f}".format(total_rev) }}đ';
-            document.getElementById('stat-debt').innerText = '{{ "{:,.0f}".format(total_debt) }}đ';
-            document.getElementById('stat-pending').innerText = '{{ pending_count }}';
-        });
-    </script>
-</body>
+<div class="premium-card p-4 mb-4">
+    <form method="GET" action="/admin/don-hang" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="small fw-bold text-muted mb-1">Tìm kiếm đơn:</label>
+            <input type="text" name="tu_khoa" class="form-control rounded-pill shadow-sm border-0 bg-light" placeholder="Tên, SĐT hoặc Mã đơn..." value="{{ tu_khoa }}">
+        </div>
+        <div class="col-md-3">
+            <label class="small fw-bold text-muted mb-1">Trạng thái:</label>
+            <select name="trang_thai" class="form-select rounded-pill shadow-sm border-0 bg-light">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="Chờ xử lý" {{ 'selected' if trang_thai_chon=='Chờ xử lý' }}>⏳ Chờ xử lý</option>
+                <option value="Đã cọc" {{ 'selected' if trang_thai_chon=='Đã cọc' }}>💰 Đã cọc</option>
+                <option value="Đang giao" {{ 'selected' if trang_thai_chon=='Đang giao' }}>🚚 Đang giao</option>
+                <option value="Hoàn thành" {{ 'selected' if trang_thai_chon=='Hoàn thành' }}>✅ Hoàn thành</option>
+                <option value="Đã hủy" {{ 'selected' if trang_thai_chon=='Đã hủy' }}>❌ Đã hủy</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="small fw-bold text-muted mb-1">Sắp xếp:</label>
+            <select name="sap_xep" class="form-select rounded-pill shadow-sm border-0 bg-light">
+                <option value="moi_nhat" {{ 'selected' if sap_xep_chon=='moi_nhat' }}>Mới nhất</option>
+                <option value="cu_nhat" {{ 'selected' if sap_xep_chon=='cu_nhat' }}>Cũ nhất</option>
+                <option value="tien_cao" {{ 'selected' if sap_xep_chon=='tien_cao' }}>Tiền giảm dần</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold shadow-sm"><i class="fas fa-filter"></i> LỌC DỮ LIỆU</button>
+        </div>
+    </form>
+</div>
 
-</html>
+<div class="premium-card overflow-hidden mb-4">
+    <table class="table premium-table table-hover mb-0">
+        <thead>
+            <tr>
+                <th class="ps-4">Mã Đơn & Trạng Thái</th>
+                <th>Thông tin SP & Lịch Về</th>
+                <th>Tài Chính</th>
+                <th class="text-end pe-4">Thao tác nhanh</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dh in don_hangs %}
+            {% set khach_no = dh.tong_tien - dh.tien_da_tra %}
+            <tr class="{{ 'opacity-75 bg-light' if dh.trang_thai in ['Hoàn thành', 'Đã hủy'] else '' }}">
+                <td class="ps-4">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <a href="/admin/don-hang/{{ dh.id }}" class="fw-bold fs-5 text-dark text-decoration-none">#{{ dh.id }}</a>
+                        <span class="badge rounded-pill {% if dh.trang_thai=='Chờ xử lý' %}badge-cho{% elif dh.trang_thai=='Đã cọc' %}badge-coc{% elif dh.trang_thai=='Đang giao' %}badge-giao{% elif dh.trang_thai=='Hoàn thành' %}badge-xong{% else %}badge-huy{% endif %}">
+                            {{ dh.trang_thai }}
+                        </span>
+                    </div>
+                    <span class="badge bg-dark rounded-pill mb-1"><i class="fas fa-user"></i> {{ dh.ten_khach }}</span><br>
+                    <small class="text-muted d-block"><i class="fas fa-phone-alt"></i> {{ dh.sdt }}</small>
+                    <small class="text-secondary d-block"><i class="fas fa-calendar-alt"></i> {{ dh.ngay_dat[:16] }}</small>
+                </td>
+                <td>
+                    <ul class="list-unstyled m-0">
+                        {% for ct in dh.ds_mat_hang %} 
+                        <li class="d-flex align-items-center gap-2 mb-1">
+                            <img src="{{ ct.hinh_anh }}" class="rounded shadow-sm" style="width: 35px; height: 35px; object-fit: cover;">
+                            <div class="lh-1">
+                                <small class="fw-bold d-block text-truncate" style="max-width: 200px;">{{ ct.ten }}</small>
+                                <small class="text-danger fw-bold" style="font-size: 0.75rem;">x{{ ct.so_luong }} - {{ "{:,.0f}".format(ct.gia) }}đ</small>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <div class="small">Bill: <strong>{{ "{:,.0f}".format(dh.tong_tien) }}đ</strong></div>
+                    <div class="small text-success">Trả: <strong>{{ "{:,.0f}".format(dh.tien_da_tra) }}đ</strong></div>
+                    {% if khach_no > 0 %}
+                    <div class="small text-danger fw-bold">Nợ: {{ "{:,.0f}".format(khach_no) }}đ</div>
+                    {% else %}<span class="badge bg-success rounded-pill" style="font-size: 0.6rem;">THU ĐỦ</span>{% endif %}
+                </td>
+                <td class="pe-4 text-end">
+                    <form method="POST" action="/admin/don-hang" class="d-inline-block" style="width: 180px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="don_id" value="{{ dh.id }}">
+                        <div class="input-group input-group-sm mb-1">
+                            <input type="number" name="tien_da_tra" class="form-control" value="{{ dh.tien_da_tra }}" placeholder="Đã trả">
+                        </div>
+                        <div class="input-group input-group-sm">
+                            <select name="trang_thai" class="form-select fw-bold border-primary">
+                                <option value="Chờ xử lý" {% if dh.trang_thai=='Chờ xử lý' %}selected{% endif %}>Chờ xử lý</option>
+                                <option value="Đã cọc" {% if dh.trang_thai=='Đã cọc' %}selected{% endif %}>Đã cọc</option>
+                                <option value="Đang giao" {% if dh.trang_thai=='Đang giao' %}selected{% endif %}>Đang giao</option>
+                                <option value="Hoàn thành" {% if dh.trang_thai=='Hoàn thành' %}selected{% endif %}>Hoàn thành</option>
+                                <option value="Đã hủy" {% if dh.trang_thai=='Đã hủy' %}selected{% endif %}>Đã hủy</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i></button>
+                        </div>
+                    </form>
+                    <div class="mt-2 d-flex justify-content-end gap-2">
+                        <a href="/admin/don-hang/{{ dh.id }}" class="btn btn-sm btn-outline-dark rounded-pill"><i class="fas fa-eye"></i></a>
+                        <a href="/admin/in-hoa-don/{{ dh.id }}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill"><i class="fas fa-print"></i></a>
+                        <a href="/admin/huy-don/{{ dh.id }}" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Hủy đơn?')"><i class="fas fa-trash"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if tong_trang and tong_trang > 1 %}
+    <nav class="mt-4 mb-4">
+        <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto" style="width: fit-content;">
+            <li class="page-item {{ 'disabled' if page == 1 }}">
+                <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page=1&tu_khoa={{ tu_khoa }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            {% for p in range(1, tong_trang + 1) %}
+                {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
+                <li class="page-item {{ 'active' if p == page }}">
+                    <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}" href="?page={{ p }}&tu_khoa={{ tu_khoa }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">{{ p }}</a>
+                </li>
+                {% elif p == page - 2 or p == page + 2 %}
+                <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {{ 'disabled' if page == tong_trang }}">
+                <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}&trang_thai={{ trang_thai_chon }}&sap_xep={{ sap_xep_chon }}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

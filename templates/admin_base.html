@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Hệ thống Quản trị{% endblock %} - V6 Premium</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        /* CSS dùng chung cho các khối thẻ */
+        .premium-card {
+            background: #fff;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+        /* CSS dùng chung cho bảng */
+        .premium-table thead th {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            padding: 15px 20px;
+            background-color: #212529 !important;
+            color: #ffffff !important;
+            border-bottom: 2px solid #373b3e;
+        }
+        .premium-table tbody td {
+            padding: 15px 20px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f2f2f2;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="container-fluid px-4 py-3 mt-2">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 shadow-sm mb-4 bg-white p-2 rounded-pill" style="border: 1px solid #eaeaea;">
+            <div class="d-flex flex-wrap gap-2">
+                <a href="/admin" class="btn rounded-pill fw-bold px-4 {% if active_page == 'kho_hang' %}btn-dark shadow text-white{% else %}btn-light{% endif %}"><i class="fas fa-boxes text-primary"></i> Kho hàng</a>
+                <a href="/admin/cong-no-nguon" class="btn rounded-pill fw-bold px-4 {% if active_page == 'no_nguon' %}btn-danger shadow text-white{% else %}btn-light{% endif %}"><i class="fas fa-file-invoice-dollar text-danger"></i> Nợ Nguồn</a>
+                <a href="/admin/don-hang" class="btn rounded-pill fw-bold px-4 {% if active_page == 'don_khach' %}btn-dark shadow text-white{% else %}btn-light{% endif %}"><i class="fas fa-shopping-basket text-success"></i> Đơn khách</a>
+                <a href="/admin/khach-hang" class="btn rounded-pill fw-bold px-4 {% if active_page == 'khach_hang' %}btn-dark shadow text-white{% else %}btn-light{% endif %}"><i class="fas fa-users text-info"></i> Khách hàng</a>
+                <a href="/admin/thong-ke" class="btn rounded-pill fw-bold px-4 {% if active_page == 'thong_ke' %}btn-dark shadow text-white{% else %}btn-light{% endif %}"><i class="fas fa-chart-pie text-warning"></i> Thống kê</a>
+                <a href="/admin/cai-dat" class="btn rounded-pill fw-bold px-4 {% if active_page == 'giao_dien' %}btn-dark shadow text-white{% else %}btn-light{% endif %}"><i class="fas fa-palette text-secondary"></i> Giao diện</a>
+                
+                <div class="vr mx-2"></div> 
+                
+                <a href="/danh-muc" class="btn rounded-pill px-3 {% if active_page == 'danh_muc' %}btn-dark shadow text-white{% else %}btn-outline-dark border-0{% endif %}"><i class="fas fa-folder"></i> Danh mục</a>
+                <a href="/admin/hang-sx" class="btn rounded-pill px-3 {% if active_page == 'hang_sx' %}btn-dark shadow text-white{% else %}btn-outline-dark border-0{% endif %}"><i class="fas fa-industry"></i> Hãng SX</a>
+                <a href="/admin/nguon-nhap" class="btn rounded-pill px-3 {% if active_page == 'nguon_nhap' %}btn-danger shadow text-white{% else %}btn-outline-danger border-0{% endif %}"><i class="fas fa-user-secret"></i> Nguồn</a>
+            </div>
+            
+            <a href="/" class="btn btn-warning fw-bold rounded-pill shadow-sm" target="_blank">
+                <i class="fas fa-store"></i> Xem Web Shop
+            </a>
+        </div>
+
+        {% block content %}{% endblock %}
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

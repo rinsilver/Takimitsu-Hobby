@@ -8,6 +8,7 @@ from flask_wtf.csrf import CSRFProtect
 import os
 from PIL import Image # Đảm bảo đã có dòng này ở đầu file app.py
 from werkzeug.utils import secure_filename # Để xử lý tên file an toàn
+from flask_mail import Mail, Message 
 
 app = Flask(__name__)
 app.secret_key = 'wolves_master_system_ultimate_v7'
@@ -15,11 +16,70 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = True # Bật cái này khi web có HTTPS
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400 # 1 ngày tự động đăng xuất
+
+# CẤU HÌNH EMAIL (Sếp thay thông tin của sếp vào đây)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'duymx25092000@gmail.com' # Email sếp dùng gửi
+app.config['MAIL_PASSWORD'] = 'voxr henm kuap hgpu'      # 16 ký tự App Password vừa tạo
+app.config['MAIL_DEFAULT_SENDER'] = ('TAKIMITSU HOBBY', 'duymx25092000@gmail.com')
+
+mail = Mail(app)
 csrf = CSRFProtect(app)
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# --- BẢO MẬT SESSION (Chống Hacker ăn cắp Cookie) ---
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400 # Tự động đăng xuất sau 1 ngày
+
+# --- KHIÊN CHỐNG BRUTE-FORCE (Spam đăng nhập) ---
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 # --- HỆ THỐNG QUẢN LÝ CÀI ĐẶT GIAO DIỆN (JSON) ---
 SETTINGS_FILE = 'settings.json'
 
+def gui_email_thong_bao(don_id, ten_khach, email_khach, tong_tien, gio_hang):
+    try:
+        # 1. Gửi cho Khách hàng (Xác nhận đơn)
+        msg_khach = Message(f"Xác nhận đơn hàng #{don_id} từ Takimitsu Hobby",
+                           recipients=[email_khach])
+        
+        # Tạo nội dung HTML cho chuyên nghiệp
+        html_content = f"<h3>Chào {ten_khach}, cảm ơn sếp đã ủng hộ shop!</h3>"
+        html_content += f"<p>Đơn hàng <b>#{don_id}</b> của sếp đã được tiếp nhận.</p>"
+        html_content += "<ul>"
+        for item in gio_hang:
+            html_content += f"<li>{item['ten']} x {item['so_luong']} - {item['gia']:,.0f}đ</li>"
+        html_content += "</ul>"
+        html_content += f"<h4>Tổng cộng: {tong_tien:,.0f} VNĐ</h4>"
+        html_content += "<p>Shop sẽ sớm liên hệ để giao hàng cho sếp!</p>"
+        
+        msg_khach.html = html_content
+        mail.send(msg_khach)
+
+        # 2. Gửi cho Sếp (Báo có đơn mới)
+        msg_admin = Message(f"SẾP ƠI! CÓ ĐƠN HÀNG MỚI #{don_id}",
+                           recipients=['email_cua_sep@gmail.com']) # Nhận tại mail chính của sếp
+        msg_admin.body = f"Khách {ten_khach} vừa đặt đơn #{don_id}. Tổng tiền: {tong_tien:,.0f}đ. Vào Admin check ngay sếp ơi!"
+        mail.send(msg_admin)
+        
+        return True
+    except Exception as e:
+        print(f"Lỗi gửi mail: {e}")
+        return False
+    
 def get_settings():
     if not os.path.exists(SETTINGS_FILE):
         default_settings = {
@@ -226,23 +286,41 @@ def chi_tiet_sp(id):
                            san_pham_da_xem=san_pham_da_xem)
 
 @app.route('/dang-nhap', methods=['GET', 'POST'])
+@limiter.limit("30 per minute") # Nhớ giữ lại cái khiên chống hack này sếp nhé
 def dang_nhap():
     if request.method == 'POST':
         conn = ket_noi_db()
-        # Lấy user dựa trên tài khoản trước
-        u = conn.execute('SELECT * FROM khach_hang WHERE tai_khoan=?', (request.form['tai_khoan'],)).fetchone()
-        conn.close()
+        tai_khoan_nhap_vao = request.form['tai_khoan']
         
-        # Kiểm tra mật khẩu đã mã hóa bằng hàm chuyên dụng
-        if u and check_password_hash(u['mat_khau'], request.form['mat_khau']):
-            session.clear()
-            if u['vai_tro'] == 'admin': session['admin_id'] = u['id']
-            else: session['khach_id'] = u['id']
-            session['khach_ten'] = u['ho_ten']
-            return redirect(url_for('index'))
-        else:
-            flash('Sai tài khoản hoặc mật khẩu rồi', 'danger')
-            return redirect(url_for('dang_nhap'))
+        # 1. Tìm bằng Số điện thoại hoặc Tên tài khoản
+        u = conn.execute('SELECT * FROM khach_hang WHERE sdt=? OR tai_khoan=?', 
+                         (tai_khoan_nhap_vao, tai_khoan_nhap_vao)).fetchone()
+        
+        if u:
+            # 2. XỬ LÝ MẬT KHẨU "THÔNG MINH"
+            mat_khau_db = u['mat_khau']
+            mat_khau_nhap = request.form['mat_khau']
+            hop_le = False
+            
+            # Nếu pass trong DB đã mã hóa (có chữ scrypt) -> Dùng check_password_hash
+            if mat_khau_db.startswith('scrypt:') or mat_khau_db.startswith('pbkdf2:'):
+                hop_le = check_password_hash(mat_khau_db, mat_khau_nhap)
+            # Nếu pass trong DB là chữ thường (như "123" sếp vừa lưu) -> So sánh trực tiếp
+            else:
+                hop_le = (mat_khau_db == mat_khau_nhap)
+            
+            if hop_le:
+                session.clear()
+                if u['vai_tro'] == 'admin': session['admin_id'] = u['id']
+                else: session['khach_id'] = u['id']
+                session['khach_ten'] = u['ho_ten']
+                conn.close()
+                return redirect(url_for('index'))
+                
+        conn.close()
+        flash('Sai tài khoản, số điện thoại hoặc mật khẩu rồi sếp ơi!', 'danger')
+        return redirect(url_for('dang_nhap'))
+        
     return render_template('dang_nhap_chung.html')
 
 @app.route('/dang-ky', methods=['GET', 'POST'])
@@ -387,18 +465,30 @@ def lich_su_don_hang():
 def admin():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
-    tu_khoa = request.args.get('tu_khoa', '')
     
+    tu_khoa = request.args.get('tu_khoa', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 10 # 10 sản phẩm 1 trang
+    
+    query_count = "SELECT COUNT(*) FROM san_pham"
     query = "SELECT * FROM san_pham"
     params = []
+    
     if tu_khoa:
-        query += " WHERE ten LIKE ? OR id LIKE ?"
+        where_clause = " WHERE ten LIKE ? OR id LIKE ?"
+        query_count += where_clause
+        query += where_clause
         params = [f'%{tu_khoa}%', f'%{tu_khoa}%']
     
-    query += " ORDER BY id DESC"
+    tong_sp = conn.execute(query_count, params).fetchone()[0]
+    tong_trang = (tong_sp + per_page - 1) // per_page
+    
+    query += " ORDER BY id DESC LIMIT ? OFFSET ?"
+    params.extend([per_page, (page - 1) * per_page])
     sps = conn.execute(query, params).fetchall()
     conn.close()
-    return render_template('admin.html', san_phams=sps, tu_khoa=tu_khoa)
+    
+    return render_template('admin.html', san_phams=sps, tu_khoa=tu_khoa, page=page, tong_trang=tong_trang)
 
 @app.route('/them', methods=['GET', 'POST'])
 def them_san_pham():
@@ -534,7 +624,7 @@ def xoa_san_pham(id):
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
-    # KIỂM TRA KHÓA AN TOÀN: Xem sản phẩm này có đang nằm trong đơn hàng nào không
+    # 1. KIỂM TRA KHÓA AN TOÀN: Xem sản phẩm này có đang nằm trong đơn hàng nào không
     don_hang_dang_chua = conn.execute('''
         SELECT d.id, d.trang_thai 
         FROM chi_tiet_don c
@@ -547,10 +637,21 @@ def xoa_san_pham(id):
         conn.close()
         return f"<script>alert('SẾP KHOAN XÓA! Sản phẩm này đang nằm trong Đơn hàng #{don_hang_dang_chua['id']} (Trạng thái: {don_hang_dang_chua['trang_thai']}). Vui lòng Hủy đơn hoặc Hoàn thành đơn trước khi xóa sản phẩm khỏi kho.'); window.location.href='/admin';</script>"
 
-    # Nếu an toàn (Không ai đặt, hoặc đơn đã xong/hủy), tiến hành xóa
+    # 2. XÓA FILE ẢNH VẬT LÝ ĐỂ NHẸ Ổ CỨNG
+    sp = conn.execute('SELECT hinh_anh FROM san_pham WHERE id=?', (id,)).fetchone()
+    if sp and sp['hinh_anh']:
+        try: os.remove(os.path.join(app.root_path, sp['hinh_anh'].lstrip('/')))
+        except: pass
+    
+    anh_phus = conn.execute('SELECT du_ong_dan FROM hinh_anh_sp WHERE san_pham_id=?', (id,)).fetchall()
+    for anh in anh_phus:
+        try: os.remove(os.path.join(app.root_path, anh['du_ong_dan'].lstrip('/')))
+        except: pass
+
+    # 3. XÓA DỮ LIỆU TRONG DATABASE
     conn.execute('DELETE FROM san_pham WHERE id=?', (id,))
-    # Xóa luôn ảnh phụ cho nhẹ server
     conn.execute('DELETE FROM hinh_anh_sp WHERE san_pham_id=?', (id,))
+    
     conn.commit()
     conn.close()
     return redirect(url_for('admin'))
@@ -759,20 +860,52 @@ def quan_ly_khach_hang():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     
+    # ... (Giữ nguyên đoạn If request.method == 'POST' của sếp ở đây) ...
     if request.method == 'POST':
         kh_id = request.form.get('kh_id')
+        mat_khau_nhap = request.form['mat_khau']
+        if not mat_khau_nhap.startswith('scrypt:'):
+            mat_khau_nhap = generate_password_hash(mat_khau_nhap)
         if kh_id: 
-            # ĐÃ THÊM: tai_khoan=? vào câu lệnh UPDATE để sếp sửa được tên đăng nhập
             conn.execute('UPDATE khach_hang SET ho_ten=?, tai_khoan=?, sdt=?, dia_chi=?, mat_khau=? WHERE id=?',
-                        (request.form['ho_ten'], request.form['tai_khoan'], request.form['sdt'], request.form['dia_chi'], request.form['mat_khau'], kh_id))
+                        (request.form['ho_ten'], request.form['tai_khoan'], request.form['sdt'], request.form['dia_chi'], mat_khau_nhap, kh_id))
         else: 
             try:
                 conn.execute('INSERT INTO khach_hang (ho_ten, tai_khoan, mat_khau, sdt, dia_chi) VALUES (?,?,?,?,?)',
-                            (request.form['ho_ten'], request.form['tai_khoan'], request.form['mat_khau'], request.form['sdt'], request.form['dia_chi']))
+                            (request.form['ho_ten'], request.form['tai_khoan'], mat_khau_nhap, request.form['sdt'], request.form['dia_chi']))
             except: pass
         conn.commit()
         return redirect(url_for('quan_ly_khach_hang'))
 
+    tu_khoa = request.args.get('tu_khoa', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    query_count = "SELECT COUNT(*) FROM khach_hang k"
+    query = '''
+        SELECT k.*, COUNT(d.id) as so_don, IFNULL(SUM(d.tong_tien), 0) as tong_mua, IFNULL(SUM(d.tien_da_tra), 0) as da_tra
+        FROM khach_hang k LEFT JOIN don_hang d ON k.id = d.khach_hang_id
+    '''
+    params = []; count_params = []
+    
+    if tu_khoa:
+        where_clause = " WHERE k.ho_ten LIKE ? OR k.tai_khoan LIKE ? OR k.sdt LIKE ?"
+        query_count += where_clause
+        query += where_clause
+        params = [f'%{tu_khoa}%', f'%{tu_khoa}%', f'%{tu_khoa}%']
+        count_params = params.copy()
+        
+    tong_khach = conn.execute(query_count, count_params).fetchone()[0]
+    tong_trang = (tong_khach + per_page - 1) // per_page
+    
+    query += " GROUP BY k.id ORDER BY k.id DESC LIMIT ? OFFSET ?"
+    params.extend([per_page, (page - 1) * per_page])
+    khachs = conn.execute(query, params).fetchall()
+    conn.close()
+    
+    return render_template('quan_ly_khach.html', khachs=khachs, tu_khoa=tu_khoa, page=page, tong_trang=tong_trang)
+
+    # ... (Giữ nguyên đoạn code SELECT danh sách khách hàng bên dưới) ...
     tu_khoa = request.args.get('tu_khoa', '')
     query = '''
         SELECT k.*, 
@@ -1193,6 +1326,7 @@ def thanh_toan():
         sdt = request.form['sdt']
         dia_chi = request.form['dia_chi']
         khach_id = session.get('khach_id', 0) # Bằng 0 nếu là khách vãng lai
+        email_khach = request.form.get('email', '')
         
         conn = ket_noi_db()
         cur = conn.cursor()
@@ -1209,6 +1343,9 @@ def thanh_toan():
             # Trừ Tồn kho (so_luong) đi, giữ nguyên (so_luong_nhap)
             cur.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (item['so_luong'], item['id']))
             
+        # GỌI HÀM GỬI MAIL
+        gui_email_thong_bao(don_id, ten_khach, email_khach, tong_tien, gio_hang)
+
         conn.commit()
         conn.close()
         

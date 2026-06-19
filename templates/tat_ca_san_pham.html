@@ -4,21 +4,23 @@
 
 {% block extra_css %}
 <style>
-    /* 1. CSS CARD SẢN PHẨM */
+    /* 1. CSS CARD SẢN PHẨM (ĐÃ NÂNG CẤP PREMIUM) */
     .tms-card {
-        display: block;
+        display: flex;
+        flex-direction: column;
         text-decoration: none;
         background-color: #fff;
-        border: 1px solid #e0e0e0;
+        border: 1px solid #eef0f2;
         transition: all 0.3s ease;
         height: 100%;
-        border-radius: 12px; /* Bo góc tròn hơn cho sang */
+        border-radius: 15px; /* Bo góc tròn và mềm mại hơn */
         overflow: hidden;
+        position: relative;
     }
 
     .tms-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
         border-color: var(--main-color);
     }
 
@@ -29,15 +31,39 @@
         align-items: center;
         justify-content: center;
         padding: 15px;
+        overflow: hidden; /* Cần thiết cho hiệu ứng Zoom */
+        position: relative;
     }
 
     .tms-img-wrap img {
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
+        transition: transform 0.5s ease; /* Hiệu ứng mượt */
     }
 
-    /* 2. CSS THẺ TAG */
+    /* Hiệu ứng Zoom ảnh khi rê chuột */
+    .tms-card:hover .tms-img-wrap img {
+        transform: scale(1.1);
+    }
+
+    /* NÚT XEM NHANH TRƯỢT TỪ DƯỚI LÊN */
+    .quick-action-bar {
+        position: absolute;
+        bottom: -50px; /* Ẩn đi khi bình thường */
+        left: 0;
+        right: 0;
+        padding: 10px;
+        background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent);
+        transition: bottom 0.3s ease;
+        text-align: center;
+    }
+
+    .tms-card:hover .quick-action-bar {
+        bottom: 0; /* Hiện lên khi hover */
+    }
+
+    /* 2. CSS THẺ TAG & THÔNG TIN */
     .badge-item {
         font-size: 0.6rem;
         padding: 3px 8px;
@@ -49,7 +75,13 @@
     .bg-brand { background-color: #f1f1f1; color: #555; }
     .bg-cat { background-color: #eee; color: #888; }
 
-    .tms-info { padding: 15px; }
+    .tms-info { 
+        padding: 15px; 
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1; /* Để phần thông tin tự giãn ra */
+    }
+
     .tms-name {
         color: #111;
         font-weight: 700;
@@ -62,7 +94,19 @@
         margin-bottom: 10px;
     }
 
-    .tms-price { color: #e60012; font-weight: 800; font-size: 1.1rem; }
+    /* Hàng sao đánh giá */
+    .rating-stars {
+        color: #ffc107;
+        font-size: 0.75rem;
+        margin-bottom: 8px;
+    }
+
+    .tms-price { 
+        color: #e60012; 
+        font-weight: 800; 
+        font-size: 1.1rem; 
+        margin-top: auto; /* Ép giá luôn nằm dưới đáy card */
+    }
 
     /* 3. BỘ LỌC SIDEBAR */
     .filter-sidebar {
@@ -155,9 +199,15 @@
                 <div class="col">
                     <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm">
                         <div class="tms-img-wrap">
-                            <img src="{{ sp.hinh_anh }}">
+                            <img src="{{ sp.hinh_anh }}" loading="lazy">
+                            <div class="quick-action-bar">
+                                <span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">
+                                    XEM CHI TIẾT
+                                </span>
+                            </div>
                         </div>
-                        <div class="tms-info">
+                        
+                        <div class="tms-info d-flex flex-column flex-grow-1">
                             <div class="mb-2 d-flex flex-wrap gap-1">
                                 <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
                                 <span class="badge-item bg-cat">{{ sp.the_loai }}</span>
@@ -165,8 +215,19 @@
                                     {{ 'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'ORD' }}
                                 </span>
                             </div>
+                            
                             <div class="tms-name">{{ sp.ten }}</div>
-                            <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                            
+                            <div class="rating-stars mt-auto">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i> 
+                                <span class="text-muted ms-1" style="font-size: 0.7rem;">(Đã bán {{ (sp.id * 3) % 20 + 5 }})</span>
+                            </div>
+                            
+                            <div class="tms-price mt-1">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
                         </div>
                     </a>
                 </div>

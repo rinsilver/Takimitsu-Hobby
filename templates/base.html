@@ -395,7 +395,7 @@
         </div>
     </nav>
 
-    <div class="content-wrapper">
+  
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="container mt-3">
@@ -413,7 +413,7 @@
         {% endwith %}
 
         {% block content %}{% endblock %}
-    </div>
+
 
     <footer class="tms-footer mt-auto">
         <div class="container">
@@ -525,6 +525,29 @@
             }
         });
     </script>
+
+    <button onclick="topFunction()" id="backToTopBtn" class="btn btn-danger rounded-circle shadow-lg" title="Lên đầu trang" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; width: 45px; height: 45px;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // JS điều khiển nút lên đầu trang
+        let mybutton = document.getElementById("backToTopBtn");
+        window.onscroll = function() { scrollFunction() };
+        
+        function scrollFunction() {
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                mybutton.style.display = "block";
+            } else {
+                mybutton.style.display = "none";
+            }
+        }
+        
+        function topFunction() {
+            window.scrollTo({top: 0, behavior: 'smooth'}); // Cuộn mượt
+        }
+    </script>
+    
     {% block scripts %}{% endblock %}
 </body>
 
