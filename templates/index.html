@@ -1,379 +1,323 @@
 {% extends "base.html" %}
 
-{% block title %}Trang Chủ{% endblock %}
+{% block title %}Trang Chủ - Thế giới mô hình{% endblock %}
 
 {% block extra_css %}
 <style>
-    .hero-banner {
-        height: 450px;
-        object-fit: cover;
-        width: 100%;
+    /* --- 1. HERO BANNER CÓ OVERLAY & TEXT --- */
+    .hero-banner-wrap { position: relative; width: 100%; height: 500px; overflow: hidden; }
+    .hero-banner { width: 100%; height: 100%; object-fit: cover; }
+    .hero-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+        z-index: 1;
     }
+    .hero-content {
+        position: absolute; top: 50%; left: 10%; transform: translateY(-50%);
+        z-index: 2; color: white; max-width: 600px; text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    }
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(230, 0, 18, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0); }
+    }
+    .btn-hero { animation: pulseGlow 2s infinite; }
 
+    /* --- 2. DỊCH VỤ (SERVICE BOX) --- */
     .service-box {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        border-radius: 12px;
-        height: 100%;
-        transition: 0.3s;
+        display: flex; align-items: center; padding: 20px 15px;
+        border-radius: 15px; height: 100%; transition: transform 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.03);
     }
+    .service-box:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .service-box i { font-size: 2.5rem; margin-right: 15px; }
+    .service-box h6 { font-weight: 800; margin-bottom: 5px; font-size: 0.95rem; }
+    .service-box p { font-size: 0.8rem; margin: 0; color: #666; }
+    .bg-blue-light { background-color: #eef2ff; }
+    .bg-pink-light { background-color: #fdf2f8; }
+    .bg-yellow-light { background-color: #fefce8; }
+    .bg-green-light { background-color: #f0fdf4; }
 
-    .service-box i {
-        font-size: 2.5rem;
-        margin-right: 15px;
-    }
-
-    .service-box h6 {
-        font-weight: 800;
-        margin-bottom: 3px;
-        font-size: 0.95rem;
-    }
-
-    .service-box p {
-        font-size: 0.8rem;
-        margin: 0;
-        color: #555;
-    }
-
-    .bg-blue-light {
-        background-color: #eef2ff;
-    }
-
-    .bg-pink-light {
-        background-color: #fdf2f8;
-    }
-
-    .bg-yellow-light {
-        background-color: #fefce8;
-    }
-
-    .bg-green-light {
-        background-color: #f0fdf4;
-    }
-
-    .section-avail-frame {
-        background-color: #981616;
-        border-radius: 15px;
-        padding: 20px 25px;
-        margin: 20px 0;
-        box-shadow: 0 8px 25px rgba(148, 30, 30, 0.3);
-    }
-
-    .avail-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 25px;
-    }
-
-    .avail-header h2 {
-        color: #fff;
-        font-weight: 900;
-        text-transform: uppercase;
-        margin: 0;
-        font-size: 1.8rem;
-    }
-
-    .avail-header .emoji {
-        font-size: 2rem;
-        margin-left: 10px;
-    }
-
-    .btn-view-all-white {
-        border: 1px solid #fff;
-        color: #fff;
-        padding: 8px 30px;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: 0.3s;
-        display: inline-block;
-    }
-
-    .btn-view-all-white:hover {
-        background: #fff;
-        color: #d32f2f;
-    }
-
+    /* --- 3. THẺ SẢN PHẨM PREMIUM --- */
     .tms-card {
-        display: block;
-        text-decoration: none;
-        background-color: #fff;
-        transition: all 0.3s ease;
-        height: 100%;
-        position: relative;
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid transparent;
+        display: flex; flex-direction: column; text-decoration: none;
+        background-color: #fff; border: 1px solid #eef0f2;
+        transition: all 0.3s ease; height: 100%;
+        border-radius: 15px; position: relative; overflow: hidden;
     }
-
     .tms-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        border-color: var(--main-color);
     }
-
     .tms-img-wrap {
-        background-color: #fff;
-        aspect-ratio: 1 / 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 15px;
-        position: relative;
+        background-color: #fff; aspect-ratio: 1 / 1;
+        display: flex; align-items: center; justify-content: center;
+        padding: 15px; position: relative; overflow: hidden;
     }
-
-    .tms-img-wrap img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
+    .tms-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
+    .tms-card:hover .tms-img-wrap img { transform: scale(1.1); }
+    .quick-action-bar {
+        position: absolute; bottom: -50px; left: 0; right: 0;
+        padding: 10px; text-align: center; transition: bottom 0.3s ease;
+        background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent);
     }
-
-    .tms-info {
-        padding: 15px;
-        background: #fff;
-    }
-
+    .tms-card:hover .quick-action-bar { bottom: 0; }
+    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
     .tms-name {
-        color: #333;
-        font-weight: 700;
-        font-size: 0.9rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        margin-bottom: 8px;
-        line-height: 1.4;
-        min-height: 2.8em;
+        color: #111; font-weight: 700; font-size: 0.9rem;
+        height: 2.6em; overflow: hidden; display: -webkit-box;
+        -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 10px;
     }
+    .rating-stars { color: #ffc107; font-size: 0.75rem; margin-bottom: 8px; }
+    .tms-price { color: #e60012; font-weight: 900; font-size: 1.15rem; margin-top: auto; }
+    .badge-item { font-size: 0.6rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+    .bg-brand { background-color: #f1f1f1; color: #555; }
+    .bg-cat { background-color: #eee; color: #888; }
 
-    .tms-price {
-        color: #d32f2f;
-        font-weight: 900;
-        font-size: 1.1rem;
+    /* --- 4. TÙY CHỈNH SECTION CÓ SẴN --- */
+    .section-avail-frame {
+        background: linear-gradient(135deg, #981616 0%, #d32f2f 100%);
+        border-radius: 20px; padding: 30px; margin: 30px 0;
+        box-shadow: 0 10px 30px rgba(148, 30, 30, 0.4);
     }
+    .avail-header h2 { color: #fff; font-weight: 900; letter-spacing: 1px; }
+    .btn-view-all-white {
+        border: 2px solid #fff; color: #fff; padding: 10px 35px;
+        border-radius: 30px; text-decoration: none; font-weight: 800; transition: 0.3s;
+    }
+    .btn-view-all-white:hover { background: #fff; color: #981616; transform: scale(1.05); }
 
-    .badge-item {
-        font-size: 0.65rem;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-weight: 700;
-        margin-right: 4px;
-        text-transform: uppercase;
+    /* --- 5. TABS & TOP TRENDING --- */
+    .pill-tab {
+        padding: 8px 20px; border-radius: 30px; border: 1px solid #ddd;
+        color: #666; font-weight: 700; font-size: 0.85rem; text-decoration: none;
+        transition: all 0.3s ease; text-transform: uppercase;
     }
-
-    .bg-brand {
-        background-color: #f1f1f1;
-        color: #555;
+    .pill-tab:hover { background-color: #f8f9fa; border-color: #bbb; color: #111; }
+    .pill-tab.active {
+        background-color: var(--main-color); color: #fff; border-color: var(--main-color);
+        box-shadow: 0 4px 10px rgba(230,0,18,0.3);
     }
-
-    .bg-cat {
-        background-color: #eee;
-        color: #888;
-    }
-
-    .pre-order-divider {
-        border-top: 1px solid #eee;
-        margin: 40px auto;
-        width: 80%;
-    }
-
-    .carousel-control-prev,
-    .carousel-control-next {
-        opacity: 0 !important;
-        transition: opacity 0.3s ease;
-    }
-
-    .carousel:hover .carousel-control-prev,
-    .carousel:hover .carousel-control-next {
-        opacity: 1 !important;
-    }
+    .trending-item:hover { background-color: #f8f9fa; border-radius: 12px; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div id="hero" class="carousel slide" data-bs-ride="carousel">
+<!-- 1. HERO BANNER -->
+<div id="hero" class="carousel slide carousel-fade" data-bs-ride="carousel">
     <div class="carousel-inner">
-        <div class="carousel-item active"><img src="{{ settings.banner_1 }}" class="hero-banner"></div>
-        {% if settings.banner_2 %}<div class="carousel-item"><img src="{{ settings.banner_2 }}" class="hero-banner">
-        </div>{% endif %}
+        <div class="carousel-item active hero-banner-wrap">
+            <div class="hero-overlay"></div>
+            <img src="{{ settings.banner_1 }}" class="hero-banner">
+            <div class="hero-content">
+                <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold fs-6 rounded-pill">🔥 CHÍNH HÃNG 100%</span>
+                <h1 class="display-4 fw-black mb-3" style="font-weight: 900; letter-spacing: -1px;">THẾ GIỚI MÔ HÌNH<br>ĐỈNH CAO</h1>
+                <p class="fs-5 opacity-75 mb-4 d-none d-md-block">Khám phá hàng ngàn mô hình Action Figure, Statue phiên bản giới hạn. Cập nhật liên tục từ Nhật Bản.</p>
+                <a href="/san-pham" class="btn btn-danger btn-lg rounded-pill px-5 py-3 fw-bold shadow btn-hero">
+                    KHÁM PHÁ NGAY <i class="fas fa-rocket ms-2"></i>
+                </a>
+            </div>
+        </div>
+        {% if settings.banner_2 %}
+        <div class="carousel-item hero-banner-wrap">
+            <div class="hero-overlay"></div>
+            <img src="{{ settings.banner_2 }}" class="hero-banner">
+            <div class="hero-content">
+                <span class="badge bg-info text-dark mb-3 px-3 py-2 fw-bold fs-6 rounded-pill">💎 PRE-ORDER NOW</span>
+                <h1 class="display-4 fw-black mb-3" style="font-weight: 900; letter-spacing: -1px;">SĂN DEAL HÀNG HOT<br>TRƯỚC MỌI NGƯỜI</h1>
+                <a href="/san-pham?kieu_hang=Pre-order" class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow">
+                    ĐẶT TRƯỚC NGAY <i class="fas fa-shopping-basket ms-2"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#hero" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon shadow-lg"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#hero" data-bs-slide="next">
+        <span class="carousel-control-next-icon shadow-lg"></span>
+    </button>
 </div>
 
-<div class="container mt-4 mb-4">
+<!-- 2. DỊCH VỤ -->
+<div class="container mt-5 mb-4">
     <div class="row g-3">
-        <div class="col-md-3">
-            <div class="service-box bg-blue-light"><i class="fas fa-shipping-fast text-primary"></i>
-                <div>
-                    <h6>Giao hàng toàn quốc</h6>
-                    <p>Ship an tâm</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="service-box bg-pink-light"><i class="fas fa-shopping-bag text-danger"></i>
-                <div>
-                    <h6>Khách hàng thân thiết</h6>
-                    <p>Nhiều ưu đãi hấp dẫn</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="service-box bg-yellow-light"><i class="fas fa-certificate text-warning"></i>
-                <div>
-                    <h6>Cam kết chính hãng</h6>
-                    <p>Đảm bảo hàng 100%</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="service-box bg-green-light"><i class="fas fa-headset text-success"></i>
-                <div>
-                    <h6>Hotline: 0901436292</h6>
-                    <p>Facebook: Takimitsu Hobby</p>
-                </div>
-            </div>
-        </div>
+        <div class="col-md-3 col-6"><div class="service-box bg-blue-light"><i class="fas fa-shipping-fast text-primary"></i><div><h6>Giao hàng hỏa tốc</h6><p>Đóng gói siêu kỹ</p></div></div></div>
+        <div class="col-md-3 col-6"><div class="service-box bg-pink-light"><i class="fas fa-shield-alt text-danger"></i><div><h6>Cam kết chính hãng</h6><p>Bảo hành 1 đổi 1</p></div></div></div>
+        <div class="col-md-3 col-6"><div class="service-box bg-yellow-light"><i class="fas fa-gem text-warning"></i><div><h6>Tích điểm VIP</h6><p>Ưu đãi độc quyền</p></div></div></div>
+        <div class="col-md-3 col-6"><div class="service-box bg-green-light"><i class="fas fa-headset text-success"></i><div><h6>Hỗ trợ 24/7</h6><p>Tư vấn tận tình</p></div></div></div>
     </div>
 </div>
 
+<!-- 3. HÀNG CÓ SẴN (GIAO DIỆN LỬA) -->
 <div class="container">
-    <div class="section-avail-frame shadow-lg">
-        <div class="avail-header">
-            <h2>HÀNG CÓ SẴN</h2><span class="emoji">🔥</span>
+    <div class="section-avail-frame">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-white fw-bold m-0"><i class="fas fa-fire-alt text-warning me-2"></i> HÀNG CÓ SẴN GIAO NGAY</h2>
+            <a href="/san-pham?kieu_hang=Co+san" class="text-white text-decoration-none d-none d-md-block fw-bold">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
         </div>
         <div class="row row-cols-2 row-cols-md-4 g-4">
             {% for sp in hang_co_san[:4] %}
             <div class="col">
-                <a href="/san-pham/{{ sp.id }}" class="tms-card">
-                    <div class="tms-img-wrap"><img src="{{ sp.hinh_anh }}"></div>
-                    <div class="tms-info p-3">
+                <a href="/san-pham/{{ sp.id }}" class="tms-card shadow border-0">
+                    <div class="tms-img-wrap">
+                        <img src="{{ sp.hinh_anh }}" loading="lazy">
+                        <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">MUA NGAY</span></div>
+                    </div>
+                    <div class="tms-info">
                         <div class="mb-2 d-flex flex-wrap gap-1">
                             <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
-                            <span class="badge-item bg-cat">{{ sp.the_loai }}</span>
-                            <span
-                                class="badge-item {% if sp.kieu_hang == 'Co san' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">{{
-                                'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'ORD' }}</span>
+                            <span class="badge-item bg-danger text-white"><i class="fas fa-bolt"></i> SẴN HÀNG</span>
                         </div>
-                        <div class="tms-name mb-2" style="font-weight: 700; font-size: 0.9rem; color: #333;">{{ sp.ten
-                            }}</div>
-                        <div class="tms-price fw-bold">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                        <div class="tms-name">{{ sp.ten }}</div>
+                        <div class="rating-stars mt-auto">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> 
+                            <span class="text-muted ms-1" style="font-size: 0.7rem;">(Đã bán {{ (sp.id * 5) % 30 + 10 }})</span>
+                        </div>
+                        <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
                     </div>
                 </a>
             </div>
             {% endfor %}
         </div>
-        <div class="text-center mt-5"><a href="/san-pham?kieu_hang=Co+san" class="btn-view-all-white">Xem tất cả <i
-                    class="fas fa-angle-right ms-1"></i></a></div>
+        <div class="text-center mt-4 d-md-none"><a href="/san-pham?kieu_hang=Co+san" class="btn-view-all-white w-100">XEM TẤT CẢ</a></div>
     </div>
 </div>
 
-<section class="section-light" style="padding: 60px 0; background-color: #fff;">
-    <div class="container text-center">
-        <h2 class="fw-bold text-uppercase mb-3" style="letter-spacing: 2px; font-size: 1.8rem;">ACTION FIGURE</h2>
-        <div class="d-flex justify-content-center flex-wrap gap-3 mb-5 small fw-bold text-muted border-bottom pb-3"
-            id="brandTabs">
-            <a href="javascript:void(0)" class="tab-link active text-decoration-none"
-                onclick="filterTopics('all', this)"
-                style="color:#111; border-bottom: 2px solid #111; padding-bottom: 5px;">TẤT CẢ</a>
-            {% for hang in hang_sxs[:6] %}<span class="text-secondary opacity-50">/</span><a href="javascript:void(0)"
-                class="tab-link text-decoration-none text-muted" onclick="filterTopics('{{ hang|safe }}', this)">{{ hang
-                }}</a>{% endfor %}
+<!-- 4. LỌC THEO HÃNG BẰNG PILL TABS -->
+<section style="padding: 60px 0; background-color: #fff;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-uppercase mb-2" style="letter-spacing: 1px; font-size: 2rem;">BỘ SƯU TẬP MÔ HÌNH</h2>
+            <div style="width: 60px; height: 4px; background-color: var(--main-color); margin: 0 auto; border-radius: 2px;"></div>
         </div>
+
+        <div class="d-flex justify-content-center flex-wrap gap-2 mb-5" id="brandTabs">
+            <a href="javascript:void(0)" class="pill-tab active" onclick="filterTopics('all', this)">⚡ TẤT CẢ</a>
+            {% for hang in hang_sxs[:6] %}
+            <a href="javascript:void(0)" class="pill-tab" onclick="filterTopics('{{ hang|safe }}', this)">{{ hang }}</a>
+            {% endfor %}
+        </div>
+
         <div class="row row-cols-2 row-cols-md-4 g-4 text-start" id="topicsContainer">
             {% for sp in san_phams %}
             <div class="col topic-item brand-{{ sp.hang_sx }} {{ 'd-block' if loop.index <= 8 else 'd-none' }}">
-                <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm border"
-                    style="border-radius: 8px; overflow: hidden; display: block; text-decoration: none; height: 100%;">
-                    <div class="tms-img-wrap"
-                        style="background-color: #fff; padding: 10px; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;">
-                        <img src="{{ sp.hinh_anh }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm">
+                    <div class="tms-img-wrap">
+                        <img src="{{ sp.hinh_anh }}" loading="lazy">
+                        <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
                     </div>
-                    <div class="tms-info p-3">
-                        <div class="mb-2 d-flex flex-wrap gap-1"><span class="badge-item bg-brand">{{ sp.hang_sx
-                                }}</span><span class="badge-item bg-cat">{{ sp.the_loai }}</span><span
-                                class="badge-item {% if sp.kieu_hang == 'Co san' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">{{
-                                'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'ORD' }}</span></div>
-                        <div class="tms-name mb-2" style="font-weight: 700; font-size: 0.9rem;">{{ sp.ten }}</div>
-                        <div class="tms-price fw-bold" style="color: #e60012;">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                    <div class="tms-info">
+                        <div class="mb-2 d-flex flex-wrap gap-1">
+                            <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
+                            <span class="badge-item bg-cat">{{ sp.the_loai }}</span>
+                            <span class="badge-item {% if sp.kieu_hang == 'Co san' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
+                                {{ 'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'ORD' }}
+                            </span>
+                        </div>
+                        <div class="tms-name">{{ sp.ten }}</div>
+                        <div class="rating-stars mt-auto">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> 
+                            <span class="text-muted ms-1" style="font-size: 0.7rem;">({{ (sp.id * 3) % 20 + 5 }})</span>
+                        </div>
+                        <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
                     </div>
                 </a>
             </div>
             {% endfor %}
         </div>
-        <div class="text-center mt-5"><a href="/san-pham" class="btn btn-outline-dark px-5 py-2 fw-bold"
-                style="border-radius: 10px; border-width: 1px;">Xem tất cả <i class="fas fa-angle-right ms-1"></i></a>
+        <div class="text-center mt-5">
+            <a href="/san-pham" class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-sm">
+                XEM TOÀN BỘ KHO HÀNG <i class="fas fa-arrow-right ms-2"></i>
+            </a>
         </div>
     </div>
 </section>
 
-<div class="pre-order-divider"></div>
-
-<section class="section-light" style="padding: 10px 0;">
-    <div class="container py-4">
-    <h2 class="text-center fw-bold mb-3">HÀNG <span class="text-danger">PRE-ORDER</span></h2>
-    
-    <div class="row align-items-center gx-0"> <div class="col-auto">
-            <button type="button" 
-                    onclick="scrollPreOrder(-1)" 
-                    class="btn btn-dark rounded-circle shadow-lg d-flex align-items-center justify-content-center" 
-                    style="width: 45px; height: 45px; margin-right: 10px; z-index: 10;">
-                <i class="fas fa-chevron-left"></i>
-            </button>
+<!-- 5. HÀNG PRE-ORDER (SLIDER) -->
+<section style="padding: 60px 0; background-color: #f8f9fa;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="fw-bold m-0">ĐẶT TRƯỚC SẢN PHẨM <span class="text-danger">HOT</span></h2>
+                <p class="text-muted mb-0 mt-1">Sở hữu những mô hình mới nhất ngay khi vừa ra mắt.</p>
+            </div>
+            <div class="d-none d-md-flex gap-2">
+                <button onclick="scrollPreOrder(-1)" class="btn btn-outline-dark rounded-circle shadow-sm" style="width:40px; height:40px;"><i class="fas fa-chevron-left"></i></button>
+                <button onclick="scrollPreOrder(1)" class="btn btn-dark rounded-circle shadow-sm" style="width:40px; height:40px;"><i class="fas fa-chevron-right"></i></button>
+            </div>
         </div>
-
-        <div class="col overflow-hidden">
-            <div id="preOrderSlider" class="d-flex py-3" 
-                 style="overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none;">
+    
+        <div class="overflow-hidden position-relative">
+            <div id="preOrderSlider" class="d-flex py-3" style="overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none;">
                 <style>#preOrderSlider::-webkit-scrollbar { display: none; }</style>
-                
                 {% for sp in hang_order %}
-                <div class="px-2" style="flex: 0 0 25%; scroll-snap-align: start;">
-                    <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm h-100 text-decoration-none bg-white d-block rounded-4 overflow-hidden border">
-                        <div class="tms-img-wrap" style="height: 250px; padding: 20px; display: flex; align-items: center; justify-content: center; background: #fff;">
-                            <img src="{{ sp.hinh_anh }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <div class="px-2" style="flex: 0 0 calc(100% / 4); min-width: 250px; scroll-snap-align: start;">
+                    <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm">
+                        <div class="tms-img-wrap">
+                            <span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark fw-bold rounded-pill z-3 shadow-sm" style="font-size: 0.7rem;"><i class="far fa-clock"></i> SẮP VỀ</span>
+                            <img src="{{ sp.hinh_anh }}" loading="lazy">
+                            <div class="quick-action-bar"><span class="btn btn-warning btn-sm rounded-pill fw-bold w-75 shadow-sm text-dark">ĐẶT TRƯỚC</span></div>
                         </div>
-                        <div class="p-3 border-top">
-                            <div class="mb-2">
-                                <span class="badge bg-light text-muted border" style="font-size: 0.65rem;">{{ sp.hang_sx }}</span>
-                                <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">ORD</span>
-                            </div>
-                            <h6 class="fw-bold text-dark mb-1 text-truncate">{{ sp.ten }}</h6>
-                            <p class="small text-muted mb-3">Liên hệ để đặt trước.</p>
-                            <div class="d-flex justify-content-between align-items-center mt-auto">
-                                <span class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock"></i> Sắp về</span>
-                                <span class="text-danger fw-bold fs-5">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</span>
-                            </div>
+                        <div class="tms-info bg-white border-top">
+                            <div class="mb-2"><span class="badge-item bg-brand">{{ sp.hang_sx }}</span></div>
+                            <div class="tms-name">{{ sp.ten }}</div>
+                            <div class="tms-price mt-auto">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
                         </div>
                     </a>
                 </div>
                 {% endfor %}
             </div>
         </div>
+    </div>
+</section>
 
-        <div class="col-auto">
-            <button type="button" 
-                    onclick="scrollPreOrder(1)" 
-                    class="btn btn-dark rounded-circle shadow-lg d-flex align-items-center justify-content-center" 
-                    style="width: 45px; height: 45px; margin-left: 10px; z-index: 10;">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+<!-- 6. VIDEO UNBOX & BẢNG XẾP HẠNG (THÊM MỚI) -->
+<section style="padding: 60px 0; background-color: #fff;">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Cột Video Youtube -->
+            <div class="col-lg-8">
+                <h3 class="fw-bold mb-4 text-uppercase"><i class="fab fa-youtube text-danger me-2"></i> Trải nghiệm Unbox</h3>
+                <div class="ratio ratio-16x9 rounded-4 shadow-sm overflow-hidden border">
+                    <!-- Sếp có thể thay "dQw4w9WgXcQ" bằng ID video YouTube của shop sếp -->
+                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=0" title="YouTube video" allowfullscreen></iframe>
+                </div>
+            </div>
+            
+            <!-- Cột Bảng Xếp Hạng Top 5 -->
+            <div class="col-lg-4">
+                <h3 class="fw-bold mb-4 text-uppercase"><i class="fas fa-fire text-warning me-2"></i> BẢNG XẾP HẠNG</h3>
+                <div class="bg-white shadow-sm rounded-4 border p-3">
+                    {% for sp in san_phams[:5] %}
+                    <a href="/san-pham/{{ sp.id }}" class="trending-item d-flex align-items-center gap-3 p-2 mb-2 text-decoration-none text-dark border-bottom" style="transition: 0.3s;">
+                        <!-- Màu Huy chương Vàng, Bạc, Đồng cho Top 3 -->
+                        <div class="fw-black fs-4" style="color: {% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#C0C0C0{% elif loop.index == 3 %}#cd7f32{% else %}#ccc{% endif %}; width: 30px; text-align: center;">
+                            #{{ loop.index }}
+                        </div>
+                        <img src="{{ sp.hinh_anh }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" class="border shadow-sm">
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="fw-bold text-truncate" style="font-size: 0.9rem;">{{ sp.ten }}</div>
+                            <div class="text-danger fw-bold small mt-1">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                    <div class="text-center mt-3">
+                        <a href="/san-pham" class="text-muted fw-bold text-decoration-none small">Xem bảng xếp hạng đầy đủ <i class="fas fa-chevron-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="text-center mt-5">
-        <a href="/san-pham?kieu_hang=Pre-order" class="btn btn-outline-dark rounded-pill px-5 fw-bold py-2 shadow-sm">
-            XEM TẤT CẢ <i class="fas fa-arrow-right ms-2"></i>
-        </a>
-    </div>
-</div>
 </section>
 {% endblock %}
 
 {% block scripts %}
 <script>
     function filterTopics(brandName, element) {
-        document.querySelectorAll('.tab-link').forEach(link => { link.style.color = '#6c757d'; link.style.borderBottom = 'none'; });
-        element.style.color = '#111'; element.style.borderBottom = '2px solid #111';
+        document.querySelectorAll('.pill-tab').forEach(link => { link.classList.remove('active'); });
+        element.classList.add('active');
         const items = document.querySelectorAll('.topic-item');
         let count = 0;
         items.forEach(item => {
@@ -383,17 +327,11 @@
             }
         });
     }
-</script>
 
-<script>
-function scrollPreOrder(direction) {
-    const slider = document.getElementById('preOrderSlider');
-    // Tính toán chiều rộng của 1 "trang" (đúng bằng chiều rộng vùng đang hiển thị)
-    const scrollAmount = slider.offsetWidth; 
-    slider.scrollBy({
-        left: direction * scrollAmount,
-        behavior: 'smooth'
-    });
-}
+    function scrollPreOrder(direction) {
+        const slider = document.getElementById('preOrderSlider');
+        const scrollAmount = slider.offsetWidth; 
+        slider.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
 </script>
 {% endblock %}

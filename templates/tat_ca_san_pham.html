@@ -4,135 +4,23 @@
 
 {% block extra_css %}
 <style>
-    /* 1. CSS CARD SẢN PHẨM (ĐÃ NÂNG CẤP PREMIUM) */
-    .tms-card {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        background-color: #fff;
-        border: 1px solid #eef0f2;
-        transition: all 0.3s ease;
-        height: 100%;
-        border-radius: 15px; /* Bo góc tròn và mềm mại hơn */
-        overflow: hidden;
-        position: relative;
-    }
-
-    .tms-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-        border-color: var(--main-color);
-    }
-
-    .tms-img-wrap {
-        background-color: #fff;
-        aspect-ratio: 1 / 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 15px;
-        overflow: hidden; /* Cần thiết cho hiệu ứng Zoom */
-        position: relative;
-    }
-
-    .tms-img-wrap img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        transition: transform 0.5s ease; /* Hiệu ứng mượt */
-    }
-
-    /* Hiệu ứng Zoom ảnh khi rê chuột */
-    .tms-card:hover .tms-img-wrap img {
-        transform: scale(1.1);
-    }
-
-    /* NÚT XEM NHANH TRƯỢT TỪ DƯỚI LÊN */
-    .quick-action-bar {
-        position: absolute;
-        bottom: -50px; /* Ẩn đi khi bình thường */
-        left: 0;
-        right: 0;
-        padding: 10px;
-        background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent);
-        transition: bottom 0.3s ease;
-        text-align: center;
-    }
-
-    .tms-card:hover .quick-action-bar {
-        bottom: 0; /* Hiện lên khi hover */
-    }
-
-    /* 2. CSS THẺ TAG & THÔNG TIN */
-    .badge-item {
-        font-size: 0.6rem;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
+    .tms-card { display: flex; flex-direction: column; text-decoration: none; background-color: #fff; border: 1px solid #eef0f2; transition: all 0.3s ease; height: 100%; border-radius: 15px; overflow: hidden; position: relative; }
+    .tms-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08); border-color: var(--main-color); }
+    .tms-img-wrap { background-color: #fff; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; padding: 15px; overflow: hidden; position: relative; }
+    .tms-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
+    .tms-card:hover .tms-img-wrap img { transform: scale(1.1); }
+    .quick-action-bar { position: absolute; bottom: -50px; left: 0; right: 0; padding: 10px; background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent); transition: bottom 0.3s ease; text-align: center; }
+    .tms-card:hover .quick-action-bar { bottom: 0; }
+    .badge-item { font-size: 0.6rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
     .bg-brand { background-color: #f1f1f1; color: #555; }
     .bg-cat { background-color: #eee; color: #888; }
-
-    .tms-info { 
-        padding: 15px; 
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1; /* Để phần thông tin tự giãn ra */
-    }
-
-    .tms-name {
-        color: #111;
-        font-weight: 700;
-        font-size: 0.9rem;
-        height: 2.6em;
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        margin-bottom: 10px;
-    }
-
-    /* Hàng sao đánh giá */
-    .rating-stars {
-        color: #ffc107;
-        font-size: 0.75rem;
-        margin-bottom: 8px;
-    }
-
-    .tms-price { 
-        color: #e60012; 
-        font-weight: 800; 
-        font-size: 1.1rem; 
-        margin-top: auto; /* Ép giá luôn nằm dưới đáy card */
-    }
-
-    /* 3. BỘ LỌC SIDEBAR */
-    .filter-sidebar {
-        background: #fff;
-        border: 1px solid #eee;
-        border-radius: 15px;
-        position: sticky;
-        top: 100px;
-    }
-
-    .filter-title {
-        font-weight: 900;
-        font-size: 0.9rem;
-        border-bottom: 2px solid #111;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-    }
-
-    .form-label-sm {
-        font-size: 0.7rem;
-        font-weight: 800;
-        color: #888;
-        text-transform: uppercase;
-        margin-bottom: 5px;
-        display: block;
-    }
+    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+    .tms-name { color: #111; font-weight: 700; font-size: 0.9rem; height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 10px; }
+    .rating-stars { color: #ffc107; font-size: 0.75rem; margin-bottom: 8px; }
+    .tms-price { color: #e60012; font-weight: 800; font-size: 1.1rem; margin-top: auto; }
+    .filter-sidebar { background: #fff; border: 1px solid #eee; border-radius: 15px; position: sticky; top: 100px; }
+    .filter-title { font-weight: 900; font-size: 0.9rem; border-bottom: 2px solid #111; padding-bottom: 10px; margin-bottom: 20px; }
+    .form-label-sm { font-size: 0.7rem; font-weight: 800; color: #888; text-transform: uppercase; margin-bottom: 5px; display: block; }
 </style>
 {% endblock %}
 
@@ -145,17 +33,23 @@
 
                 <div class="mb-3">
                     <label class="form-label-sm">Từ khóa tên SP</label>
-                    <input type="text" name="tu_khoa" class="form-control form-control-sm shadow-sm"
-                        placeholder="Nhập tên mô hình..." value="{{ tu_khoa }}">
+                    <input type="text" name="tu_khoa" class="form-control form-control-sm shadow-sm" placeholder="Nhập tên mô hình..." value="{{ tu_khoa }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-sm">Sắp xếp theo</label>
+                    <select name="sap_xep" class="form-select form-select-sm shadow-sm border-primary" onchange="this.form.submit()">
+                        <option value="moi_nhat" {{ 'selected' if sap_xep_chon=='moi_nhat' }}>Hàng mới nhất</option>
+                        <option value="gia_tang" {{ 'selected' if sap_xep_chon=='gia_tang' }}>Giá: Thấp đến Cao</option>
+                        <option value="gia_giam" {{ 'selected' if sap_xep_chon=='gia_giam' }}>Giá: Cao đến Thấp</option>
+                    </select>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label-sm">Danh mục</label>
                     <select name="danh_muc" class="form-select form-select-sm shadow-sm">
                         <option value="">Tất cả danh mục</option>
-                        {% for dm in danh_mucs %}
-                        <option value="{{ dm.ten_danh_muc }}" {% if dm_chon==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>
-                        {% endfor %}
+                        {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if dm_chon==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
                     </select>
                 </div>
 
@@ -163,9 +57,7 @@
                     <label class="form-label-sm">Hãng sản xuất</label>
                     <select name="hang_sx" class="form-select form-select-sm shadow-sm">
                         <option value="">Tất cả hãng</option>
-                        {% for h in hangs %}
-                        <option value="{{ h.ten_hang }}" {% if hang_chon==h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>
-                        {% endfor %}
+                        {% for h in hangs %}<option value="{{ h.ten_hang }}" {% if hang_chon==h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>{% endfor %}
                     </select>
                 </div>
 
@@ -200,13 +92,8 @@
                     <a href="/san-pham/{{ sp.id }}" class="tms-card shadow-sm">
                         <div class="tms-img-wrap">
                             <img src="{{ sp.hinh_anh }}" loading="lazy">
-                            <div class="quick-action-bar">
-                                <span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">
-                                    XEM CHI TIẾT
-                                </span>
-                            </div>
+                            <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
                         </div>
-                        
                         <div class="tms-info d-flex flex-column flex-grow-1">
                             <div class="mb-2 d-flex flex-wrap gap-1">
                                 <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
@@ -215,18 +102,11 @@
                                     {{ 'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'ORD' }}
                                 </span>
                             </div>
-                            
                             <div class="tms-name">{{ sp.ten }}</div>
-                            
                             <div class="rating-stars mt-auto">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i> 
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> 
                                 <span class="text-muted ms-1" style="font-size: 0.7rem;">(Đã bán {{ (sp.id * 3) % 20 + 5 }})</span>
                             </div>
-                            
                             <div class="tms-price mt-1">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
                         </div>
                     </a>
@@ -243,27 +123,23 @@
                 <ul class="pagination justify-content-center shadow-sm p-2 bg-light rounded-pill mx-auto" style="width: fit-content;">
                     <li class="page-item {{ 'disabled' if page == 1 }}">
                         <a class="page-link border-0 rounded-circle mx-1 text-dark"
-                            href="?page=1&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}">
+                            href="?page=1&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}">
                             <i class="fas fa-angle-double-left"></i>
                         </a>
                     </li>
-
                     {% for p in range(1, tong_trang + 1) %}
                     {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
                     <li class="page-item {{ 'active' if p == page }}">
                         <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-danger text-white' if p == page else 'text-dark' }}"
-                            href="?page={{ p }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}">
-                            {{ p }}
-                        </a>
+                            href="?page={{ p }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}">{{ p }}</a>
                     </li>
                     {% elif p == page - 2 or p == page + 2 %}
                     <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
                     {% endif %}
                     {% endfor %}
-
                     <li class="page-item {{ 'disabled' if page == tong_trang }}">
                         <a class="page-link border-0 rounded-circle mx-1 text-dark"
-                            href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}">
+                            href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}">
                             <i class="fas fa-angle-double-right"></i>
                         </a>
                     </li>

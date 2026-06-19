@@ -1256,16 +1256,17 @@ def cai_dat_giao_dien():
 # ================= TRANG KHÁCH: TẤT CẢ SẢN PHẨM =================
 # ================= TRANG KHÁCH: TẤT CẢ SẢN PHẨM (CÓ TÌM THEO TÊN) =================
 # ================= TRANG KHÁCH: TẤT CẢ SẢN PHẨM (CẬP NHẬT BỘ LỌC TỒN KHO) =================
+# Thay thế toàn bộ hàm này trong app.py
 @app.route('/san-pham')
 def tat_ca_san_pham():
     conn = ket_noi_db()
     
-    # 1. Lấy thêm tham số 'ton_kho' từ URL
     tu_khoa = request.args.get('tu_khoa', '')
     danh_muc_loc = request.args.get('danh_muc', '')
     hang_loc = request.args.get('hang_sx', '')
     kieu_loc = request.args.get('kieu_hang', '')
-    ton_kho = request.args.get('ton_kho', '') # Biến mới ở đây sếp nhé
+    ton_kho = request.args.get('ton_kho', '') 
+    sap_xep = request.args.get('sap_xep', 'moi_nhat') # <-- BIẾN MỚI
     
     page = request.args.get('page', 1, type=int)
     per_page = 12 
@@ -1273,7 +1274,6 @@ def tat_ca_san_pham():
     cau_lenh_base = ' FROM san_pham WHERE 1=1'
     dk = []
     
-    # Ghép điều kiện tìm kiếm cũ
     if tu_khoa:
         cau_lenh_base += ' AND ten LIKE ?'; dk.append(f'%{tu_khoa}%')
     if danh_muc_loc:
@@ -1282,8 +1282,6 @@ def tat_ca_san_pham():
         cau_lenh_base += ' AND hang_sx = ?'; dk.append(hang_loc)
     if kieu_loc:
         cau_lenh_base += ' AND kieu_hang = ?'; dk.append(kieu_loc)
-        
-    # 2. LOGIC LỌC TỒN KHO MỚI
     if ton_kho == 'con_hang':
         cau_lenh_base += ' AND so_luong > 0'
     elif ton_kho == 'het_hang':
@@ -1292,21 +1290,23 @@ def tat_ca_san_pham():
     tong_sp = conn.execute('SELECT COUNT(id)' + cau_lenh_base, dk).fetchone()[0]
     tong_trang = (tong_sp + per_page - 1) // per_page
     
-    cau_lenh = 'SELECT *' + cau_lenh_base + ' ORDER BY id DESC LIMIT ? OFFSET ?'
+    # LOGIC SẮP XẾP MỚI
+    order_by = ' ORDER BY id DESC'
+    if sap_xep == 'gia_tang': order_by = ' ORDER BY gia_ban ASC'
+    elif sap_xep == 'gia_giam': order_by = ' ORDER BY gia_ban DESC'
+    
+    cau_lenh = 'SELECT *' + cau_lenh_base + order_by + ' LIMIT ? OFFSET ?'
     dk.extend([per_page, (page - 1) * per_page])
     
     san_phams = conn.execute(cau_lenh, dk).fetchall()
-    
     danh_mucs = conn.execute('SELECT DISTINCT the_loai as ten_danh_muc FROM san_pham').fetchall()
     hangs = conn.execute('SELECT DISTINCT hang_sx as ten_hang FROM san_pham').fetchall()
-    
     conn.close()
     
-    # 3. TRUYỀN BIẾN ton_kho_chon RA NGOÀI HTML
     return render_template('tat_ca_san_pham.html', san_phams=san_phams, danh_mucs=danh_mucs, hangs=hangs, 
                            page=page, tong_trang=tong_trang, 
                            dm_chon=danh_muc_loc, hang_chon=hang_loc, kieu_chon=kieu_loc, 
-                           tu_khoa=tu_khoa, ton_kho_chon=ton_kho)
+                           tu_khoa=tu_khoa, ton_kho_chon=ton_kho, sap_xep_chon=sap_xep)
 
 # ================= XỬ LÝ THANH TOÁN & ĐẶT HÀNG =================
 @app.route('/thanh-toan', methods=['GET', 'POST'])
