@@ -280,9 +280,8 @@
             <!-- Cột Video Youtube -->
             <div class="col-lg-8">
                 <h3 class="fw-bold mb-4 text-uppercase"><i class="fab fa-youtube text-danger me-2"></i> Trải nghiệm Unbox</h3>
-                <div class="ratio ratio-16x9 rounded-4 shadow-sm overflow-hidden border">
-                    <!-- Sếp có thể thay "dQw4w9WgXcQ" bằng ID video YouTube của shop sếp -->
-                    <iframe src="https://www.youtube.com/embed/HGCsAcFzaFw" title="YouTube video" allowfullscreen></iframe>
+                <div class="ratio ratio-16x9 rounded-4 shadow-sm overflow-hidden border bg-light">
+                    <iframe src="https://www.youtube.com/embed/{{ settings.video_trang_chu | default('HGCsAcFzaFw') }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 </div>
             </div>
             

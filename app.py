@@ -89,7 +89,8 @@ def get_settings():
             "dia_chi": "TP. Hồ Chí Minh", "dien_thoai": "091.416.5278", "email": "0914165278",
             "link_fb": "#", "link_ig": "#", "link_yt": "#",
             # THÊM 4 DÒNG NÀY ĐỂ TẠO CHỖ CHỨA CHÍNH SÁCH
-            "cs_cua_hang": "", "cs_doi_tra": "", "cs_van_chuyen": "", "hd_mua_hang": ""
+            "cs_cua_hang": "", "cs_doi_tra": "", "cs_van_chuyen": "", "hd_mua_hang": "",
+            "video_trang_chu": "HGCsAcFzaFw" # <-- THÊM DÒNG NÀY
         }
         save_settings(default_settings)
     with open(SETTINGS_FILE, 'r', encoding='utf-8') as f: return json.load(f)
@@ -1247,7 +1248,8 @@ def cai_dat_giao_dien():
             "cs_cua_hang": request.form.get('cs_cua_hang', settings.get('cs_cua_hang', '')),
             "cs_doi_tra": request.form.get('cs_doi_tra', settings.get('cs_doi_tra', '')),
             "cs_van_chuyen": request.form.get('cs_van_chuyen', settings.get('cs_van_chuyen', '')),
-            "hd_mua_hang": request.form.get('hd_mua_hang', settings.get('hd_mua_hang', ''))
+            "hd_mua_hang": request.form.get('hd_mua_hang', settings.get('hd_mua_hang', '')),
+            "video_trang_chu": request.form.get('video_trang_chu', settings.get('video_trang_chu', 'HGCsAcFzaFw'))
         }
         save_settings(new_settings)
         return redirect(url_for('cai_dat_giao_dien'))
