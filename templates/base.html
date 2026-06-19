@@ -9,18 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-
-            /* Phải viết dính liền trên một dòng như thế này mới không lỗi màu */
-            --main-color: {
-                    {
-                    settings.mau_chu_dao
-                }
-            }
-
-            ;
-            --bg-dark: #121212;
-            --bg-card: #0a0a0a;
-        }
+        /* Phải viết dính liền trên một dòng như thế này mới không lỗi màu */
+        --main-color: {{ settings.mau_chu_dao }};
+        --bg-dark: #121212;
+        --bg-card: #0a0a0a;
+    }
 
         html,
         body {
