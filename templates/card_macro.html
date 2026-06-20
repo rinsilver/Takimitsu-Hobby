@@ -1,0 +1,38 @@
+{% macro render_card(sp) %}
+<a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm h-100 text-decoration-none">
+    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+        {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
+        <div class="discount-badge">-{{ percent }}%</div>
+    {% endif %}
+
+    <div class="tms-img-wrap">
+        <span class="position-absolute top-0 start-0 m-2 badge {% if sp.kieu_hang == 'Co san' %}bg-success{% else %}bg-warning text-dark{% endif %} shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
+            {% if sp.kieu_hang == 'Co san' %}<i class="fas fa-check-circle me-1"></i> CÓ SẴN{% else %}<i class="fas fa-clock me-1"></i> ORDER{% endif %}
+        </span>
+        <img src="{{ sp.hinh_anh }}" loading="lazy">
+        <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
+    </div>
+    
+    <div class="tms-info bg-white">
+
+        <!-- Tag Hãng & Loại (Sang trọng, bo tròn viên thuốc) -->
+        <div class="mb-2 d-flex flex-wrap gap-2 align-items-center">
+            <span class="badge rounded-pill bg-dark fw-bold shadow-sm" style="font-size: 0.65rem; padding: 4px 10px; letter-spacing: 0.5px;">
+                <i class="fas fa-crown text-warning me-1"></i>{{ sp.hang_sx }}
+            </span>
+            <span class="badge rounded-pill bg-white text-secondary fw-bold shadow-sm" style="font-size: 0.65rem; padding: 4px 10px; border: 1px solid #eef0f2; letter-spacing: 0.5px;">
+                <i class="fas fa-tag text-muted opacity-50 me-1"></i>{{ sp.the_loai if sp.the_loai else 'Mô Hình' }}
+            </span>
+        </div>
+
+        <h6 class="tms-name">{{ sp.ten }}</h6>
+        
+        <div class="tms-price-box">
+            <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
+            {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+            <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
+            {% endif %}
+        </div>
+    </div>
+</a>
+{% endmacro %}

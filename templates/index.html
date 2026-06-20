@@ -1,18 +1,16 @@
 {% extends "base.html" %}
+{% from 'card_macro.html' import render_card with context %}
 
 {% block title %}Trang Chủ - Thế giới mô hình{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* --- HERO BANNER --- */
     .hero-banner-wrap { position: relative; width: 100%; height: 500px; overflow: hidden; }
     .hero-banner { width: 100%; height: 100%; object-fit: cover; }
     .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%); z-index: 1; }
     .hero-content { position: absolute; top: 50%; left: 10%; transform: translateY(-50%); z-index: 2; color: white; max-width: 600px; text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
     @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(230, 0, 18, 0); } 100% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0); } }
     .btn-hero { animation: pulseGlow 2s infinite; }
-
-    /* --- DỊCH VỤ --- */
     .service-box { display: flex; align-items: center; padding: 20px 15px; border-radius: 15px; height: 100%; transition: transform 0.3s ease; border: 1px solid rgba(0,0,0,0.03); background: #fff; }
     .service-box:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     .service-box i { font-size: 2.5rem; margin-right: 15px; }
@@ -22,29 +20,9 @@
     .bg-pink-light { border-left: 4px solid #dc3545; }
     .bg-yellow-light { border-left: 4px solid #ffc107; }
     .bg-green-light { border-left: 4px solid #198754; }
-
-    /* --- THẺ SẢN PHẨM PREMIUM --- */
-    .tms-card { display: flex; flex-direction: column; text-decoration: none; background-color: #fff; border: 1px solid #eef0f2; transition: all 0.3s ease; height: 100%; border-radius: 15px; position: relative; overflow: hidden; }
-    .tms-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08); border-color: var(--main-color); }
-    .discount-badge { position: absolute; top: 10px; right: 10px; background: #e60012; color: #fff; font-weight: 900; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; z-index: 5; box-shadow: 0 4px 10px rgba(230,0,18,0.3); }
-    .tms-img-wrap { background-color: #fff; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; padding: 15px; position: relative; overflow: hidden; }
-    .tms-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
-    .tms-card:hover .tms-img-wrap img { transform: scale(1.1); }
-    .quick-action-bar { position: absolute; bottom: -50px; left: 0; right: 0; padding: 10px; text-align: center; transition: bottom 0.3s ease; background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent); z-index: 4; }
-    .tms-card:hover .quick-action-bar { bottom: 0; }
-    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; border-top: 1px solid #f5f5f5; }
-    .tms-name { color: #111; font-weight: 700; font-size: 0.9rem; height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 10px; }
-    .tms-price { color: #e60012; font-weight: 900; font-size: 1.15rem; }
-    .tms-price-old { text-decoration: line-through; color: #999; font-size: 0.85rem; font-weight: bold; margin-bottom: 0; }
-    .badge-item { font-size: 0.65rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-    .bg-brand { background-color: #f1f1f1; color: #555; border: 1px solid #ddd; }
-
-    /* --- SECTION BACKGROUND LỬA --- */
     .section-avail-frame { background: linear-gradient(135deg, #981616 0%, #d32f2f 100%); border-radius: 20px; padding: 30px; margin: 30px 0; box-shadow: 0 10px 30px rgba(148, 30, 30, 0.3); }
     .btn-view-all-white { border: 2px solid #fff; color: #fff; padding: 10px 35px; border-radius: 30px; text-decoration: none; font-weight: 800; transition: 0.3s; display: inline-block; }
     .btn-view-all-white:hover { background: #fff; color: #981616; transform: scale(1.05); }
-
-    /* --- TABS BỘ SƯU TẬP --- */
     .pill-tab { padding: 8px 20px; border-radius: 30px; border: 1px solid #ddd; color: #666; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: all 0.3s ease; text-transform: uppercase; }
     .pill-tab:hover { background-color: #f8f9fa; border-color: #bbb; color: #111; }
     .pill-tab.active { background-color: var(--main-color); color: #fff; border-color: var(--main-color); box-shadow: 0 4px 10px rgba(230,0,18,0.3); }
@@ -81,12 +59,8 @@
         </div>
         {% endif %}
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#hero" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon shadow-lg"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#hero" data-bs-slide="next">
-        <span class="carousel-control-next-icon shadow-lg"></span>
-    </button>
+    <button class="carousel-control-prev" type="button" data-bs-target="#hero" data-bs-slide="prev"><span class="carousel-control-prev-icon shadow-lg"></span></button>
+    <button class="carousel-control-next" type="button" data-bs-target="#hero" data-bs-slide="next"><span class="carousel-control-next-icon shadow-lg"></span></button>
 </div>
 
 <div class="container mt-5 mb-4">
@@ -106,34 +80,7 @@
         </div>
         <div class="row row-cols-2 row-cols-md-4 g-4">
             {% for sp in hang_co_san[:4] %}
-            <div class="col">
-                <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow border-0">
-                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
-                        {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
-                        <div class="discount-badge">-{{ percent }}%</div>
-                    {% endif %}
-
-                    <div class="tms-img-wrap">
-                        <span class="position-absolute top-0 start-0 m-2 badge bg-success shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
-                            <i class="fas fa-check-circle me-1"></i> SẴN HÀNG
-                        </span>
-                        <img src="{{ sp.hinh_anh }}" loading="lazy">
-                        <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">MUA NGAY</span></div>
-                    </div>
-                    <div class="tms-info bg-white">
-                        <div class="mb-2 d-flex flex-wrap gap-1">
-                            <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
-                        </div>
-                        <div class="tms-name">{{ sp.ten }}</div>
-                        <div class="mt-auto d-flex align-items-center flex-wrap gap-2">
-                            <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
-                            {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
-                            <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </a>
-            </div>
+            <div class="col">{{ render_card(sp) }}</div>
             {% endfor %}
         </div>
         <div class="text-center mt-4 d-md-none"><a href="/san-pham?kieu_hang=Co+san" class="btn-view-all-white w-100">XEM TẤT CẢ</a></div>
@@ -157,42 +104,7 @@
         <div class="row row-cols-2 row-cols-md-4 g-4 text-start" id="topicsContainer">
             {% for sp in san_phams %}
             <div class="col topic-item brand-{{ sp.hang_sx }} {{ 'd-block' if loop.index <= 8 else 'd-none' }}">
-                <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm">
-                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
-                        {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
-                        <div class="discount-badge">-{{ percent }}%</div>
-                    {% endif %}
-
-                    <div class="tms-img-wrap">
-                        <span class="position-absolute top-0 start-0 m-2 badge {% if sp.kieu_hang == 'Co san' %}bg-success{% else %}bg-warning text-dark{% endif %} shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
-                            {% if sp.kieu_hang == 'Co san' %}
-                                <i class="fas fa-check-circle me-1"></i> CÓ SẴN
-                            {% else %}
-                                <i class="fas fa-clock me-1"></i> ORDER
-                            {% endif %}
-                        </span>
-                        <img src="{{ sp.hinh_anh }}" loading="lazy">
-                        <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
-                    </div>
-                    <div class="tms-info bg-white">
-                        <div class="mb-2 d-flex flex-wrap gap-1">
-                            <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
-                            <span class="badge-item bg-light border text-muted">{{ sp.the_loai }}</span>
-                        </div>
-                        <div class="tms-name">{{ sp.ten }}</div>
-                        <div class="mt-auto">
-                            {% if sp.kieu_hang == 'Pre-order' and sp.ngay_phat_hanh %}
-                            <div class="small text-warning fw-bold mb-2"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp.ngay_phat_hanh }}</div>
-                            {% endif %}
-                            <div class="d-flex align-items-center flex-wrap gap-2">
-                                <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
-                                {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
-                                <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </a>
+                {{ render_card(sp) }}
             </div>
             {% endfor %}
         </div>
@@ -222,32 +134,7 @@
                 <style>#preOrderSlider::-webkit-scrollbar { display: none; }</style>
                 {% for sp in hang_order %}
                 <div class="px-2" style="flex: 0 0 calc(100% / 4); min-width: 250px; scroll-snap-align: start;">
-                    <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm">
-                        {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
-                            {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
-                            <div class="discount-badge">-{{ percent }}%</div>
-                        {% endif %}
-                        <div class="tms-img-wrap">
-                            <span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark fw-bold rounded-pill z-3 shadow-sm" style="font-size: 0.7rem;"><i class="fas fa-clock me-1"></i> SẮP VỀ</span>
-                            <img src="{{ sp.hinh_anh }}" loading="lazy">
-                            <div class="quick-action-bar"><span class="btn btn-warning btn-sm rounded-pill fw-bold w-75 shadow-sm text-dark">ĐẶT TRƯỚC</span></div>
-                        </div>
-                        <div class="tms-info bg-white">
-                            <div class="mb-2"><span class="badge-item bg-brand">{{ sp.hang_sx }}</span></div>
-                            <div class="tms-name">{{ sp.ten }}</div>
-                            <div class="mt-auto">
-                                {% if sp.ngay_phat_hanh %}
-                                <div class="small text-warning fw-bold mb-2"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp.ngay_phat_hanh }}</div>
-                                {% endif %}
-                                <div class="d-flex align-items-center flex-wrap gap-2">
-                                    <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
-                                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
-                                    <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                    {{ render_card(sp) }}
                 </div>
                 {% endfor %}
             </div>
@@ -269,9 +156,7 @@
                 <div class="bg-white shadow-sm rounded-4 border p-3">
                     {% for sp in san_phams[:5] %}
                     <a href="/san-pham/{{ encode_id(sp.id) }}" class="trending-item d-flex align-items-center gap-3 p-2 mb-2 text-decoration-none text-dark border-bottom" style="transition: 0.3s;">
-                        <div class="fw-black fs-4" style="color: {% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#C0C0C0{% elif loop.index == 3 %}#cd7f32{% else %}#ccc{% endif %}; width: 30px; text-align: center;">
-                            #{{ loop.index }}
-                        </div>
+                        <div class="fw-black fs-4" style="color: {% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#C0C0C0{% elif loop.index == 3 %}#cd7f32{% else %}#ccc{% endif %}; width: 30px; text-align: center;">#{{ loop.index }}</div>
                         <img src="{{ sp.hinh_anh }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" class="border shadow-sm">
                         <div class="flex-grow-1 overflow-hidden">
                             <div class="fw-bold text-truncate" style="font-size: 0.9rem;">{{ sp.ten }}</div>
@@ -279,9 +164,7 @@
                         </div>
                     </a>
                     {% endfor %}
-                    <div class="text-center mt-3">
-                        <a href="/san-pham" class="text-muted fw-bold text-decoration-none small">Xem bảng xếp hạng đầy đủ <i class="fas fa-chevron-right ms-1"></i></a>
-                    </div>
+                    <div class="text-center mt-3"><a href="/san-pham" class="text-muted fw-bold text-decoration-none small">Xem bảng xếp hạng đầy đủ <i class="fas fa-chevron-right ms-1"></i></a></div>
                 </div>
             </div>
         </div>
@@ -303,7 +186,6 @@
             }
         });
     }
-
     function scrollPreOrder(direction) {
         const slider = document.getElementById('preOrderSlider');
         const scrollAmount = slider.offsetWidth; 
