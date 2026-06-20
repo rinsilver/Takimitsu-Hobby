@@ -56,6 +56,35 @@ def save_settings(settings_data):
     with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
         json.dump(settings_data, f, ensure_ascii=False, indent=4)
 
+# HÀM LẤY MENU ĐỘNG TỪ DATABASE
+def get_mega_menu():
+    conn = ket_noi_db()
+    try:
+        items = conn.execute('SELECT * FROM menu_item ORDER BY cot ASC, id ASC').fetchall()
+    except:
+        # Nếu thiếu bảng, tự động tạo và bơm dữ liệu mẫu
+        conn.execute('CREATE TABLE IF NOT EXISTS menu_item (id INTEGER PRIMARY KEY AUTOINCREMENT, cot INTEGER, nhom TEXT, icon_nhom TEXT, ten_link TEXT, url TEXT, badge_html TEXT)')
+        defaults = [
+            (1, 'BANDAI SPIRITS', 'fas fa-robot', 'S.H.Figuarts', '/san-pham?hang_sx=Bandai', ''),
+            (1, 'BANDAI SPIRITS', 'fas fa-robot', 'Mô hình khớp cử động', '/san-pham?danh_muc=Action Figure', ''),
+            (2, 'THƯƠNG HIỆU KHÁC', 'fas fa-chess-knight', 'Good Smile Company', '/san-pham?hang_sx=Good Smile', ''),
+            (2, 'THƯƠNG HIỆU KHÁC', 'fas fa-chess-knight', 'Nendoroid & Figma', '/san-pham?hang_sx=Figma', ''),
+            (3, 'HOT TREND', 'fas fa-fire', 'Hàng có sẵn', '/san-pham?kieu_hang=Co san', '<span class="badge bg-success rounded-circle p-1 me-1" style="font-size:0.4rem;"> </span>'),
+            (3, 'HOT TREND', 'fas fa-fire', 'Hàng Pre-order', '/san-pham?kieu_hang=Pre-order', '<span class="badge bg-warning text-dark p-1 me-1" style="font-size:0.5rem;"><i class="fas fa-hourglass-half"></i></span>')
+        ]
+        conn.executemany('INSERT INTO menu_item (cot, nhom, icon_nhom, ten_link, url, badge_html) VALUES (?,?,?,?,?,?)', defaults)
+        conn.commit()
+        items = conn.execute('SELECT * FROM menu_item ORDER BY cot ASC, id ASC').fetchall()
+    conn.close()
+    
+    cots = {}
+    for row in items:
+        cot = row['cot']
+        if cot not in cots:
+            cots[cot] = {'nhom': row['nhom'], 'icon': row['icon_nhom'], 'links': []}
+        cots[cot]['links'].append(row)
+    return cots
+
 @app.context_processor
 def inject_data():
     gio_hang = session.get('gio_hang', [])
@@ -64,13 +93,13 @@ def inject_data():
         for item in gio_hang:
             if isinstance(item, dict) and 'so_luong' in item:
                 so_luong += item['so_luong']
-
     return dict(
         so_luong_gio_hang=so_luong, 
         is_admin='admin_id' in session, 
         is_khach='khach_id' in session, 
         khach_ten=session.get('khach_ten', ''),
         settings=get_settings(),
+        mega_menu=get_mega_menu(), # <-- BƠM MENU VÀO GIAO DIỆN
         encode_id=lambda id: hashids.encode(id)
     )
 
@@ -99,13 +128,25 @@ def tao_bang():
         ngay_dat DATETIME DEFAULT CURRENT_TIMESTAMP, trang_thai TEXT DEFAULT "Chờ xử lý")''')
     conn.execute('CREATE TABLE IF NOT EXISTS chi_tiet_don (id INTEGER PRIMARY KEY AUTOINCREMENT, don_hang_id INTEGER, san_pham_id INTEGER, so_luong INTEGER, gia REAL)')
     conn.execute('CREATE TABLE IF NOT EXISTS anh_san_pham (id INTEGER PRIMARY KEY AUTOINCREMENT, san_pham_id INTEGER, du_ong_dan TEXT)')
+    
+    # --- BẢNG MỚI: QUẢN LÝ MEGA MENU ---
+    conn.execute('CREATE TABLE IF NOT EXISTS menu_item (id INTEGER PRIMARY KEY AUTOINCREMENT, cot INTEGER, nhom TEXT, icon_nhom TEXT, ten_link TEXT, url TEXT, badge_html TEXT)')
+    if conn.execute("SELECT COUNT(*) FROM menu_item").fetchone()[0] == 0:
+        defaults = [
+            (1, 'BANDAI SPIRITS', 'fas fa-robot', 'S.H.Figuarts', '/san-pham?hang_sx=Bandai', ''),
+            (1, 'BANDAI SPIRITS', 'fas fa-robot', 'Mô hình khớp cử động', '/san-pham?danh_muc=Action Figure', ''),
+            (2, 'THƯƠNG HIỆU KHÁC', 'fas fa-chess-knight', 'Good Smile Company', '/san-pham?hang_sx=Good Smile', ''),
+            (2, 'THƯƠNG HIỆU KHÁC', 'fas fa-chess-knight', 'Nendoroid & Figma', '/san-pham?hang_sx=Figma', ''),
+            (3, 'HOT TREND', 'fas fa-fire', 'Hàng có sẵn', '/san-pham?kieu_hang=Co san', '<span class="badge bg-success rounded-circle p-1 me-1" style="font-size:0.4rem;"> </span>'),
+            (3, 'HOT TREND', 'fas fa-fire', 'Hàng Pre-order', '/san-pham?kieu_hang=Pre-order', '<span class="badge bg-warning text-dark p-1 me-1" style="font-size:0.5rem;"><i class="fas fa-hourglass-half"></i></span>')
+        ]
+        conn.executemany('INSERT INTO menu_item (cot, nhom, icon_nhom, ten_link, url, badge_html) VALUES (?,?,?,?,?,?)', defaults)
 
     try:
         conn.execute("ALTER TABLE san_pham ADD COLUMN so_luong_nhap INTEGER DEFAULT 0")
         conn.execute("UPDATE san_pham SET so_luong_nhap = so_luong WHERE so_luong_nhap = 0")
     except:
         pass
-
     try:
         conn.execute("ALTER TABLE san_pham ADD COLUMN gia_goc REAL DEFAULT 0")
     except: pass
@@ -442,10 +483,14 @@ def sua_san_pham(id):
             request.form.get('ngay_ve', ''), gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew
         ]
         if f and f.filename != '':
-            ten_file = secure_filename(f.filename)
-            f.save(os.path.join(app.config['UPLOAD_FOLDER'], ten_file))
+            filename = secure_filename(f.filename)
+            base_name = os.path.splitext(filename)[0]
+            webp_name = f"{base_name}_{id}_main.webp"
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], webp_name)
+            img_raw = Image.open(f)
+            img_raw.convert("RGB").save(save_path, "WEBP", quality=80)
             img_sql = ", hinh_anh = ?"
-            tham_so.append('/static/uploads/' + ten_file)
+            tham_so.append('/static/uploads/' + webp_name)
         tham_so.append(id)
 
         conn.execute(f'''UPDATE san_pham SET 
@@ -454,11 +499,17 @@ def sua_san_pham(id):
             trang_thai_nhap=?, ngay_du_kien_ve=?, gia_san_new=?, gia_san_likenew=?, gia_order_new=?, gia_order_likenew=? {img_sql} 
             WHERE id=?''', tuple(tham_so))
         
+        # --- ĐOẠN XỬ LÝ ẢNH PHỤ (Đã được vá bảo mật & tối ưu WebP) ---
         for pf in request.files.getlist('hinh_anh_phu'):
             if pf and pf.filename != '':
-                ten_file = secure_filename(pf.filename)
-                pf.save(os.path.join(app.config['UPLOAD_FOLDER'], ten_file))
-                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (id, '/static/uploads/'+ten_file))
+                filename_phu = secure_filename(pf.filename)
+                base_name_phu = os.path.splitext(filename_phu)[0]
+                import time
+                webp_name_phu = f"{base_name_phu}_{id}_{int(time.time())}.webp"
+                save_path_phu = os.path.join(app.config['UPLOAD_FOLDER'], webp_name_phu)
+                img_phu_raw = Image.open(pf)
+                img_phu_raw.convert("RGB").save(save_path_phu, "WEBP", quality=80)
+                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (id, '/static/uploads/' + webp_name_phu))
         conn.commit(); conn.close()
         return redirect(url_for('admin')) 
 
@@ -823,40 +874,66 @@ def ho_so_khach():
 def cai_dat_giao_dien():
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     settings = get_settings()
+    conn = ket_noi_db()
+    
     if request.method == 'POST':
-        def xu_ly_anh(ten_input, file_cu):
-            if request.form.get(f'is_delete_{ten_input}') == 'true': return "" 
-            file = request.files.get(ten_input)
-            if file and file.filename != '':
-                filename = secure_filename(file.filename)
-                filepath = os.path.join('static/uploads', filename)
-                file.save(filepath)
-                return '/' + filepath
-            return file_cu
+        hanh_dong = request.form.get('hanh_dong')
+        
+        # 1. XỬ LÝ LƯU CẤU HÌNH CHUNG
+        if hanh_dong == 'luu_cai_dat_chung':
+            def xu_ly_anh(ten_input, file_cu):
+                if request.form.get(f'is_delete_{ten_input}') == 'true': return "" 
+                file = request.files.get(ten_input)
+                if file and file.filename != '':
+                    filepath = os.path.join('static/uploads', secure_filename(file.filename))
+                    file.save(filepath); return '/' + filepath
+                return file_cu
 
-        new_settings = {
-            "ten_web": request.form.get('ten_web', settings.get('ten_web')),
-            "mau_chu_dao": request.form.get('mau_chu_dao', settings.get('mau_chu_dao')),
-            "thong_tin_footer": request.form.get('thong_tin_footer', ''),
-            "dia_chi": request.form.get('dia_chi', ''),
-            "dien_thoai": request.form.get('dien_thoai', ''),
-            "email": request.form.get('email', ''),
-            "ma_so_thue": request.form.get('ma_so_thue', settings.get('ma_so_thue', '')),
-            "link_fb": request.form.get('link_fb', '#'),
-            "link_ig": request.form.get('link_ig', '#'),
-            "link_yt": request.form.get('link_yt', '#'),
-            "logo_url": xu_ly_anh('logo_file', settings.get('logo_url')),
-            "banner_1": xu_ly_anh('banner_1_file', settings.get('banner_1')),
-            "banner_2": xu_ly_anh('banner_2_file', settings.get('banner_2')),
-            "cs_cua_hang": request.form.get('cs_cua_hang', settings.get('cs_cua_hang', '')),
-            "cs_doi_tra": request.form.get('cs_doi_tra', settings.get('cs_doi_tra', '')),
-            "cs_van_chuyen": request.form.get('cs_van_chuyen', settings.get('cs_van_chuyen', '')),
-            "hd_mua_hang": request.form.get('hd_mua_hang', settings.get('hd_mua_hang', '')),
-            "video_trang_chu": request.form.get('video_trang_chu', settings.get('video_trang_chu', 'HGCsAcFzaFw'))
-        }
-        save_settings(new_settings)
+            settings['ten_web'] = request.form.get('ten_web', settings.get('ten_web'))
+            settings['mau_chu_dao'] = request.form.get('mau_chu_dao', settings.get('mau_chu_dao'))
+            settings['dia_chi'] = request.form.get('dia_chi', '')
+            settings['dien_thoai'] = request.form.get('dien_thoai', '')
+            settings['email'] = request.form.get('email', '')
+            settings['ma_so_thue'] = request.form.get('ma_so_thue', '')
+            settings['link_fb'] = request.form.get('link_fb', '#')
+            settings['link_ig'] = request.form.get('link_ig', '#')
+            settings['link_yt'] = request.form.get('link_yt', '#')
+            settings['video_trang_chu'] = request.form.get('video_trang_chu', 'HGCsAcFzaFw')
+            settings['logo_url'] = xu_ly_anh('logo_file', settings.get('logo_url'))
+            settings['banner_1'] = xu_ly_anh('banner_1_file', settings.get('banner_1'))
+            settings['banner_2'] = xu_ly_anh('banner_2_file', settings.get('banner_2'))
+            save_settings(settings)
+            flash('Đã lưu Cấu Hình Chung thành công!', 'success')
+
+        # 2. XỬ LÝ LƯU NỘI DUNG CHÍNH SÁCH
+        elif hanh_dong == 'luu_chinh_sach':
+            settings['cs_cua_hang'] = request.form.get('cs_cua_hang', '')
+            settings['cs_doi_tra'] = request.form.get('cs_doi_tra', '')
+            settings['cs_van_chuyen'] = request.form.get('cs_van_chuyen', '')
+            settings['hd_mua_hang'] = request.form.get('hd_mua_hang', '')
+            save_settings(settings)
+            flash('Đã lưu Nội dung Chính Sách!', 'success')
+            
+        # 3. XỬ LÝ THÊM LINK MENU
+        elif hanh_dong == 'them_menu':
+            conn.execute('INSERT INTO menu_item (cot, nhom, icon_nhom, ten_link, url, badge_html) VALUES (?,?,?,?,?,?)',
+                         (request.form['cot'], request.form['nhom'], request.form['icon_nhom'], request.form['ten_link'], request.form['url'], request.form.get('badge_html','')))
+            conn.commit()
+            flash('Đã thêm link vào Menu!', 'success')
+            
+        # 4. XỬ LÝ XÓA LINK MENU
+        elif hanh_dong == 'xoa_menu':
+            conn.execute('DELETE FROM menu_item WHERE id=?', (request.form['id'],))
+            conn.commit()
+            flash('Đã xóa link khỏi Menu!', 'success')
+            
+        conn.close()
         return redirect(url_for('cai_dat_giao_dien'))
-    return render_template('cai_dat.html', settings=settings)
+        
+    try: items = conn.execute('SELECT * FROM menu_item ORDER BY cot ASC, id ASC').fetchall()
+    except: items = []
+    conn.close()
+    return render_template('cai_dat.html', settings=settings, items=items)
 
 @app.route('/san-pham')
 def tat_ca_san_pham():
@@ -963,28 +1040,9 @@ def search_products_api():
         ket_qua.append({"id": sp['id'], "ten": sp['ten'], "hinh_anh": sp['hinh_anh'], "gia": "{:,.0f}".format(sp['gia_ban']), "status": sp['kieu_hang']})
     return jsonify(ket_qua)
 
-@app.route('/doi-mat-khau', methods=['POST'])
-def doi_mat_khau():
-    khach_id = session.get('khach_id')
-    if not khach_id: return redirect(url_for('dang_nhap'))
-    
-    mk_cu = request.form['mk_cu']
-    mk_moi = request.form['mk_moi']
-    
-    conn = ket_noi_db()
-    user = conn.execute('SELECT mat_khau FROM khach_hang WHERE id = ?', (khach_id,)).fetchone()
-    
-    # Kiểm tra MK cũ
-    if check_password_hash(user['mat_khau'], mk_cu) or user['mat_khau'] == mk_cu:
-        hashed_new = generate_password_hash(mk_moi)
-        conn.execute('UPDATE khach_hang SET mat_khau = ? WHERE id = ?', (hashed_new, khach_id))
-        conn.commit()
-        flash('Đổi mật khẩu thành công!', 'success')
-    else:
-        flash('Mật khẩu cũ không chính xác!', 'danger')
-        
-    conn.close()
-    return redirect(url_for('ho_so_khach'))
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 if __name__ == '__main__':
     Timer(1.5, lambda: webbrowser.open_new('http://127.0.0.1:5000/')).start()

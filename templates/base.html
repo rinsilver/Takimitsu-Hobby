@@ -8,138 +8,443 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main-color: {{ settings.mau_chu_dao }}; --bg-dark: #121212; --bg-card: #0a0a0a; }
+        :root {
+        /* Phải viết dính liền trên một dòng như thế này mới không lỗi màu */
+        --main-color: {{ settings.mau_chu_dao }};
+        --bg-dark: #121212;
+        --bg-card: #0a0a0a;
+    }
 
         /* HIỆU ỨNG CHUYỂN TRANG MƯỢT MÀ */
-        .anime-fade-in { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        .anime-fade-in {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
 
-        html, body { height: 100%; margin: 0; }
-        body { display: flex; flex-direction: column; min-height: 100vh; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8f9fa; color: #111; overflow-x: hidden; }
-        .content-wrapper { flex: 1 0 auto; }
-        footer { flex-shrink: 0; }
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: #f8f9fa;
+            color: #111;
+            overflow-x: hidden;
+        }
+
+        .content-wrapper {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
 
         /* ========================================================== */
         /* --- CSS LÕI CHO TẤT CẢ THẺ SẢN PHẨM (CARD) TRÊN WEB --- */
         /* ========================================================== */
-        .tms-card { display: flex; flex-direction: column; text-decoration: none; background-color: #fff; border: 1px solid #eef0f2; transition: all 0.3s ease; height: 100%; border-radius: 12px; overflow: hidden; position: relative; }
-        .tms-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08); border-color: var(--main-color); }
-        .discount-badge { position: absolute; top: 10px; right: 10px; background: #e60012; color: #fff; font-weight: 900; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; z-index: 5; box-shadow: 0 4px 10px rgba(230,0,18,0.3); }
-        .tms-img-wrap { background-color: #fff; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; padding: 15px; position: relative; overflow: hidden; }
-        .tms-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
-        .tms-card:hover .tms-img-wrap img { transform: scale(1.08); }
-        .quick-action-bar { position: absolute; bottom: -50px; left: 0; right: 0; padding: 10px; text-align: center; transition: bottom 0.3s ease; background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent); z-index: 4; }
-        .tms-card:hover .quick-action-bar { bottom: 0; }
-        
-        .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; background: #fff; }
-        .tms-name { color: #111; font-weight: 700; font-size: 0.95rem; line-height: 1.4; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 12px; }
-        
-        .tms-price-box { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 12px; border-top: 1px dashed #eef0f2; margin-top: auto; }
-        .tms-price { color: #e60012; font-weight: 900; font-size: 1.25rem; line-height: 1; }
-        .tms-price-old { text-decoration: line-through; color: #a0a0a0; font-size: 0.85rem; font-weight: 700; line-height: 1.2; }
+        .tms-card {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #eef0f2;
+            transition: all 0.3s ease;
+            height: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tms-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+            border-color: var(--main-color);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e60012;
+            color: #fff;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 5;
+            box-shadow: 0 4px 10px rgba(230, 0, 18, 0.3);
+        }
+
+        .tms-img-wrap {
+            background-color: #fff;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tms-img-wrap img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.5s ease;
+        }
+
+        .tms-card:hover .tms-img-wrap img {
+            transform: scale(1.08);
+        }
+
+        .quick-action-bar {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            text-align: center;
+            transition: bottom 0.3s ease;
+            background: linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.7), transparent);
+            z-index: 4;
+        }
+
+        .tms-card:hover .quick-action-bar {
+            bottom: 0;
+        }
+
+        .tms-info {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            background: #fff;
+        }
+
+        .tms-name {
+            color: #111;
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            height: 2.8em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-bottom: 12px;
+        }
+
+        .tms-price-box {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 12px;
+            border-top: 1px dashed #eef0f2;
+            margin-top: auto;
+        }
+
+        .tms-price {
+            color: #e60012;
+            font-weight: 900;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .tms-price-old {
+            text-decoration: line-through;
+            color: #a0a0a0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
         /* ========================================================== */
 
         /* 1. NAVBAR & SEARCH */
         .navbar {
-            border-bottom: 4px solid var(--main-color) !important; /* Viền đỏ dày dặn hơn */
+            border-bottom: 4px solid var(--main-color) !important;
+            /* Viền đỏ dày dặn hơn */
             background-color: #111 !important;
             padding: 12px 0;
         }
 
-        .nav-search-form { flex: 1; max-width: 500px; margin: 0 auto; padding: 0 20px; }
-        .nav-search-input { 
-            background-color: #222 !important; /* Màu nền ô search tối hơn */
-            border: 1px solid #333 !important; 
-            color: #fff !important; 
-            border-radius: 20px 0 0 20px !important; 
-            padding-left: 20px !important; 
+        .nav-search-form {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
-        .nav-search-input::placeholder { color: #888 !important; opacity: 1; }
-        .nav-search-btn { 
-            border-radius: 0 20px 20px 0 !important; 
-            background-color: #222 !important; 
-            border: 1px solid #333 !important; 
-            border-left: none !important; 
-            color: #888 !important; transition: 0.3s;
+
+        .nav-search-input {
+            background-color: #222 !important;
+            /* Màu nền ô search tối hơn */
+            border: 1px solid #333 !important;
+            color: #fff !important;
+            border-radius: 20px 0 0 20px !important;
+            padding-left: 20px !important;
         }
-        .nav-search-btn:hover { color: var(--main-color) !important; }
+
+        .nav-search-input::placeholder {
+            color: #888 !important;
+            opacity: 1;
+        }
+
+        .nav-search-btn {
+            border-radius: 0 20px 20px 0 !important;
+            background-color: #222 !important;
+            border: 1px solid #333 !important;
+            border-left: none !important;
+            color: #888 !important;
+            transition: 0.3s;
+        }
+
+        .nav-search-btn:hover {
+            color: var(--main-color) !important;
+        }
 
         /* 2. NÂNG CẤP MEGA MENU (TRONG SUỐT & CHIA CỘT) */
-        .navbar > .container { position: relative; } 
-        .mega-dropdown { position: static !important; }
-        .mega-menu { 
-            width: 100%; left: 0; right: 0; padding: 0 !important; 
+        .navbar>.container {
+            position: relative;
+        }
+
+        .mega-dropdown {
+            position: static !important;
+        }
+
+        .mega-menu {
+            width: 100%;
+            left: 0;
+            right: 0;
+            padding: 0 !important;
             /* Nền trong suốt 90% kết hợp ảnh chìm */
-            background: rgba(255, 255, 255, 0.9) url('https://i.imgur.com/rL4lR5W.png') no-repeat right bottom !important; 
-            backdrop-filter: blur(5px); /* Hiệu ứng kính mờ xuyên thấu */
+            background: rgba(255, 255, 255, 0.9) url('https://i.imgur.com/rL4lR5W.png') no-repeat right bottom !important;
+            backdrop-filter: blur(5px);
+            /* Hiệu ứng kính mờ xuyên thấu */
             -webkit-backdrop-filter: blur(12px);
-            background-size: 300px !important; 
-            border: 1px solid rgba(255,255,255,0.4) !important; 
-            border-top: 3px solid var(--main-color) !important; 
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important; 
-            border-radius: 0 0 15px 15px !important; 
-            margin-top: 12px !important; 
+            background-size: 300px !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border-top: 3px solid var(--main-color) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+            border-radius: 0 0 15px 15px !important;
+            margin-top: 12px !important;
         }
+
         /* Làm rõ đường kẻ phân chia các cột */
-        .mega-menu .border-end { border-right: 1px dashed rgba(0,0,0,0.15) !important; }
-        
-        .mega-menu-title { color: #111; font-size: 1rem; font-weight: 900; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; }
-        .mega-menu-title i { color: var(--main-color); margin-right: 10px; font-size: 1.2rem; }
-        .mega-menu-list { list-style: none; padding: 0; }
-        .mega-menu-list li { margin-bottom: 12px; }
-        .mega-menu-link { color: #444 !important; text-decoration: none; font-size: 0.95rem; font-weight: 700; transition: all 0.2s ease; display: block; padding: 5px 0; }
-        .mega-menu-link:hover { color: var(--main-color) !important; transform: translateX(8px); }
-        .search-cta-box { background: rgba(255,255,255,0.6); border-radius: 12px; padding: 25px; text-align: center; border: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(5px); }
+        .mega-menu .border-end {
+            border-right: 1px dashed rgba(0, 0, 0, 0.15) !important;
+        }
 
-        /* 3. FOOTER STYLE */
-        .tms-footer { background-color: #000; color: #fff; padding: 60px 0 30px; border-top: 4px solid var(--main-color); }
-        .footer-title { color: var(--main-color); font-size: 1.1rem; font-weight: 800; margin-bottom: 25px; text-transform: uppercase; display: inline-block; position: relative; }
-        .footer-title::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 40px; height: 3px; background-color: var(--main-color); }
-        .footer-link { color: #bbb !important; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 12px; transition: 0.3s; }
-        .footer-link:hover { color: var(--main-color) !important; padding-left: 5px; }
+        .mega-menu-title {
+            color: #111;
+            font-size: 1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
 
-        /* FIX MÀU MẠNG XÃ HỘI */
-        .social-list { display: flex !important; gap: 20px; list-style: none; padding: 0; margin: 0; }
-        .social-list a { color: rgba(255, 255, 255, 0.7) !important; text-decoration: none; transition: 0.3s; }
-        .social-list i { font-size: 1.5rem; }
-        .fa-facebook:hover { color: #1877F2 !important; transform: scale(1.2); }
-        .fa-instagram:hover { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; transform: scale(1.2); }
-        .fa-tiktok:hover { color: #00f2ea !important; text-shadow: 2px 0 #ff0050; transform: scale(1.2); }
+        .mega-menu-title i {
+            color: var(--main-color);
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
 
-        /* 4. CSS CHO Ô TÌM KIẾM NHANH (LIVE SEARCH KÍNH MỜ) */
-        #navSearchResults { 
-            max-height: 480px; overflow-y: auto; 
-            border: 1px solid rgba(255, 255, 255, 0.5) !important; 
-            background: rgba(255, 255, 255, 0.85) !important; /* Giảm nền trắng xuống 85% để nhìn xuyên thấu */
-            backdrop-filter: blur(15px); /* Tăng độ mờ */
-            -webkit-backdrop-filter: blur(15px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+        .mega-menu-list {
+            list-style: none;
+            padding: 0;
         }
-        .search-result-item { 
-            display: flex; align-items: center; padding: 12px 18px; 
-            text-decoration: none !important; color: #111 !important; 
-            border-bottom: 1px solid rgba(0,0,0,0.05); 
-            transition: all 0.2s ease; 
-            background: transparent; /* Nền trong suốt để lộ lớp kính */
+
+        .mega-menu-list li {
+            margin-bottom: 12px;
         }
-        .search-result-item:hover { 
-            background-color: rgba(255, 255, 255, 0.6); /* Nền hover cũng trong suốt nhẹ */
-            border-left: 4px solid var(--main-color); 
+
+        .mega-menu-link {
+            color: #444 !important;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            display: block;
+            padding: 5px 0;
         }
-        .search-result-item img { 
-            width: 50px !important; height: 50px !important; object-fit: contain; 
-            background: #fff; border-radius: 8px; margin-right: 15px; 
-            flex-shrink: 0; padding: 2px; border: 1px solid rgba(0,0,0,0.05); 
+
+        .mega-menu-link:hover {
+            color: var(--main-color) !important;
+            transform: translateX(8px);
         }
-        .search-footer-link { 
-            display: block; text-align: center; padding: 12px 10px; 
-            background: rgba(0,0,0,0.03); /* Thay màu đặc bằng nền mờ */
-            color: var(--main-color); font-weight: 800; font-size: 0.75rem; 
-            text-transform: uppercase; text-decoration: none; letter-spacing: 1px; 
+
+        .search-cta-box {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(5px);
         }
 
-        @media (max-width: 991px) { .nav-search-form { max-width: 100%; margin: 15px 0; padding: 0; } }
+        /* 3. FOOTER STYLE */
+        .tms-footer {
+            background-color: #000;
+            color: #fff;
+            padding: 60px 0 30px;
+            border-top: 4px solid var(--main-color);
+        }
+
+        .footer-title {
+            color: var(--main-color);
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            display: inline-block;
+            position: relative;
+        }
+
+        .footer-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--main-color);
+        }
+
+        .footer-link {
+            color: #bbb !important;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 12px;
+            transition: 0.3s;
+        }
+
+        .footer-link:hover {
+            color: var(--main-color) !important;
+            padding-left: 5px;
+        }
+
+        /* FIX MÀU MẠNG XÃ HỘI */
+        .social-list {
+            display: flex !important;
+            gap: 20px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .social-list a {
+            color: rgba(255, 255, 255, 0.7) !important;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .social-list i {
+            font-size: 1.5rem;
+        }
+
+        .fa-facebook:hover {
+            color: #1877F2 !important;
+            transform: scale(1.2);
+        }
+
+        .fa-instagram:hover {
+            background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transform: scale(1.2);
+        }
+
+        .fa-tiktok:hover {
+            color: #00f2ea !important;
+            text-shadow: 2px 0 #ff0050;
+            transform: scale(1.2);
+        }
+
+        /* 4. CSS CHO Ô TÌM KIẾM NHANH (LIVE SEARCH KÍNH MỜ) */
+        #navSearchResults {
+            max-height: 480px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            background: rgba(255, 255, 255, 0.85) !important;
+            /* Giảm nền trắng xuống 85% để nhìn xuyên thấu */
+            backdrop-filter: blur(15px);
+            /* Tăng độ mờ */
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            text-decoration: none !important;
+            color: #111 !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+            background: transparent;
+            /* Nền trong suốt để lộ lớp kính */
+        }
+
+        .search-result-item:hover {
+            background-color: rgba(255, 255, 255, 0.6);
+            /* Nền hover cũng trong suốt nhẹ */
+            border-left: 4px solid var(--main-color);
+        }
+
+        .search-result-item img {
+            width: 50px !important;
+            height: 50px !important;
+            object-fit: contain;
+            background: #fff;
+            border-radius: 8px;
+            margin-right: 15px;
+            flex-shrink: 0;
+            padding: 2px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .search-footer-link {
+            display: block;
+            text-align: center;
+            padding: 12px 10px;
+            background: rgba(0, 0, 0, 0.03);
+            /* Thay màu đặc bằng nền mờ */
+            color: var(--main-color);
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+        }
+
+        @media (max-width: 991px) {
+            .nav-search-form {
+                max-width: 100%;
+                margin: 15px 0;
+                padding: 0;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -148,53 +453,50 @@
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
-                {% if settings.logo_url %}<img src="{{ settings.logo_url }}" alt="Logo" height="40" class="me-2 rounded-circle">{% endif %}
+                {% if settings.logo_url %}<img src="{{ settings.logo_url }}" alt="Logo" height="40"
+                    class="me-2 rounded-circle">{% endif %}
                 <span style="color:var(--main-color); letter-spacing: 0.5px;">{{ settings.ten_web }}</span>
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <form class="d-flex nav-search-form position-relative" action="/san-pham" method="GET" autocomplete="off">
+                <form class="d-flex nav-search-form position-relative" action="/san-pham" method="GET"
+                    autocomplete="off">
                     <div class="input-group">
-                        <input id="navSearchInput" class="form-control nav-search-input" type="text" name="tu_khoa" placeholder="Tìm mô hình..." required oninput="liveSearch(this.value)" onfocus="if(this.value) document.getElementById('navSearchResults').style.display='block'">
+                        <input id="navSearchInput" class="form-control nav-search-input" type="text" name="tu_khoa"
+                            placeholder="Tìm mô hình..." required oninput="liveSearch(this.value)"
+                            onfocus="if(this.value) document.getElementById('navSearchResults').style.display='block'">
                         <button class="btn nav-search-btn" type="submit"><i class="fas fa-search"></i></button>
                     </div>
-                    <div id="navSearchResults" class="shadow-lg border-0 rounded-3 position-absolute w-100 mt-1 bg-white overflow-hidden" style="top: 100%; z-index: 1100; display: none; left: 0;"></div>
+                    <div id="navSearchResults"
+                        class="shadow-lg border-0 rounded-3 position-absolute w-100 mt-1 bg-white overflow-hidden"
+                        style="top: 100%; z-index: 1100; display: none; left: 0;"></div>
                 </form>
 
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item dropdown mega-dropdown mx-3">
-                        <a class="nav-link dropdown-toggle fw-bold text-white" href="#" data-bs-toggle="dropdown">DANH MỤC</a>
+                        <a class="nav-link dropdown-toggle fw-bold text-white" href="#" data-bs-toggle="dropdown">DANH
+                            MỤC</a>
                         <div class="dropdown-menu mega-menu shadow-lg">
                             <div class="px-4">
                                 <div class="row g-4 p-3 py-4">
+                                    {% for cot, data in mega_menu.items() %}
                                     <div class="col-md-3 border-end">
-                                        <div class="mega-menu-title"><i class="fas fa-robot"></i> BANDAI SPIRITS</div>
+                                        <div class="mega-menu-title"><i class="{{ data.icon }}"></i> {{ data.nhom }}</div>
                                         <ul class="mega-menu-list">
-                                            <li><a href="/san-pham?hang_sx=Bandai" class="mega-menu-link">S.H.Figuarts</a></li>
-                                            <li><a href="/san-pham?danh_muc=Action Figure" class="mega-menu-link">Mô hình khớp cử động</a></li>
+                                            {% for link in data.links %}
+                                            <li><a href="{{ link.url }}" class="mega-menu-link">{{ link.badge_html|safe }} {{ link.ten_link }}</a></li>
+                                            {% endfor %}
                                         </ul>
                                     </div>
-                                    <div class="col-md-3 border-end">
-                                        <div class="mega-menu-title"><i class="fas fa-chess-knight"></i> THƯƠNG HIỆU KHÁC</div>
-                                        <ul class="mega-menu-list">
-                                            <li><a href="/san-pham?hang_sx=Good Smile" class="mega-menu-link">Good Smile Company</a></li>
-                                            <li><a href="/san-pham?hang_sx=Figma" class="mega-menu-link">Nendoroid & Figma</a></li>
-                                            <li><a href="/san-pham?hang_sx=Kotobukiya" class="mega-menu-link">Kotobukiya</a></li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-2 border-end">
-                                        <div class="mega-menu-title"><i class="fas fa-fire"></i> HOT TREND</div>
-                                        <ul class="mega-menu-list">
-                                            <li><a href="/san-pham?kieu_hang=Co san" class="mega-menu-link"><span class="badge bg-success rounded-circle p-1 me-1" style="font-size:0.4rem;"> </span> Hàng có sẵn</a></li>
-                                            <li><a href="/san-pham?kieu_hang=Pre-order" class="mega-menu-link"><span class="badge bg-warning text-dark p-1 me-1" style="font-size:0.5rem;"><i class="fas fa-hourglass-half"></i></span> Hàng Pre-order</a></li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-4 ps-lg-4">
+                                    {% endfor %}
+
+                                    <div class="col-md-3 ps-lg-4">
                                         <div class="search-cta-box shadow-sm">
-                                            <h6 class="fw-bold text-dark mb-3">TAKIMITSU</h6>
+                                            <h6 class="fw-bold text-dark mb-3">TAKIMITSU HOBBY</h6>
                                             <p class="small text-muted mb-4">Khám phá hàng ngàn mẫu mô hình chính hãng tại đây.</p>
-                                            <a href="/san-pham" class="btn text-white fw-bold w-100 rounded-pill py-2 shadow-sm" style="background:var(--main-color)">XEM TẤT CẢ SẢN PHẨM</a>
+                                            <a href="/san-pham" class="btn text-white fw-bold w-100 rounded-pill py-2 shadow-sm" style="background:var(--main-color)">XEM TẤT CẢ</a>
                                         </div>
                                     </div>
                                 </div>
@@ -205,28 +507,36 @@
                     <li class="nav-item me-3"><a class="nav-link fw-bold text-white" href="/san-pham">SẢN PHẨM</a></li>
 
                     {% if is_admin or is_khach %}
-                    <li class="nav-item me-3"><a href="/ho-so" class="text-decoration-none text-light fw-bold small">Chào, <span style="color:var(--main-color)">{{ khach_ten }}</span></a></li>
-                    
+                    <li class="nav-item me-3"><a href="/ho-so"
+                            class="text-decoration-none text-light fw-bold small">Chào, <span
+                                style="color:var(--main-color)">{{ khach_ten }}</span></a></li>
+
                     <li class="nav-item me-3">
-                        <a href="/gio-hang" class="btn btn-outline-light rounded-circle position-relative" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <a href="/gio-hang" class="btn btn-outline-light rounded-circle position-relative"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
                             <i class="fas fa-shopping-cart"></i>
                             {% if so_luong_gio_hang > 0 %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill" style="font-size: 0.65rem;">{{ so_luong_gio_hang }}</span>
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill"
+                                style="font-size: 0.65rem;">{{ so_luong_gio_hang }}</span>
                             {% endif %}
                         </a>
                     </li>
-                    
+
                     {% if is_admin %}
-                    <li class="nav-item me-2"><a class="btn btn-warning fw-bold rounded-pill text-dark px-4 shadow-sm" href="/admin">QUẢN TRỊ</a></li>
+                    <li class="nav-item me-2"><a class="btn btn-warning fw-bold rounded-pill text-dark px-4 shadow-sm"
+                            href="/admin">QUẢN TRỊ</a></li>
                     {% endif %}
-                    
+
                     <li class="nav-item">
-                        <a class="btn btn-outline-danger rounded-circle" href="/dang-xuat" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <a class="btn btn-outline-danger rounded-circle" href="/dang-xuat"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
                             <i class="fas fa-sign-out-alt"></i>
                         </a>
                     </li>
                     {% else %}
-                    <li class="nav-item"><a class="btn px-4 ms-2 text-white fw-bold rounded-pill shadow-sm" style="background:var(--main-color)" href="/dang-nhap">ĐĂNG NHẬP</a></li>
+                    <li class="nav-item"><a class="btn px-4 ms-2 text-white fw-bold rounded-pill shadow-sm"
+                            style="background:var(--main-color)" href="/dang-nhap">ĐĂNG NHẬP</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -235,9 +545,11 @@
 
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="floating-toast-container" style="position: fixed; top: 85px; right: 20px; z-index: 9999; max-width: 380px; width: calc(100% - 40px);">
+    <div class="floating-toast-container"
+        style="position: fixed; top: 85px; right: 20px; z-index: 9999; max-width: 380px; width: calc(100% - 40px);">
         {% for category, message in messages %}
-        <div class="alert alert-dismissible fade show shadow-lg border-0 p-3 mb-2" role="alert" style="border-radius: 12px; background: #ffffff; box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important; border-left: 5px solid {% if category == 'success' %}#27ae60{% elif category == 'danger' %}#e74c3c{% else %}#3498db{% endif %} !important;">
+        <div class="alert alert-dismissible fade show shadow-lg border-0 p-3 mb-2" role="alert"
+            style="border-radius: 12px; background: #ffffff; box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important; border-left: 5px solid {% if category == 'success' %}#27ae60{% elif category == 'danger' %}#e74c3c{% else %}#3498db{% endif %} !important;">
             <div class="d-flex align-items-center">
                 <div class="me-3 fs-4">
                     {% if category == 'success' %}<i class="fas fa-check-circle text-success"></i>
@@ -245,11 +557,13 @@
                     {% else %}<i class="fas fa-info-circle text-primary"></i>{% endif %}
                 </div>
                 <div class="overflow-hidden">
-                    <strong class="d-block small text-uppercase text-muted" style="letter-spacing: 0.5px; font-size: 0.65rem;">Hệ thống thông báo</strong>
+                    <strong class="d-block small text-uppercase text-muted"
+                        style="letter-spacing: 0.5px; font-size: 0.65rem;">Hệ thống thông báo</strong>
                     <div class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.4;">{{ message }}</div>
                 </div>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="top: 50%; transform: translateY(-50%); right: 10px; padding: 0; width: 10px; height: 10px;"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
+                style="top: 50%; transform: translateY(-50%); right: 10px; padding: 0; width: 10px; height: 10px;"></button>
         </div>
         {% endfor %}
     </div>
@@ -270,11 +584,13 @@
                     <h4 class="fw-bold text-danger mb-4">{{ settings.ten_web }}</h4>
                     <p class="small opacity-75 mb-4" style="line-height: 1.8;">{{ settings.thong_tin_footer }}</p>
                     <div class="small opacity-75">
-                        <p class="mb-2"><i class="fas fa-map-marker-alt text-danger me-2"></i> {{ settings.dia_chi }}</p>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt text-danger me-2"></i> {{ settings.dia_chi }}
+                        </p>
                         <p class="mb-2"><i class="fas fa-phone-alt text-danger me-2"></i> {{ settings.dien_thoai }}</p>
                         <p class="mb-2"><i class="fas fa-envelope text-danger me-2"></i> {{ settings.email }}</p>
                         {% if settings.ma_so_thue %}
-                        <p class="mb-0"><i class="fas fa-file-invoice-dollar text-danger me-2"></i> MST: <strong>{{ settings.ma_so_thue }}</strong></p>
+                        <p class="mb-0"><i class="fas fa-file-invoice-dollar text-danger me-2"></i> MST: <strong>{{
+                                settings.ma_so_thue }}</strong></p>
                         {% endif %}
                     </div>
                 </div>
@@ -299,9 +615,12 @@
                     <span class="footer-title">KẾT NỐI VỚI CHÚNG TÔI</span>
                     <div class="d-flex justify-content-lg-end mt-2">
                         <ul class="social-list">
-                            <li><a href="{{ settings.link_fb }}" target="_blank" class="text-white"><i class="fab fa-facebook"></i></a></li>
-                            <li><a href="{{ settings.link_ig }}" target="_blank" class="text-white"><i class="fab fa-instagram"></i></a></li>
-                            <li><a href="{{ settings.link_yt }}" target="_blank" class="text-white"><i class="fab fa-tiktok"></i></a></li>
+                            <li><a href="{{ settings.link_fb }}" target="_blank" class="text-white"><i
+                                        class="fab fa-facebook"></i></a></li>
+                            <li><a href="{{ settings.link_ig }}" target="_blank" class="text-white"><i
+                                        class="fab fa-instagram"></i></a></li>
+                            <li><a href="{{ settings.link_yt }}" target="_blank" class="text-white"><i
+                                        class="fab fa-tiktok"></i></a></li>
                         </ul>
                     </div>
                 </div>
@@ -317,8 +636,14 @@
     <script>
         let searchTimeout;
 
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g,
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+            );
+        }
+
         function liveSearch(val) {
-            clearTimeout(searchTimeout); 
+            clearTimeout(searchTimeout);
             const resultsBox = document.getElementById('navSearchResults');
 
             if (val.length < 1) {
@@ -338,19 +663,19 @@
                                     ? `<span class="badge rounded-pill bg-success shadow-sm" style="font-size:0.65rem; padding: 3px 8px; letter-spacing: 0.5px;"><i class="fas fa-check-circle me-1"></i>SẴN</span>`
                                     : `<span class="badge rounded-pill bg-warning text-dark shadow-sm" style="font-size:0.65rem; padding: 3px 8px; letter-spacing: 0.5px;"><i class="fas fa-clock me-1"></i>ORDER</span>`;
 
+                                let safeName = escapeHTML(sp.ten);
+
                                 html += `
             <a href="/san-pham/${sp.id}" class="search-result-item">
                 <img src="${sp.hinh_anh}" onerror="this.src='/static/uploads/Logo.jpg'">
                 <div class="flex-grow-1 overflow-hidden">
-                    <div class="fw-bold text-dark text-truncate mb-1" style="font-size: 0.85rem; max-width: 95%;">${sp.ten}</div>
-                    
+                    <div class="fw-bold text-dark text-truncate mb-1" style="font-size: 0.85rem; max-width: 95%;">${safeName}</div>
                     <div class="d-flex align-items-center gap-2">
                         ${badge}
                         <div class="text-danger fw-bold" style="font-size: 0.9rem;">${sp.gia}đ</div>
                     </div>
                 </div>
-            </a>
-        `;
+            </a>`;
                             });
                             html += `<a href="/san-pham?tu_khoa=${val}" class="search-footer-link">Xem tất cả kết quả cho "${val}" <i class="fas fa-chevron-right ms-1"></i></a>`;
 
@@ -370,7 +695,10 @@
             }
         });
     </script>
-    <button onclick="topFunction()" id="backToTopBtn" class="btn btn-danger rounded-circle shadow-lg" title="Lên đầu trang" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; width: 45px; height: 45px;"><i class="fas fa-arrow-up"></i></button>
+    <button onclick="topFunction()" id="backToTopBtn" class="btn btn-danger rounded-circle shadow-lg"
+        title="Lên đầu trang"
+        style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; width: 45px; height: 45px;"><i
+            class="fas fa-arrow-up"></i></button>
     <script>
         let mybutton = document.getElementById("backToTopBtn");
         window.onscroll = function () { scrollFunction(); };

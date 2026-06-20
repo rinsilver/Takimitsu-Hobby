@@ -1,109 +1,234 @@
 {% extends "admin_base.html" %}
 {% set active_page = 'giao_dien' %}
 
-{% block title %}Cài Đặt Website{% endblock %}
+{% block title %}Cài Đặt Hệ Thống{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nav-pills .nav-link { color: #555; font-weight: 700; border-radius: 50px; padding: 10px 25px; margin-right: 10px; transition: all 0.3s ease; }
+    .nav-pills .nav-link.active, .nav-pills .show>.nav-link { background-color: #111; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+    .sticky-save-btn { position: sticky; bottom: 20px; z-index: 1000; background: #fff; padding: 15px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; text-align: center; }
+</style>
+{% endblock %}
 
 {% block content %}
-<h3 class="fw-bold mb-4 mt-2"><i class="fas fa-cogs text-primary"></i> CÀI ĐẶT WEBSITE</h3>
-<form method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="premium-card p-4 h-100">
-                <h5 class="fw-bold mb-3 border-bottom pb-2">THÔNG TIN CHUNG</h5>
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h3 class="fw-bold m-0"><i class="fas fa-cogs text-primary"></i> CÀI ĐẶT HỆ THỐNG</h3>
+</div>
+
+<ul class="nav nav-pills mb-4 shadow-sm p-2 bg-white rounded-pill d-inline-flex" id="settingsTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="chung-tab" data-bs-toggle="pill" data-bs-target="#tab-chung" type="button" role="tab"><i class="fas fa-paint-brush me-2"></i>Cấu Hình Chung</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="chinh-sach-tab" data-bs-toggle="pill" data-bs-target="#tab-chinh-sach" type="button" role="tab"><i class="fas fa-file-signature me-2"></i>Nội Dung Chính Sách</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="menu-tab" data-bs-toggle="pill" data-bs-target="#tab-menu" type="button" role="tab"><i class="fas fa-list-ul me-2"></i>Quản Lý Menu</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="settingsTabsContent">
+
+    <div class="tab-pane fade show active anime-fade-in" id="tab-chung" role="tabpanel">
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="hanh_dong" value="luu_cai_dat_chung">
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="premium-card p-4 h-100">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">THÔNG TIN CHUNG</h5>
+                        <label class="fw-bold small">Tên Website:</label>
+                        <input type="text" name="ten_web" class="form-control mb-3" value="{{ settings.ten_web }}" required>
+                        
+                        <label class="fw-bold small">Upload Logo:</label>
+                        <input type="file" name="logo_file" class="form-control mb-2">
+                        {% if settings.logo_url %}
+                        <div id="logo_container" class="position-relative d-inline-block">
+                            <img src="{{ settings.logo_url }}" height="60" class="border rounded p-1 shadow-sm">
+                            <button type="button" onclick="deleteImage('logo_file')" class="btn btn-danger btn-sm position-absolute top-0 start-100 translate-middle rounded-circle" style="width: 24px; height: 24px; padding: 0; line-height: 1;">&times;</button>
+                            <input type="hidden" name="is_delete_logo_file" id="is_delete_logo_file" value="false">
+                        </div>
+                        {% endif %}
+                        
+                        <label class="fw-bold small mt-3">Màu chủ đạo:</label>
+                        <input type="color" name="mau_chu_dao" class="form-control form-control-color mb-3 w-100" value="{{ settings.mau_chu_dao }}">
+                        
+                        <label class="fw-bold small mt-3 border-bottom pb-1 w-100">Thông tin liên hệ (Footer):</label>
+                        <input type="text" name="dia_chi" value="{{ settings.dia_chi }}" class="form-control mb-2" placeholder="Địa chỉ...">
+                        <input type="text" name="dien_thoai" value="{{ settings.dien_thoai }}" class="form-control mb-2" placeholder="Điện thoại...">
+                        <input type="text" name="email" value="{{ settings.email }}" class="form-control mb-2" placeholder="Email...">
+                        <input type="text" name="ma_so_thue" value="{{ settings.ma_so_thue }}" class="form-control mb-2 border-danger" placeholder="Mã số thuế...">
+                    </div>
+                </div>
                 
-                <label class="fw-bold small">Tên Website:</label>
-                <input type="text" name="ten_web" class="form-control mb-3" value="{{ settings.ten_web }}" placeholder="Tên Website">
-
-                <label class="fw-bold small">Upload Logo:</label>
-                <input type="file" name="logo_file" class="form-control mb-2">
-
-                {% if settings.logo_url %}
-                <div id="logo_container" class="position-relative d-inline-block">
-                    <img src="{{ settings.logo_url }}" height="60" class="border rounded p-1 shadow-sm">
-                    <button type="button" onclick="deleteImage('logo_file')" class="btn btn-danger btn-sm position-absolute top-0 start-100 translate-middle rounded-circle" style="width: 24px; height: 24px; padding: 0; line-height: 1;">&times;</button>
-                    <input type="hidden" name="is_delete_logo_file" id="is_delete_logo_file" value="false">
-                </div>
-                {% endif %}
-
-                <label class="fw-bold small mt-3">Màu chủ đạo:</label>
-                <input type="color" name="mau_chu_dao" class="form-control form-control-color mb-3 w-100" value="{{ settings.mau_chu_dao }}">
-
-                <label class="fw-bold small mt-3 border-bottom pb-1 w-100">Thông tin liên hệ (Footer):</label>
-                <input type="text" name="dia_chi" value="{{ settings.dia_chi }}" class="form-control mb-2" placeholder="Địa chỉ...">
-                <input type="text" name="dien_thoai" value="{{ settings.dien_thoai }}" class="form-control mb-2" placeholder="Điện thoại...">
-                <input type="text" name="email" value="{{ settings.email }}" class="form-control mb-2" placeholder="Email...">
-                <input type="text" name="ma_so_thue" value="{{ settings.ma_so_thue }}" class="form-control mb-2 border-danger" placeholder="Mã số thuế (nếu có)...">
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="premium-card p-4 mb-4">
-                <h5 class="fw-bold mb-3 border-bottom pb-2">BANNER TRANG CHỦ</h5>
-                <label class="fw-bold small">Banner 1:</label>
-                <input type="file" name="banner_1_file" class="form-control mb-2" accept="image/*">
-                {% if settings.banner_1 %}<img src="{{ settings.banner_1 }}" height="60" class="mb-3 rounded shadow-sm">{% endif %}
-
-                <label class="fw-bold small mt-2">Banner 2:</label>
-                <input type="file" name="banner_2_file" class="form-control mb-2" accept="image/*">
-                {% if settings.banner_2 %}<img src="{{ settings.banner_2 }}" height="60" class="mb-2 rounded shadow-sm">{% endif %}
-                <h5 class="fw-bold mt-4 mb-3 border-bottom pb-2">VIDEO TRANG CHỦ</h5>
-                <label class="fw-bold small">ID Video YouTube đập hộp:</label>
-                <div class="input-group mb-2 shadow-sm">
-                    <span class="input-group-text bg-white text-danger"><i class="fab fa-youtube"></i></span>
-                    <input type="text" name="video_trang_chu" class="form-control" value="{{ settings.video_trang_chu }}" placeholder="Ví dụ: HGCsAcFzaFw">
+                <div class="col-md-6">
+                    <div class="premium-card p-4 mb-4">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">BANNER & VIDEO TRANG CHỦ</h5>
+                        <label class="fw-bold small">Banner 1:</label>
+                        <input type="file" name="banner_1_file" class="form-control mb-2" accept="image/*">
+                        {% if settings.banner_1 %}<img src="{{ settings.banner_1 }}" height="60" class="mb-3 rounded shadow-sm">{% endif %}
+                        
+                        <label class="fw-bold small mt-2">Banner 2:</label>
+                        <input type="file" name="banner_2_file" class="form-control mb-2" accept="image/*">
+                        {% if settings.banner_2 %}<img src="{{ settings.banner_2 }}" height="60" class="mb-3 rounded shadow-sm">{% endif %}
+                        
+                        <label class="fw-bold small border-top pt-3 w-100">ID Video YouTube đập hộp:</label>
+                        <div class="input-group mb-2 shadow-sm">
+                            <span class="input-group-text bg-white text-danger"><i class="fab fa-youtube"></i></span>
+                            <input type="text" name="video_trang_chu" class="form-control" value="{{ settings.video_trang_chu }}" placeholder="VD: HGCsAcFzaFw">
+                        </div>
+                    </div>
+                    
+                    <div class="premium-card p-4">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">MẠNG XÃ HỘI</h5>
+                        <div class="input-group mb-3 shadow-sm">
+                            <span class="input-group-text bg-white"><i class="fab fa-facebook text-primary"></i></span>
+                            <input type="text" name="link_fb" class="form-control border-start-0" value="{{ settings.link_fb }}">
+                        </div>
+                        <div class="input-group mb-3 shadow-sm">
+                            <span class="input-group-text bg-white"><i class="fab fa-instagram text-danger"></i></span>
+                            <input type="text" name="link_ig" class="form-control border-start-0" value="{{ settings.link_ig }}">
+                        </div>
+                        <div class="input-group mb-2 shadow-sm">
+                            <span class="input-group-text bg-white"><i class="fab fa-youtube text-danger"></i></span>
+                            <input type="text" name="link_yt" class="form-control border-start-0" value="{{ settings.link_yt }}">
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="premium-card p-4">
-                <h5 class="fw-bold mb-3 border-bottom pb-2">MẠNG XÃ HỘI</h5>
-                <div class="input-group mb-3 shadow-sm">
-                    <span class="input-group-text bg-white"><i class="fab fa-facebook text-primary"></i></span>
-                    <input type="text" name="link_fb" class="form-control border-start-0" value="{{ settings.link_fb }}">
-                </div>
-                <div class="input-group mb-3 shadow-sm">
-                    <span class="input-group-text bg-white"><i class="fab fa-instagram text-danger"></i></span>
-                    <input type="text" name="link_ig" class="form-control border-start-0" value="{{ settings.link_ig }}">
-                </div>
-                <div class="input-group mb-2 shadow-sm">
-                    <span class="input-group-text bg-white"><i class="fab fa-youtube text-danger"></i></span>
-                    <input type="text" name="link_yt" class="form-control border-start-0" value="{{ settings.link_yt }}">
-                </div>
+            <div class="sticky-save-btn mt-4">
+                <button type="submit" class="btn btn-dark px-5 py-2 fw-bold fs-5 rounded-pill shadow-sm"><i class="fas fa-save me-2"></i> LƯU CẤU HÌNH CHUNG</button>
             </div>
-        </div>
+        </form>
+    </div>
 
-        <div class="col-12 mt-2">
-            <div class="premium-card p-4">
-                <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="fas fa-file-signature text-secondary"></i> NỘI DUNG CHÍNH SÁCH</h5>
+    <div class="tab-pane fade anime-fade-in" id="tab-chinh-sach" role="tabpanel">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="hanh_dong" value="luu_chinh_sach">
+            <div class="premium-card p-4 border-top border-danger border-4">
+                <h5 class="fw-bold mb-3 border-bottom pb-2 text-danger"><i class="fas fa-file-signature me-2"></i> NỘI DUNG CHÍNH SÁCH CỬA HÀNG</h5>
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="form-label fw-bold small">Chính sách cửa hàng</label>
-                        <textarea name="cs_cua_hang" class="form-control bg-light" rows="5">{{ settings.cs_cua_hang }}</textarea>
+                        <textarea name="cs_cua_hang" class="form-control bg-light" rows="7">{{ settings.cs_cua_hang }}</textarea>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold small">Chính sách đổi trả</label>
-                        <textarea name="cs_doi_tra" class="form-control bg-light" rows="5">{{ settings.cs_doi_tra }}</textarea>
+                        <textarea name="cs_doi_tra" class="form-control bg-light" rows="7">{{ settings.cs_doi_tra }}</textarea>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold small">Chính sách vận chuyển</label>
-                        <textarea name="cs_van_chuyen" class="form-control bg-light" rows="5">{{ settings.cs_van_chuyen }}</textarea>
+                        <textarea name="cs_van_chuyen" class="form-control bg-light" rows="7">{{ settings.cs_van_chuyen }}</textarea>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold small">Hướng dẫn mua hàng</label>
-                        <textarea name="hd_mua_hang" class="form-control bg-light" rows="5">{{ settings.hd_mua_hang }}</textarea>
+                        <textarea name="hd_mua_hang" class="form-control bg-light" rows="7">{{ settings.hd_mua_hang }}</textarea>
                     </div>
+                </div>
+            </div>
+            <div class="sticky-save-btn mt-4">
+                <button type="submit" class="btn btn-danger px-5 py-2 fw-bold fs-5 rounded-pill shadow-sm"><i class="fas fa-save me-2"></i> LƯU CÁC CHÍNH SÁCH</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="tab-pane fade anime-fade-in" id="tab-menu" role="tabpanel">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card premium-card p-4 border-top border-primary border-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle text-primary"></i> Thêm Link Menu</h5>
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="hanh_dong" value="them_menu">
+
+                        <label class="small fw-bold mb-1">Cột hiển thị (1, 2 hoặc 3)</label>
+                        <select name="cot" class="form-select mb-3 rounded-pill shadow-sm">
+                            <option value="1">Cột 1 (Bên Trái)</option>
+                            <option value="2">Cột 2 (Ở Giữa)</option>
+                            <option value="3">Cột 3 (Bên Phải)</option>
+                        </select>
+
+                        <label class="small fw-bold mb-1">Tên Tiêu đề Cột</label>
+                        <input type="text" name="nhom" class="form-control mb-3 rounded-pill shadow-sm" placeholder="VD: BANDAI SPIRITS" required>
+
+                        <label class="small fw-bold mb-1">Icon Tiêu đề (FontAwesome)</label>
+                        <label class="small fw-bold mb-1">Icon Tiêu đề</label>
+                        <select name="icon_nhom" class="form-select mb-3 rounded-pill shadow-sm bg-light fw-bold">
+                            <option value="fas fa-robot">🤖 Robot / Mecha (Robot)</option>
+                            <option value="fas fa-chess-knight">♞ Cờ / Figure (Chess)</option>
+                            <option value="fas fa-fire">🔥 Lửa / Hot (Fire)</option>
+                            <option value="fas fa-star">⭐ Ngôi sao (Star)</option>
+                            <option value="fas fa-crown">👑 Vương miện (Crown)</option>
+                            <option value="fas fa-box-open">📦 Hộp mở (Box)</option>
+                            <option value="fas fa-dragon">🐉 Rồng (Dragon)</option>
+                            <option value="fas fa-gamepad">🎮 Game (Gamepad)</option>
+                            <option value="fas fa-gem">💎 Kim cương (Gem)</option>
+                            <option value="fas fa-bolt">⚡ Tia sét (Bolt)</option>
+                        </select>
+                        <label class="small fw-bold mb-1 text-danger">Tên Link (Hiển thị cho khách) *</label>
+                        <input type="text" name="ten_link" class="form-control mb-3 rounded-pill shadow-sm border-danger" placeholder="VD: S.H.Figuarts" required>
+
+                        <label class="small fw-bold mb-1 text-danger">Đường Dẫn (URL) *</label>
+                        <input type="text" name="url" class="form-control mb-3 rounded-pill shadow-sm border-danger" placeholder="VD: /san-pham?hang_sx=Bandai" required>
+
+                        <label class="small fw-bold mb-1">Nhãn dán (Badge) làm nổi bật</label>
+                        <select name="badge_html" class="form-select mb-4 rounded-pill shadow-sm bg-light fw-bold">
+                            <option value="">-- Không dùng nhãn --</option>
+                            <option value='<span class="badge bg-danger rounded-pill me-1" style="font-size:0.55rem;">HOT</span>'>🔴 Nhãn "HOT" (Đỏ)</option>
+                            <option value='<span class="badge bg-success rounded-pill me-1" style="font-size:0.55rem;">NEW</span>'>🟢 Nhãn "NEW" (Xanh lá)</option>
+                            <option value='<span class="badge bg-warning text-dark rounded-pill me-1" style="font-size:0.55rem;">SALE</span>'>🟡 Nhãn "SALE" (Vàng)</option>
+                            <option value='<span class="badge bg-primary rounded-pill me-1" style="font-size:0.55rem;">VIP</span>'>🔵 Nhãn "VIP" (Xanh dương)</option>
+                            <option value='<span class="badge bg-success rounded-circle p-1 me-1" style="font-size:0.4rem;"> </span>'>🟢 Chấm tròn Xanh</option>
+                            <option value='<span class="badge bg-warning text-dark p-1 me-1" style="font-size:0.5rem;"><i class="fas fa-hourglass-half"></i></span>'>⏳ Biểu tượng Order</option>
+                        </select>
+
+                        <button class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm py-2"><i class="fas fa-save"></i> THÊM VÀO MENU</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card premium-card overflow-hidden h-100">
+                    <table class="table premium-table align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center">Cột</th>
+                                <th>Tiêu đề Nhóm</th>
+                                <th>Tên Link</th>
+                                <th>Đường dẫn / URL</th>
+                                <th class="text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td class="fw-bold text-primary text-center fs-5">{{ item.cot }}</td>
+                                <td><i class="{{ item.icon_nhom }} text-muted me-1"></i> <strong class="text-dark">{{ item.nhom }}</strong></td>
+                                <td class="fw-bold">{{ item.badge_html|safe }} {{ item.ten_link }}</td>
+                                <td><small class="text-muted">{{ item.url }}</small></td>
+                                <td class="text-center">
+                                    <form method="POST" onsubmit="return confirm('Sếp chắc chắn muốn xóa link này khỏi Menu?')" class="m-0">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="hanh_dong" value="xoa_menu">
+                                        <input type="hidden" name="id" value="{{ item.id }}">
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3"><i class="fas fa-trash"></i> Xóa</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center py-4 text-muted">Menu đang trống, sếp hãy thêm link bên trái nhé!</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="sticky-bottom bg-white p-3 mt-4 rounded-pill shadow text-center border" style="bottom: 20px; z-index: 1000;">
-        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold fs-5 rounded-pill shadow-sm">
-            <i class="fas fa-save me-2"></i> LƯU TẤT CẢ CÀI ĐẶT
-        </button>
-    </div>
-</form>
 
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -113,7 +238,7 @@
             document.getElementById('is_delete_' + inputName).value = 'true';
             document.getElementById(inputName.split('_')[0] + '_container').style.opacity = '0.3';
             document.getElementById(inputName.split('_')[0] + '_container').style.pointerEvents = 'none';
-            alert('Đã đánh dấu xóa. Sếp nhớ bấm "LƯU CÀI ĐẶT" ở dưới để hoàn tất nhé!');
+            alert('Ảnh đã được đánh dấu xóa. Sếp nhớ bấm "LƯU CẤU HÌNH" để áp dụng nhé!');
         }
     }
 </script>
