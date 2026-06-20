@@ -5,29 +5,21 @@
 
 {% block extra_css %}
 <style>
-    .row-done td { background-color: #e8f5e9 !important; border-bottom: 1px solid #c8e6c9 !important; }
+    .row-done td { background-color: #f8fff9 !important; border-bottom: 1px solid #d4edda !important; }
     .input-box-custom {
-        background: #fff; border: 1px solid #dee2e6; border-radius: 10px;
-        padding: 2px 8px; display: flex; align-items: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        background: #fff; border: 1px solid #dee2e6; border-radius: 30px;
+        padding: 4px 15px; display: flex; align-items: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
     }
-    .input-box-custom:focus-within {
-        border-color: var(--main-color);
-        box-shadow: 0 0 0 3px rgba(230, 0, 18, 0.1);
-    }
-    .input-box-custom input, .input-box-custom select {
-        border: none !important; outline: none !important; box-shadow: none !important; font-size: 0.85rem;
-    }
-    .btn-save-custom {
-        background: linear-gradient(45deg, #0d6efd, #004dc7); color: white;
-        border: none; border-radius: 10px; padding: 8px 15px; font-weight: bold; transition: 0.3s;
-    }
-    .btn-save-custom:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3); }
+    .input-box-custom:focus-within { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+    .input-box-custom input, .input-box-custom select { border: none !important; outline: none !important; box-shadow: none !important; font-size: 0.85rem; }
+    .btn-save-custom { background: #111; color: white; border: none; border-radius: 30px; padding: 6px 20px; font-weight: bold; transition: 0.3s; font-size: 0.85rem; }
+    .btn-save-custom:hover { background: var(--main-color); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row mb-4 align-items-stretch">
+<div class="row mb-4 align-items-stretch mt-2">
     <div class="col-md-3">
         <div class="premium-card p-4 h-100 d-flex flex-column justify-content-center border-start border-danger border-5">
             <h6 class="text-muted fw-bold mb-2"><i class="fas fa-wallet text-warning"></i> TỔNG NỢ NGUỒN:</h6>
@@ -56,7 +48,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="small fw-bold text-muted mb-1">Trạng thái Nợ:</label>
-                    <select name="trang_thai_loc" class="form-select rounded-pill shadow-sm border-0 bg-light">
+                    <select name="trang_thai_loc" class="form-select rounded-pill">
                         <option value="">-- Tất cả trạng thái --</option>
                         <option value="Còn nợ" {{ 'selected' if trang_thai_loc=='Còn nợ' }}>🔴 Đang Nợ / Cần cọc</option>
                         <option value="Đã thanh toán" {{ 'selected' if trang_thai_loc=='Đã thanh toán' }}>🟢 Đã xong / Đã cọc</option>
@@ -71,13 +63,13 @@
 </div>
 
 <div class="premium-card overflow-hidden mb-4">
-    <table class="table premium-table table-hover mb-0">
-        <thead>
+    <table class="table premium-table table-hover mb-0 align-middle">
+        <thead class="table-dark">
             <tr>
                 <th class="ps-4">Sản Phẩm / Nguồn</th>
                 <th>Chi tiết Giá Gốc</th>
                 <th>Đã Trả / Còn Nợ</th>
-                <th>Cập Nhật & Trạng Thái</th>
+                <th class="pe-4">Cập Nhật Thao Tác</th>
             </tr>
         </thead>
         <tbody>
@@ -86,45 +78,47 @@
             {% set con_no = tong_nhap - sp.tien_da_tra_nguon %}
             <tr class="{{ 'row-done' if sp.trang_thai_nhap == 'Đã thanh toán' else '' }}">
                 <td class="ps-4">
-                    <a href="/san-pham/{{ encode_id(sp.id) }}" class="fw-bold fs-6 text-primary text-decoration-none" target="_blank">
-                        <i class="fas fa-external-link-alt fa-sm"></i> {{ sp.ten }}
-                    </a><br>
-                    <span class="badge bg-secondary mt-2 rounded-pill"><i class="fas fa-truck"></i> {{ sp.ten_nguon if sp.ten_nguon else 'Chưa phân nguồn' }}</span>
-                    <span class="badge {{ 'bg-warning text-dark' if sp.kieu_hang == 'Pre-order' else 'bg-success' }} rounded-pill">{{ sp.kieu_hang }}</span>
+                    <a href="/san-pham/{{ encode_id(sp.id) }}" class="fw-bold fs-6 text-dark text-decoration-none" target="_blank">
+                        <i class="fas fa-external-link-alt fa-xs text-muted me-1"></i> {{ sp.ten }}
+                    </a>
+                    <div class="mt-2 d-flex gap-2">
+                        <span class="badge bg-light text-dark border rounded-pill px-2 py-1 small"><i class="fas fa-truck me-1"></i>{{ sp.ten_nguon if sp.ten_nguon else 'Chưa phân nguồn' }}</span>
+                        <span class="badge {% if sp.kieu_hang == 'Pre-order' %}bg-warning text-dark{% else %}bg-success{% endif %} rounded-pill px-2 py-1 small">{{ sp.kieu_hang }}</span>
+                    </div>
                 </td>
                 <td>
-                    <small class="text-muted">Giá: {{ "{:,.0f}".format(sp.gia_nhap) }}đ x {{ sp.so_luong_nhap }}</small><br>
+                    <small class="text-muted d-block">Đơn giá: {{ "{:,.0f}".format(sp.gia_nhap) }}đ x {{ sp.so_luong_nhap }}</small>
                     <strong class="fs-6 text-dark">TỔNG: {{ "{:,.0f}".format(tong_nhap) }} đ</strong>
                 </td>
                 <td>
-                    <span class="text-success fw-bold">Đã trả: {{ "{:,.0f}".format(sp.tien_da_tra_nguon) }}đ</span><br>
+                    <span class="text-success small fw-bold d-block"><i class="fas fa-check-circle me-1"></i>Đã trả: {{ "{:,.0f}".format(sp.tien_da_tra_nguon) }}đ</span>
                     {% if con_no > 0 %}
-                    <span class="text-danger fw-bold fs-6">NỢ: {{ "{:,.0f}".format(con_no) }}đ</span>
+                    <span class="text-danger fw-bold fs-6"><i class="fas fa-exclamation-circle me-1"></i>NỢ: {{ "{:,.0f}".format(con_no) }}đ</span>
                     {% else %}
-                    <span class="badge bg-success mt-1 rounded-pill"><i class="fas fa-check-circle"></i> ĐÃ THANH TOÁN</span>
+                    <span class="badge bg-success rounded-pill mt-1"><i class="fas fa-check"></i> HOÀN TẤT</span>
                     {% endif %}
                 </td>
-                <td style="min-width: 380px;">
+                <td class="pe-4" style="min-width: 400px;">
                     <form action="/admin/cap-nhat-tra-tien/{{sp.id}}" method="POST" class="m-0">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="d-flex flex-column gap-2">
                             <div class="d-flex gap-2">
                                 <div class="input-box-custom flex-grow-1">
-                                    <span class="text-muted small fw-bold me-2"><i class="fas fa-calendar-alt"></i> Ngày về:</span>
-                                    <input type="text" name="ngay_ve" value="{{sp.ngay_du_kien_ve}}" class="form-control p-1" placeholder="VD: 06/2026">
+                                    <span class="text-muted small fw-bold me-2"><i class="fas fa-calendar-alt"></i> Hàng về:</span>
+                                    <input type="text" name="ngay_ve" value="{{sp.ngay_du_kien_ve}}" class="form-control p-0" placeholder="VD: 06/2026">
                                 </div>
                                 <div class="input-box-custom" style="width: 140px;">
-                                    <select name="trang_thai" class="form-select p-1 fw-bold {{ 'text-danger' if sp.trang_thai_nhap == 'Còn nợ' else 'text-success' }}">
-                                        <option value="Còn nợ" {{'selected' if sp.trang_thai_nhap=='Còn nợ' }}>🔴 Đang Nợ</option>
+                                    <select name="trang_thai" class="form-select p-0 fw-bold {{ 'text-danger' if sp.trang_thai_nhap == 'Còn nợ' else 'text-success' }}">
+                                        <option value="Còn nợ" {{'selected' if sp.trang_thai_nhap=='Còn nợ' }}>🔴 Còn Nợ</option>
                                         <option value="Đã thanh toán" {{'selected' if sp.trang_thai_nhap=='Đã thanh toán' }}>🟢 Đã Xong</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="d-flex gap-2">
                                 <div class="input-box-custom flex-grow-1">
-                                    <span class="text-muted small fw-bold me-2"><i class="fas fa-coins text-warning"></i> Trả thêm:</span>
-                                    <input type="number" name="so_tien" value="0" min="0" class="form-control p-1 fw-bold text-primary">
-                                    <select name="han_dong" class="form-select p-1 border-start ms-2" style="width: 85px; background-color: #f8f9fa;">
+                                    <span class="text-muted small fw-bold me-2"><i class="fas fa-coins text-warning"></i> Tiền trả:</span>
+                                    <input type="number" name="so_tien" value="0" min="0" class="form-control p-0 fw-bold text-dark">
+                                    <select name="han_dong" class="form-select p-0 border-start ms-2 bg-transparent" style="width: 80px;">
                                         <option value="cong">+ Thêm</option>
                                         <option value="sua">Sửa</option>
                                     </select>
@@ -143,12 +137,25 @@
 {% if tong_trang and tong_trang > 1 %}
 <nav class="mt-4 mb-4">
     <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto" style="width: fit-content;">
-        {% for p in range(1, tong_trang + 1) %}
-        <li class="page-item {{ 'active' if p == page else '' }}">
-            <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}"
-                href="?page={{ p }}&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}">{{ p }}</a>
+        <li class="page-item {{ 'disabled' if page == 1 }}">
+            <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page=1&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
         </li>
+        {% for p in range(1, tong_trang + 1) %}
+            {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
+            <li class="page-item {{ 'active' if p == page }}">
+                <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}" href="?page={{ p }}&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}">{{ p }}</a>
+            </li>
+            {% elif p == page - 2 or p == page + 2 %}
+            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+            {% endif %}
         {% endfor %}
+        <li class="page-item {{ 'disabled' if page == tong_trang }}">
+            <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page={{ tong_trang }}&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+        </li>
     </ul>
 </nav>
 {% endif %}

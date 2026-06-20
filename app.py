@@ -786,16 +786,24 @@ def thong_ke():
     conn = ket_noi_db()
     dt = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai='Hoàn thành'").fetchone()[0] or 0
     sd = conn.execute("SELECT COUNT(*) FROM don_hang WHERE trang_thai='Chờ xử lý'").fetchone()[0] or 0
-    ds_ngay = conn.execute('''SELECT DATE(ngay_dat) as ngay, SUM(tong_tien) as doanh_thu FROM don_hang 
-        WHERE trang_thai='Hoàn thành' GROUP BY ngay ORDER BY ngay DESC LIMIT 7''').fetchall()
     
-    chart_labels = [row['ngay'] for row in reversed(ds_ngay)]
-    chart_data = [row['doanh_thu'] for row in reversed(ds_ngay)]
+    # TỐI ƯU THẦN THÁNH: Tự động tạo mốc 7 ngày gần nhất để biểu đồ không bao giờ bị rỗng dữ liệu
+    import datetime
+    chart_labels = []
+    chart_data = []
+    for i in range(6, -1, -1):
+        ngay_str = (datetime.date.today() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+        chart_labels.append(ngay_str)
+        
+        # Lấy doanh thu thực tế của ngày này, nếu không có tự động trả về 0đ
+        row = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai='Hoàn thành' AND DATE(ngay_dat) = ?", (ngay_str,)).fetchone()
+        chart_data.append(row[0] or 0)
+
     top_products = conn.execute('''SELECT s.ten, SUM(c.so_luong) as total_qty FROM chi_tiet_don c
         JOIN san_pham s ON c.san_pham_id = s.id JOIN don_hang d ON c.don_hang_id = d.id
         WHERE d.trang_thai = 'Hoàn thành' GROUP BY s.id ORDER BY total_qty DESC LIMIT 5''').fetchall()
     conn.close()
-    return render_template('thong_ke.html', doanh_thu=dt, so_don_moi=sd, tien_loi=dt*0.05, thue_vat=dt*0.03, labels=json.dumps(chart_labels), values=json.dumps(chart_data), top_sps=top_products)
+    return render_template('thong_ke.html', doanh_thu=dt, so_don_moi=sd, thue_vat=dt*0.03, labels=json.dumps(chart_labels), values=json.dumps(chart_data), top_sps=top_products)
 
 @app.route('/xoa-danh-muc/<int:id>', methods=['POST'])
 def xoa_danh_muc(id):
