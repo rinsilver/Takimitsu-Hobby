@@ -483,6 +483,14 @@ def sua_san_pham(id):
             request.form.get('ngay_ve', ''), gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew
         ]
         if f and f.filename != '':
+            # 1. Xóa ảnh cũ khỏi ổ cứng để giải phóng bộ nhớ
+            if sp['hinh_anh']:
+                try: 
+                    os.remove(os.path.join(app.root_path, sp['hinh_anh'].lstrip('/')))
+                except: 
+                    pass
+            
+            # 2. Lưu ảnh mới vào
             filename = secure_filename(f.filename)
             base_name = os.path.splitext(filename)[0]
             webp_name = f"{base_name}_{id}_main.webp"

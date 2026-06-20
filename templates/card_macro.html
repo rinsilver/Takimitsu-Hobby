@@ -1,21 +1,36 @@
 {% macro render_card(sp) %}
-<a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm h-100 text-decoration-none">
-    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+{% set het_hang = true if (sp.kieu_hang == 'Co san' and sp.so_luong <= 0) else false %}
+
+<a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm h-100 text-decoration-none {{ 'opacity-75' if het_hang else '' }}" style="position: relative;">
+    
+    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban and not het_hang %}
         {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
         <div class="discount-badge">-{{ percent }}%</div>
     {% endif %}
 
-    <div class="tms-img-wrap">
+    <div class="tms-img-wrap" style="background-color: {{ '#f8f9fa' if het_hang else '#fff' }};">
         <span class="position-absolute top-0 start-0 m-2 badge {% if sp.kieu_hang == 'Co san' %}bg-success{% else %}bg-warning text-dark{% endif %} shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
             {% if sp.kieu_hang == 'Co san' %}<i class="fas fa-check-circle me-1"></i> CÓ SẴN{% else %}<i class="fas fa-clock me-1"></i> ORDER{% endif %}
         </span>
-        <img src="{{ sp.hinh_anh }}" loading="lazy">
-        <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
+        
+        <img src="{{ sp.hinh_anh }}" loading="lazy" style="{{ 'filter: grayscale(100%); opacity: 0.6;' if het_hang else '' }}">
+        
+        {% if het_hang %}
+        <div class="position-absolute top-50 start-50 translate-middle w-100 text-center z-3" style="transform: translate(-50%, -50%) rotate(-15deg) !important;">
+            <span class="badge bg-dark text-white border border-2 border-white shadow-lg py-2 px-4 fs-6 rounded-pill" style="letter-spacing: 2px;">TẠM HẾT HÀNG</span>
+        </div>
+        {% endif %}
+
+        <div class="quick-action-bar">
+            {% if het_hang %}
+            <span class="btn btn-secondary btn-sm rounded-pill fw-bold w-75 shadow-sm"><i class="fas fa-eye me-1"></i> XEM CHI TIẾT</span>
+            {% else %}
+            <span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm"><i class="fas fa-shopping-cart me-1"></i> MUA NGAY</span>
+            {% endif %}
+        </div>
     </div>
     
     <div class="tms-info bg-white">
-
-        <!-- Tag Hãng & Loại (Sang trọng, bo tròn viên thuốc) -->
         <div class="mb-2 d-flex flex-wrap gap-2 align-items-center">
             <span class="badge rounded-pill bg-dark fw-bold shadow-sm" style="font-size: 0.65rem; padding: 4px 10px; letter-spacing: 0.5px;">
                 <i class="fas fa-crown text-warning me-1"></i>{{ sp.hang_sx }}
@@ -25,13 +40,23 @@
             </span>
         </div>
 
-        <h6 class="tms-name">{{ sp.ten }}</h6>
+        <h6 class="tms-name {{ 'text-muted' if het_hang else '' }}">{{ sp.ten }}</h6>
         
-        <div class="tms-price-box">
-            <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
-            {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
-            <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
+        <div class="mt-auto">
+            {% if sp.kieu_hang == 'Pre-order' and sp.ngay_phat_hanh %}
+            <div class="small text-warning fw-bold mb-2 w-100"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp.ngay_phat_hanh }}</div>
             {% endif %}
+            
+            <div class="tms-price-box">
+                {% if het_hang %}
+                    <div class="text-secondary fw-bold" style="font-size: 1.1rem;">Liên hệ sau</div>
+                {% else %}
+                    <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
+                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                    <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
+                    {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </a>
