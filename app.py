@@ -39,10 +39,11 @@ SETTINGS_FILE = 'settings.json'
 def get_settings():
     if not os.path.exists(SETTINGS_FILE):
         default_settings = {
-            "ten_web": "WOLVES STORE", "logo_url": "", "mau_chu_dao": "#e60012",
+            "ten_web": "TAKIMITSU HOBBY", "logo_url": "", "mau_chu_dao": "#e60012",
             "banner_1": "", "banner_2": "", 
             "thong_tin_footer": "Shop online chuyên sản phẩm mô hình chính hãng",
             "dia_chi": "TP. Hồ Chí Minh", "dien_thoai": "091.416.5278", "email": "0914165278",
+            "ma_so_thue": "", # <--- THÊM MỚI
             "link_fb": "#", "link_ig": "#", "link_yt": "#",
             "cs_cua_hang": "", "cs_doi_tra": "", "cs_van_chuyen": "", "hd_mua_hang": "",
             "video_trang_chu": "HGCsAcFzaFw"
@@ -104,6 +105,10 @@ def tao_bang():
         conn.execute("UPDATE san_pham SET so_luong_nhap = so_luong WHERE so_luong_nhap = 0")
     except:
         pass
+
+    try:
+        conn.execute("ALTER TABLE san_pham ADD COLUMN gia_goc REAL DEFAULT 0")
+    except: pass
     
     if conn.execute("SELECT COUNT(*) FROM khach_hang WHERE vai_tro = 'admin'").fetchone()[0] == 0:
         hashed_pw = generate_password_hash('123')
@@ -384,11 +389,12 @@ def them_san_pham():
         gia_order_new = float(request.form.get('gia_order_new', 0) or 0)
         gia_order_likenew = float(request.form.get('gia_order_likenew', 0) or 0)
         gia_ban = float(request.form.get('gia_ban', gia_san_new)) 
+        gia_goc = float(request.form.get('gia_goc', 0) or 0)
         
-        cur.execute('''INSERT INTO san_pham (ten, the_loai, hang_sx, gia_nhap, gia_ban, so_luong, so_luong_nhap, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh, nguon_nhap_id, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve, gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', 
+        cur.execute('''INSERT INTO san_pham (ten, the_loai, hang_sx, gia_nhap, gia_goc, gia_ban, so_luong, so_luong_nhap, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh, nguon_nhap_id, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve, gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', 
                     (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], 
-                     float(request.form.get('gia_nhap', 0) or 0), gia_ban, 
+                     float(request.form.get('gia_nhap', 0) or 0), gia_goc, gia_ban, 
                      int(request.form.get('so_luong', 0) or 0), int(request.form.get('so_luong', 0) or 0), 
                      img, request.form['mo_ta'], request.form['kieu_hang'], 
                      float(request.form.get('tien_coc', 0) or 0), request.form.get('ngay_phat_hanh', ''), 
@@ -424,11 +430,12 @@ def sua_san_pham(id):
         gia_order_new = float(request.form.get('gia_order_new', 0) or 0)
         gia_order_likenew = float(request.form.get('gia_order_likenew', 0) or 0)
         gia_ban = float(request.form.get('gia_ban', gia_san_new)) 
+        gia_goc = float(request.form.get('gia_goc', 0) or 0)
         f = request.files.get('hinh_anh')
         img_sql = ""
         tham_so = [
             request.form['ten'], request.form['the_loai'], request.form['hang_sx'],
-            float(request.form.get('gia_nhap', 0) or 0), gia_ban, int(request.form.get('so_luong', 0) or 0),
+            float(request.form.get('gia_nhap', 0) or 0), gia_goc, gia_ban, int(request.form.get('so_luong', 0) or 0),
             request.form['mo_ta'], request.form['kieu_hang'], float(request.form.get('tien_coc', 0) or 0),
             request.form.get('ngay_phat_hanh', ''), request.form.get('nguon_nhap_id'),
             float(request.form.get('tien_da_tra_nguon', 0) or 0), request.form.get('trang_thai_nhap', 'Còn nợ'),
@@ -442,7 +449,7 @@ def sua_san_pham(id):
         tham_so.append(id)
 
         conn.execute(f'''UPDATE san_pham SET 
-            ten=?, the_loai=?, hang_sx=?, gia_nhap=?, gia_ban=?, so_luong=?, mo_ta=?, 
+            ten=?, the_loai=?, hang_sx=?, gia_nhap=?, gia_goc=?, gia_ban=?, so_luong=?, mo_ta=?, 
             kieu_hang=?, tien_coc=?, ngay_phat_hanh=?, nguon_nhap_id=?, tien_da_tra_nguon=?, 
             trang_thai_nhap=?, ngay_du_kien_ve=?, gia_san_new=?, gia_san_likenew=?, gia_order_new=?, gia_order_likenew=? {img_sql} 
             WHERE id=?''', tuple(tham_so))
@@ -834,6 +841,7 @@ def cai_dat_giao_dien():
             "dia_chi": request.form.get('dia_chi', ''),
             "dien_thoai": request.form.get('dien_thoai', ''),
             "email": request.form.get('email', ''),
+            "ma_so_thue": request.form.get('ma_so_thue', settings.get('ma_so_thue', '')),
             "link_fb": request.form.get('link_fb', '#'),
             "link_ig": request.form.get('link_ig', '#'),
             "link_yt": request.form.get('link_yt', '#'),
@@ -954,6 +962,29 @@ def search_products_api():
     for sp in sps:
         ket_qua.append({"id": sp['id'], "ten": sp['ten'], "hinh_anh": sp['hinh_anh'], "gia": "{:,.0f}".format(sp['gia_ban']), "status": sp['kieu_hang']})
     return jsonify(ket_qua)
+
+@app.route('/doi-mat-khau', methods=['POST'])
+def doi_mat_khau():
+    khach_id = session.get('khach_id')
+    if not khach_id: return redirect(url_for('dang_nhap'))
+    
+    mk_cu = request.form['mk_cu']
+    mk_moi = request.form['mk_moi']
+    
+    conn = ket_noi_db()
+    user = conn.execute('SELECT mat_khau FROM khach_hang WHERE id = ?', (khach_id,)).fetchone()
+    
+    # Kiểm tra MK cũ
+    if check_password_hash(user['mat_khau'], mk_cu) or user['mat_khau'] == mk_cu:
+        hashed_new = generate_password_hash(mk_moi)
+        conn.execute('UPDATE khach_hang SET mat_khau = ? WHERE id = ?', (hashed_new, khach_id))
+        conn.commit()
+        flash('Đổi mật khẩu thành công!', 'success')
+    else:
+        flash('Mật khẩu cũ không chính xác!', 'danger')
+        
+    conn.close()
+    return redirect(url_for('ho_so_khach'))
 
 if __name__ == '__main__':
     Timer(1.5, lambda: webbrowser.open_new('http://127.0.0.1:5000/')).start()

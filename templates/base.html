@@ -9,11 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-        /* Phải viết dính liền trên một dòng như thế này mới không lỗi màu */
-        --main-color: {{ settings.mau_chu_dao }};
-        --bg-dark: #121212;
-        --bg-card: #0a0a0a;
-    }
+            /* Phải viết dính liền trên một dòng như thế này mới không lỗi màu */
+            --main-color: {{ settings.mau_chu_dao }};
+            --bg-dark: #121212;
+            --bg-card: #0a0a0a;
+        }
+
+        /* HIỆU ỨNG CHUYỂN TRANG MƯỢT MÀ */
+        .anime-fade-in { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
 
         html,
         body {
@@ -25,24 +32,18 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            /* Chiều cao tối thiểu bằng 1 màn hình */
-        }
-
-        .content-wrapper {
-            flex: 1 0 auto;
-            /* Vùng này sẽ tự giãn ra để đẩy footer xuống chân trang */
-        }
-
-        footer {
-            flex-shrink: 0;
-            /* Đảm bảo footer không bị co lại */
-        }
-
-        body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
             background-color: #f8f9fa;
             color: #111;
             overflow-x: hidden;
+        }
+
+        .content-wrapper {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
         }
 
         /* 1. NAVBAR & SEARCH */
@@ -69,9 +70,7 @@
 
         .nav-search-input::placeholder {
             color: #a4a2a2 !important;
-            /* Màu xám sếp muốn */
             opacity: 1;
-            /* Hiện rõ trên mọi trình duyệt */
         }
 
         .nav-search-btn {
@@ -82,21 +81,19 @@
             color: rgba(255, 255, 255, 0.5) !important;
         }
 
-        /* 2. NÂNG CẤP MEGA MENU PREMIUM */
+        /* 2. NÂNG CẤP MEGA MENU PREMIUM (CÓ NỀN ANIME) */
         .mega-dropdown {
             position: static !important;
         }
 
         .mega-menu {
-            width: 100%;
-            left: 0;
-            right: 0;
-            padding: 0 !important;
-            border: none !important;
-            border-top: 3px solid var(--main-color) !important;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
-            background: #fff !important;
-            border-radius: 0 0 15px 15px !important;
+            width: 100%; left: 0; right: 0; padding: 0 !important;
+            background: #fff url('https://i.imgur.com/rL4lR5W.png') no-repeat right bottom !important;
+            background-size: 350px !important;
+            border: none !important; 
+            border-top: 4px solid var(--main-color) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+            border-radius: 0 0 10px 10px !important; 
         }
 
         .mega-menu-title {
@@ -124,21 +121,18 @@
         }
 
         .mega-menu-link {
-            color: #555 !important;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: 0.2s;
-            display: block;
+            color: #444 !important; text-decoration: none; font-size: 0.95rem;
+            font-weight: 700; transition: all 0.2s ease; display: block; padding: 8px 12px;
+            border-left: 3px solid transparent;
         }
 
-        .mega-menu-link:hover {
-            color: var(--main-color) !important;
-            padding-left: 8px;
+        .mega-menu-link:hover { 
+            color: var(--main-color) !important; background-color: rgba(230,0,18,0.05); 
+            border-left: 3px solid var(--main-color); padding-left: 15px; 
         }
 
         .search-cta-box {
-            background: #f8f9fa;
+            background: rgba(255,255,255,0.8);
             border-radius: 12px;
             padding: 20px;
             text-align: center;
@@ -195,7 +189,6 @@
             margin: 0;
         }
 
-        /* Màu mặc định là trắng mờ */
         .social-list a {
             color: rgba(255, 255, 255, 0.7) !important;
             text-decoration: none;
@@ -206,7 +199,6 @@
             font-size: 1.5rem;
         }
 
-        /* Hiệu ứng màu khi hover */
         .fa-facebook:hover {
             color: #1877F2 !important;
             transform: scale(1.2);
@@ -225,14 +217,13 @@
             transform: scale(1.2);
         }
 
-        /* 4. CSS CHO Ô TÌM KIẾM NHANH (LIVE SEARCH) - PREMIUM LOOK */
+        /* 4. CSS CHO Ô TÌM KIẾM NHANH (LIVE SEARCH) */
         #navSearchResults {
             max-height: 480px;
             overflow-y: auto;
             border: 1px solid rgba(0, 0, 0, 0.05) !important;
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
-            /* Hiệu ứng kính mờ */
         }
 
         .search-result-item {
@@ -248,7 +239,6 @@
         .search-result-item:hover {
             background-color: #fcfcfc;
             border-left: 4px solid var(--main-color);
-            /* Vạch đỏ bên trái khi hover */
         }
 
         .search-result-item img {
@@ -397,7 +387,6 @@
         </div>
     </nav>
 
-
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="floating-toast-container"
@@ -439,7 +428,9 @@
     {% endif %}
     {% endwith %}
 
-    {% block content %}{% endblock %}
+    <div class="content-wrapper anime-fade-in">
+        {% block content %}{% endblock %}
+    </div>
 
 
     <footer class="tms-footer mt-auto">
@@ -449,10 +440,12 @@
                     <h4 class="fw-bold text-danger mb-4">{{ settings.ten_web }}</h4>
                     <p class="small opacity-75 mb-4" style="line-height: 1.8;">{{ settings.thong_tin_footer }}</p>
                     <div class="small opacity-75">
-                        <p class="mb-2"><i class="fas fa-map-marker-alt text-danger me-2"></i> {{ settings.dia_chi }}
-                        </p>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt text-danger me-2"></i> {{ settings.dia_chi }}</p>
                         <p class="mb-2"><i class="fas fa-phone-alt text-danger me-2"></i> {{ settings.dien_thoai }}</p>
-                        <p class="mb-0"><i class="fas fa-envelope text-danger me-2"></i> {{ settings.email }}</p>
+                        <p class="mb-2"><i class="fas fa-envelope text-danger me-2"></i> {{ settings.email }}</p>
+                        {% if settings.ma_so_thue %}
+                        <p class="mb-0"><i class="fas fa-file-invoice-dollar text-danger me-2"></i> MST: <strong>{{ settings.ma_so_thue }}</strong></p>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -579,6 +572,5 @@
 
     {% block scripts %}{% endblock %}
 </body>
-
 
 </html>

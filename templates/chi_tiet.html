@@ -4,101 +4,44 @@
 
 {% block extra_css %}
 <style>
-    /* --- 1. CSS CHO TRANG CHI TIẾT SẢN PHẨM --- */
-    .product-card {
-        background: #fff; border: 1px solid #eef0f2; padding: 25px;
-        border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-    }
-    
-    .main-img-box {
-        height: 480px; 
-        background-color: #fafafa; border: 1px solid #eef0f2;
-        cursor: zoom-in; overflow: hidden; display: flex; align-items: center; justify-content: center;
-        border-radius: 15px; position: relative;
-        padding-bottom: 80px; 
-    }
-    
-    .blur-bg {
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-size: cover;
-        background-position: center;
-        filter: blur(20px); 
-        opacity: 0.5; 
-        transform: scale(1.1); 
-        z-index: 1;
-    }
-
-    .main-img-box img {
-        max-width: 100%; max-height: 100%; object-fit: contain;
-        transition: transform 0.4s ease; padding: 10px;
-        z-index: 2; position: relative; 
-    }
+    /* --- 1. CSS CƠ BẢN TRANG CHI TIẾT --- */
+    .product-card { background: #fff; border: 1px solid #eef0f2; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); }
+    .main-img-box { height: 480px; background-color: #fafafa; border: 1px solid #eef0f2; cursor: zoom-in; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 15px; position: relative; padding-bottom: 80px; }
+    .blur-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(20px); opacity: 0.5; transform: scale(1.1); z-index: 1; }
+    .main-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.4s ease; padding: 10px; z-index: 2; position: relative; }
     .main-img-box:hover img { transform: scale(1.08); }
     
-    .thumb-container {
-        position: absolute;
-        bottom: 15px; left: 0; width: 100%;
-        display: flex; gap: 12px; overflow-x: auto; flex-wrap: nowrap; 
-        justify-content: center; 
-        padding: 5px 20px; scrollbar-width: none; z-index: 10;
-    }
+    .thumb-container { position: absolute; bottom: 15px; left: 0; width: 100%; display: flex; gap: 12px; overflow-x: auto; flex-wrap: nowrap; justify-content: center; padding: 5px 20px; scrollbar-width: none; z-index: 10; }
     .thumb-container::-webkit-scrollbar { display: none; }
-    
-    .thumb-box {
-        width: 60px; height: 60px; border: 2px solid #fff; cursor: pointer;
-        overflow: hidden; background: #fff; transition: 0.3s; border-radius: 10px;
-        flex-shrink: 0; 
-        box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
-    }
+    .thumb-box { width: 60px; height: 60px; border: 2px solid #fff; cursor: pointer; overflow: hidden; background: #fff; transition: 0.3s; border-radius: 10px; flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
     .thumb-box:hover, .thumb-box.active { border-color: var(--main-color); transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
     .thumb-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
 
-    .variant-btn {
-        border: 2px solid #eef0f2; background: #fff; color: #555;
-        font-weight: 700; font-size: 0.85rem; padding: 8px 18px;
-        transition: all 0.3s ease; cursor: pointer; border-radius: 30px;
-    }
+    .variant-btn { border: 2px solid #eef0f2; background: #fff; color: #555; font-weight: 700; font-size: 0.85rem; padding: 8px 18px; transition: all 0.3s ease; cursor: pointer; border-radius: 30px; }
     .variant-btn:hover { border-color: #111; color: #111; background: #f8f9fa; }
-    .variant-btn.active {
-        background: #111; color: #fff; border-color: #111;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
+    .variant-btn.active { background: #111; color: #fff; border-color: #111; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-    .price-text-dynamic { font-size: 2.2rem; font-weight: 900; color: #e60012; margin: 10px 0 15px 0; letter-spacing: -1px; }
+    .price-text-dynamic { font-size: 2.2rem; font-weight: 900; color: #e60012; letter-spacing: -1px; }
+    .original-price-text { font-size: 1.2rem; color: #999; text-decoration: line-through; font-weight: bold; }
     .section-title { font-weight: 900; text-transform: uppercase; padding-bottom: 10px; margin-bottom: 25px; font-size: 1.3rem; letter-spacing: 0.5px; border-bottom: 3px solid #111; display: inline-block;}
 
-    .tms-card {
-        display: flex; flex-direction: column; text-decoration: none;
-        background-color: #fff; border: 1px solid #eef0f2;
-        transition: all 0.3s ease; height: 100%;
-        border-radius: 15px; position: relative; overflow: hidden;
-    }
+    /* --- 2. CSS CHO THẺ SẢN PHẨM NHỎ --- */
+    .tms-card { display: flex; flex-direction: column; text-decoration: none; background-color: #fff; border: 1px solid #eef0f2; transition: all 0.3s ease; height: 100%; border-radius: 15px; overflow: hidden; position: relative; }
     .tms-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08); border-color: var(--main-color); }
-    .tms-img-wrap {
-        background-color: #fff; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
-        padding: 15px; position: relative; overflow: hidden;
-    }
+    .discount-badge { position: absolute; top: 10px; right: 10px; background: #e60012; color: #fff; font-weight: 900; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; z-index: 5; box-shadow: 0 4px 10px rgba(230,0,18,0.3); }
+    .tms-img-wrap { background-color: #fff; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; padding: 15px; position: relative; overflow: hidden; }
     .tms-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
     .tms-card:hover .tms-img-wrap img { transform: scale(1.1); }
-    .quick-action-bar {
-        position: absolute; bottom: -50px; left: 0; right: 0; padding: 10px; text-align: center; transition: bottom 0.3s ease;
-        background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent);
-    }
+    .quick-action-bar { position: absolute; bottom: -50px; left: 0; right: 0; padding: 10px; text-align: center; transition: bottom 0.3s ease; background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent); z-index: 4; }
     .tms-card:hover .quick-action-bar { bottom: 0; }
-    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; border-top: 1px solid #f5f5f5; }
     .tms-name { color: #111; font-weight: 700; font-size: 0.9rem; height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 10px; }
-    .rating-stars { color: #ffc107; font-size: 0.75rem; margin-bottom: 8px; }
-    .tms-price { color: #e60012; font-weight: 900; font-size: 1.15rem; margin-top: auto; }
-    .badge-item { font-size: 0.6rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-    .bg-brand { background-color: #f1f1f1; color: #555; }
-    .bg-cat { background-color: #eee; color: #888; }
-    
-    @keyframes pulse-btn {
-        0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.3); }
-        70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
-    }
+    .tms-price { color: #e60012; font-weight: 900; font-size: 1.15rem; }
+    .tms-price-old { text-decoration: line-through; color: #999; font-size: 0.85rem; font-weight: bold; margin-bottom: 0; }
+    .badge-item { font-size: 0.65rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+    .bg-brand { background-color: #f1f1f1; color: #555; border: 1px solid #ddd; }
+
+    @keyframes pulse-btn { 0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.3); } 70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); } }
     .btn-contact-pulse { animation: pulse-btn 2s infinite; }
 </style>
 {% endblock %}
@@ -115,30 +58,24 @@
 
     <div class="product-card mb-5">
         <div class="row g-4">
-            
             <div class="col-md-6 mb-4 mb-md-0">
                 <div class="main-img-box shadow-sm" onclick="zoomImage()">
-                    
                     <div id="mainImageBlur" class="blur-bg" style="background-image: url('{{ sp.hinh_anh }}');"></div>
-
-                    <span class="position-absolute top-0 start-0 m-3 badge {% if sp.kieu_hang == 'Co san' %}bg-danger{% else %}bg-warning text-dark{% endif %} shadow-sm px-3 py-2 rounded-pill z-3" style="font-size: 0.75rem;">
-                        {{ 'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'PRE-ORDER' }}
+                    <span class="position-absolute top-0 start-0 m-3 badge {% if sp.kieu_hang == 'Co san' %}bg-success{% else %}bg-warning text-dark{% endif %} shadow-sm px-3 py-2 rounded-pill z-3" style="font-size: 0.75rem;">
+                        {% if sp.kieu_hang == 'Co san' %}
+                            <i class="fas fa-check-circle me-1"></i> CÓ SẴN
+                        {% else %}
+                            <i class="fas fa-clock me-1"></i> PRE-ORDER
+                        {% endif %}
                     </span>
-                    
                     <img id="mainImage" src="{{ sp.hinh_anh }}">
-                    
                     <button class="btn btn-light position-absolute top-0 end-0 m-3 rounded-circle shadow" style="width: 35px; height: 35px; padding: 0; z-index: 10;" onclick="event.stopPropagation(); zoomImage();">
                         <i class="fas fa-expand-arrows-alt"></i>
                     </button>
-                    
                     <div class="thumb-container" onclick="event.stopPropagation()">
-                        <div class="thumb-box active" onclick="changeImage('{{ sp.hinh_anh }}', 0, this)">
-                            <img src="{{ sp.hinh_anh }}">
-                        </div>
+                        <div class="thumb-box active" onclick="changeImage('{{ sp.hinh_anh }}', 0, this)"><img src="{{ sp.hinh_anh }}"></div>
                         {% for anh in anh_phu %}
-                        <div class="thumb-box" onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)">
-                            <img src="{{ anh.du_ong_dan }}">
-                        </div>
+                        <div class="thumb-box" onclick="changeImage('{{ anh.du_ong_dan }}', '{{ loop.index }}', this)"><img src="{{ anh.du_ong_dan }}"></div>
                         {% endfor %}
                     </div>
                 </div>
@@ -146,26 +83,27 @@
 
             <div class="col-md-6 d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center gap-2 mb-3">
-                    <span class="badge px-3 py-2 text-uppercase bg-brand text-dark shadow-sm border"><i class="fas fa-industry me-1"></i> {{ sp.hang_sx }}</span>
+                    <span class="badge px-3 py-2 text-uppercase bg-light border text-dark shadow-sm">{{ sp.hang_sx }}</span>
                     <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-                    <span class="badge px-3 py-2 text-uppercase shadow-sm bg-dark text-white"><i class="fas fa-tag me-1"></i> {{ sp.the_loai }}</span>
+                    <span class="badge px-3 py-2 text-uppercase shadow-sm bg-dark text-white">{{ sp.the_loai }}</span>
+                    <span class="badge px-3 py-2 text-uppercase shadow-sm bg-light text-muted border">SKU: {{ sp.id }}</span>
                 </div>
                 
                 <h3 class="fw-black mb-2 text-dark" style="font-weight: 800;">{{ sp.ten }}</h3>
                 
                 <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                    <div class="text-warning me-2" style="font-size: 0.85rem;">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                    </div>
-                    <span class="text-muted fw-bold small me-3">4.9 Đánh giá</span>
-                    <span class="text-muted small border-start ps-3 fw-bold">Đã bán: <span class="text-dark">{{ (sp.id * 7) % 50 + 15 }}</span></span>
+                    <span class="text-muted small fw-bold">Đã bán: <span class="text-dark">{{ (sp.id * 7) % 50 + 15 }} sản phẩm</span></span>
                 </div>
 
                 <div class="mb-auto">
-                    <div class="price-text-dynamic" id="hien_thi_gia">Đang tải giá...</div>
+                    <div class="d-flex align-items-baseline flex-wrap gap-3 mb-4">
+                        <div class="price-text-dynamic m-0" id="hien_thi_gia">Đang tải giá...</div>
+                        <div class="original-price-text m-0" id="hien_thi_gia_goc" style="display:none;"></div>
+                        <span id="badge-discount" class="badge bg-danger py-1 px-2 shadow-sm" style="font-size: 0.9rem; display:none;"></span>
+                    </div>
                     
-                    <div class="product-meta-extra mb-4">
-                        <div id="stock-area" style="display: none;" class="mb-2">
+                    <div class="product-meta-extra mb-4 d-flex flex-wrap gap-2 align-items-center">
+                        <div id="stock-area" style="display: none;">
                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger shadow-sm py-2 px-3 rounded-pill" style="font-size: 0.8rem;">
                                 <i class="fas fa-fire-alt me-1"></i> Kho còn sẵn: <strong id="stock-qty">{{ sp.so_luong }}</strong> hộp
                             </span>
@@ -174,6 +112,12 @@
                         <div id="deposit-area" style="display: none;">
                             <span class="badge bg-warning bg-opacity-10 text-dark border border-warning shadow-sm py-2 px-3 rounded-pill" style="font-size: 0.8rem;">
                                 <i class="fas fa-money-check-alt me-1"></i> Cọc trước: <strong class="text-danger">{{ "{:,.0f}".format(sp.tien_coc | default(0)) }}đ</strong>
+                            </span>
+                        </div>
+                        
+                        <div id="release-date-area" style="display: none;">
+                            <span class="badge bg-info bg-opacity-10 text-dark border border-info shadow-sm py-2 px-3 rounded-pill" style="font-size: 0.8rem;">
+                                <i class="fas fa-calendar-check me-1"></i> Phát hành: <strong>{{ sp.ngay_phat_hanh if sp.ngay_phat_hanh else 'Đang cập nhật' }}</strong>
                             </span>
                         </div>
                     </div>
@@ -202,11 +146,11 @@
                         <button type="submit" id="btn_add_cart" class="btn btn-danger text-white w-100 py-2 fw-bold fs-6 rounded-pill shadow-sm mb-2" style="display: none;">
                             <i class="fas fa-cart-plus me-2"></i> THÊM VÀO GIỎ (ADMIN)
                         </button>
-                        {% endif %}
-
+                        {% else %}
                         <a href="{{ settings.link_fb }}" target="_blank" id="btn_contact" class="btn btn-dark w-100 py-2 fw-bold fs-6 rounded-pill shadow-sm btn-contact-pulse" style="display: none;">
                             <i class="fab fa-facebook-messenger me-2 text-primary"></i> CHAT VỚI ADMIN ĐỂ MUA
                         </a>
+                        {% endif %}
                     </form>
                 </div>
             </div>
@@ -215,7 +159,7 @@
                 <div class="row justify-content-center">
                     <div class="col-md-10">
                         <h5 class="fw-bold mb-4 text-center text-uppercase"><i class="fas fa-info-circle text-primary me-2"></i> CHI TIẾT SẢN PHẨM</h5>
-                        <div class="p-4 bg-light rounded-4 border" style="font-size: 0.95rem; line-height: 1.8; color: #444;">
+                        <div class="p-4 bg-light rounded-4 border text-dark" style="font-size: 0.95rem; line-height: 1.8;">
                             <p style="white-space: pre-line;">{{ sp.mo_ta if sp.mo_ta else 'Chưa có thông tin mô tả chi tiết cho sản phẩm này.' }}</p>
                         </div>
                     </div>
@@ -232,23 +176,40 @@
         <div class="row row-cols-2 row-cols-md-4 g-4">
             {% for sp_lq in san_pham_lien_quan %}
             <div class="col">
-                <a href="/san-pham/{{ encode_id(sp_lq.id) }}" class="tms-card shadow-sm h-100">
-                    <div class="tms-img-wrap" style="height: 250px;">
-                        <img src="{{ sp_lq.hinh_anh }}" loading="lazy">
+                <a href="/san-pham/{{ encode_id(sp_lq.id) }}" class="tms-card h-100 shadow-sm text-decoration-none">
+                    {% if sp_lq.gia_goc and sp_lq.gia_goc > sp_lq.gia_ban %}
+                        {% set percent = ((sp_lq.gia_goc - sp_lq.gia_ban) / sp_lq.gia_goc * 100)|round|int %}
+                        <div class="discount-badge">-{{ percent }}%</div>
+                    {% endif %}
+
+                    <div class="tms-img-wrap" style="height: 250px; padding: 15px; position: relative;">
+                        <span class="position-absolute top-0 start-0 m-2 badge {% if sp_lq.kieu_hang == 'Co san' %}bg-success{% else %}bg-warning text-dark{% endif %} shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
+                            {% if sp_lq.kieu_hang == 'Co san' %}
+                                <i class="fas fa-check-circle me-1"></i> CÓ SẴN
+                            {% else %}
+                                <i class="fas fa-clock me-1"></i> ORDER
+                            {% endif %}
+                        </span>
+                        <img src="{{ sp_lq.hinh_anh }}" style="width:100%; height:100%; object-fit:contain;" loading="lazy">
                         <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
                     </div>
-                    <div class="tms-info">
+
+                    <div class="tms-info bg-white">
                         <div class="mb-2 d-flex flex-wrap gap-1">
                             <span class="badge-item bg-brand">{{ sp_lq.hang_sx }}</span>
-                            <span class="badge-item {% if sp_lq.kieu_hang == 'Co san' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
-                                {{ 'CÓ SẴN' if sp_lq.kieu_hang == 'Co san' else 'ORD' }}
-                            </span>
                         </div>
-                        <div class="tms-name">{{ sp_lq.ten }}</div>
-                        <div class="rating-stars mt-auto">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> 
+                        <h6 class="tms-name">{{ sp_lq.ten }}</h6>
+                        <div class="mt-auto">
+                            {% if sp_lq.kieu_hang == 'Pre-order' and sp_lq.ngay_phat_hanh %}
+                            <div class="small text-warning fw-bold mb-2"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp_lq.ngay_phat_hanh }}</div>
+                            {% endif %}
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <div class="tms-price">{{ "{:,.0f}".format(sp_lq.gia_ban | default(0)) }}đ</div>
+                                {% if sp_lq.gia_goc and sp_lq.gia_goc > sp_lq.gia_ban %}
+                                <div class="tms-price-old">{{ "{:,.0f}".format(sp_lq.gia_goc) }}đ</div>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="tms-price">{{ "{:,.0f}".format(sp_lq.gia_ban | default(0)) }}đ</div>
                     </div>
                 </a>
             </div>
@@ -270,16 +231,39 @@
                 <style>#sliderDaXem::-webkit-scrollbar { display: none; }</style>
                 {% for sp_dx in san_pham_da_xem %}
                 <div style="flex: 0 0 calc(25% - 12px); min-width: 220px; scroll-snap-align: start;">
-                    <a href="/san-pham/{{ encode_id(sp_dx.id) }}" class="tms-card shadow-sm h-100">
+                    <a href="/san-pham/{{ encode_id(sp_dx.id) }}" class="tms-card shadow-sm h-100 text-decoration-none">
+                        {% if sp_dx.gia_goc and sp_dx.gia_goc > sp_dx.gia_ban %}
+                            {% set percent = ((sp_dx.gia_goc - sp_dx.gia_ban) / sp_dx.gia_goc * 100)|round|int %}
+                            <div class="discount-badge">-{{ percent }}%</div>
+                        {% endif %}
+                        
                         <div class="tms-img-wrap" style="height: 220px;">
+                            <span class="position-absolute top-0 start-0 m-2 badge {% if sp_dx.kieu_hang == 'Co san' %}bg-success{% else %}bg-warning text-dark{% endif %} shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
+                                {% if sp_dx.kieu_hang == 'Co san' %}
+                                    <i class="fas fa-check-circle me-1"></i> CÓ SẴN
+                                {% else %}
+                                    <i class="fas fa-clock me-1"></i> ORDER
+                                {% endif %}
+                            </span>
                             <img src="{{ sp_dx.hinh_anh }}" loading="lazy">
                         </div>
-                        <div class="tms-info">
+                        
+                        <div class="tms-info bg-white">
                             <div class="mb-2 d-flex flex-wrap gap-1">
                                 <span class="badge-item bg-brand">{{ sp_dx.hang_sx }}</span>
                             </div>
-                            <div class="tms-name" style="height: 1.5em; -webkit-line-clamp: 1;">{{ sp_dx.ten }}</div>
-                            <div class="tms-price mt-auto" style="font-size: 1rem;">{{ "{:,.0f}".format(sp_dx.gia_ban | default(0)) }}đ</div>
+                            <h6 class="tms-name" style="height: 1.5em; -webkit-line-clamp: 1;">{{ sp_dx.ten }}</h6>
+                            <div class="mt-auto">
+                                {% if sp_dx.kieu_hang == 'Pre-order' and sp_dx.ngay_phat_hanh %}
+                                <div class="small text-warning fw-bold mb-2"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp_dx.ngay_phat_hanh }}</div>
+                                {% endif %}
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="tms-price" style="font-size: 1rem;">{{ "{:,.0f}".format(sp_dx.gia_ban | default(0)) }}đ</div>
+                                    {% if sp_dx.gia_goc and sp_dx.gia_goc > sp_dx.gia_ban %}
+                                    <div class="tms-price-old" style="font-size: 0.75rem;">{{ "{:,.0f}".format(sp_dx.gia_goc) }}đ</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </a>
                 </div>
@@ -291,23 +275,18 @@
         </div>
     </div>
     {% endif %}
+
 </div>
 
-<div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="imageZoomModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content" style="background: transparent; border: none;">
             <div class="modal-body p-0 position-relative">
                 <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" style="z-index: 1060;"></button>
                 <div id="zoomCarousel" class="carousel slide carousel-fade" data-bs-ride="false">
                     <div class="carousel-inner text-center">
-                        <div class="carousel-item active" data-index="0">
-                            <img src="{{ sp.hinh_anh }}" class="img-fluid rounded" style="max-height: 90vh;">
-                        </div>
-                        {% for anh in anh_phu %}
-                        <div class="carousel-item" data-index="{{ loop.index }}">
-                            <img src="{{ anh.du_ong_dan }}" class="img-fluid rounded" style="max-height: 90vh;">
-                        </div>
-                        {% endfor %}
+                        <div class="carousel-item active" data-index="0"><img src="{{ sp.hinh_anh }}" class="img-fluid rounded" style="max-height: 90vh;"></div>
+                        {% for anh in anh_phu %}<div class="carousel-item" data-index="{{ loop.index }}"><img src="{{ anh.du_ong_dan }}" class="img-fluid rounded" style="max-height: 90vh;"></div>{% endfor %}
                     </div>
                     {% if anh_phu %}
                     <button class="carousel-control-prev" type="button" data-bs-target="#zoomCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" style="width: 3rem; height: 3rem;"></span></button>
@@ -322,7 +301,9 @@
 
 {% block scripts %}
 <script>
-    const stockQty = Number('{{ sp.so_luong | default(0) }}'); // Lấy tồn kho thực tế
+    const stockQty = Number('{{ sp.so_luong | default(0) }}'); 
+    const giaGoc = Number('{{ sp.gia_goc | default(0) }}'); 
+    
     const prices = {
         'san_new': Number('{{ sp.gia_san_new | default(0) }}') || 0,
         'san_likenew': Number('{{ sp.gia_san_likenew | default(0) }}') || 0,
@@ -354,45 +335,61 @@
         let price = prices[ht + '_' + l];
 
         let priceDisplay = document.getElementById('hien_thi_gia');
+        let orgPriceDisplay = document.getElementById('hien_thi_gia_goc');
+        let discountBadge = document.getElementById('badge-discount');
+        
         let btnCart = document.getElementById('btn_add_cart');
         let btnContact = document.getElementById('btn_contact');
         let depositArea = document.getElementById('deposit-area'); 
         let stockArea = document.getElementById('stock-area'); 
+        let releaseDateArea = document.getElementById('release-date-area');
 
         let isAdmin = ('{{ "true" if is_admin else "false" }}' === 'true');
 
         if (ht === 'order') {
             if (depositArea) depositArea.style.display = 'block'; 
             if (stockArea) stockArea.style.display = 'none';      
+            if (releaseDateArea) releaseDateArea.style.display = 'block'; 
         } else {
             if (depositArea) depositArea.style.display = 'none';   
             if (stockArea) stockArea.style.display = 'block';      
+            if (releaseDateArea) releaseDateArea.style.display = 'none'; 
         }
 
-        // BẮT ĐẦU VÁ LỖI TỒN KHO = 0
+        if (price > 0 && giaGoc > price) {
+            orgPriceDisplay.innerText = giaGoc.toLocaleString('vi-VN') + 'đ';
+            orgPriceDisplay.style.display = 'inline-block';
+            let pt = Math.round(((giaGoc - price) / giaGoc) * 100);
+            discountBadge.innerText = '-' + pt + '%';
+            discountBadge.style.display = 'inline-block';
+        } else {
+            if(orgPriceDisplay) orgPriceDisplay.style.display = 'none';
+            if(discountBadge) discountBadge.style.display = 'none';
+        }
+
         if (ht === 'san' && stockQty <= 0) {
             priceDisplay.innerText = 'Hết hàng sẵn';
             priceDisplay.style.color = '#555';
+            if(orgPriceDisplay) orgPriceDisplay.style.display = 'none';
+            if(discountBadge) discountBadge.style.display = 'none';
             
             if (isAdmin && btnCart) {
                 btnCart.style.display = 'block';
-                btnCart.disabled = true; // KHÓA CỨNG NÚT BẤM
+                btnCart.disabled = true; 
                 btnCart.innerHTML = '<i class="fas fa-times-circle me-2"></i> HẾT HÀNG';
-                btnCart.classList.remove('btn-danger');
-                btnCart.classList.add('btn-secondary'); // ĐỔI SANG MÀU XÁM
+                btnCart.classList.remove('btn-danger', 'btn-warning');
+                btnCart.classList.add('btn-secondary'); 
             }
             if (btnContact) btnContact.style.display = 'none';
-            return; // Dừng chạy code bên dưới
+            return; 
         }
 
-        // PHỤC HỒI LẠI TRẠNG THÁI BÌNH THƯỜNG NẾU CÓ HÀNG
         if (isAdmin && btnCart) {
             btnCart.disabled = false;
             btnCart.innerHTML = '<i class="fas fa-cart-plus me-2"></i> THÊM VÀO GIỎ (ADMIN)';
-            btnCart.classList.add('btn-danger');
-            btnCart.classList.remove('btn-secondary');
+            btnCart.classList.remove('btn-secondary', 'btn-warning', 'text-dark');
+            btnCart.classList.add('btn-danger', 'text-white');
         }
-        // KẾT THÚC VÁ LỖI
 
         if (price > 0) {
             priceDisplay.innerText = price.toLocaleString('vi-VN') + 'đ';
@@ -407,7 +404,13 @@
         } else {
             priceDisplay.innerText = 'Vui lòng liên hệ';
             priceDisplay.style.color = '#555';
-            if (btnCart) btnCart.style.display = 'none';
+            if (btnCart) {
+                btnCart.style.display = 'block';
+                btnCart.disabled = false;
+                btnCart.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> THÊM VÀO GIỎ (GIÁ 0đ)';
+                btnCart.classList.remove('btn-danger', 'btn-secondary', 'text-white');
+                btnCart.classList.add('btn-warning', 'text-dark');
+            }
             if (btnContact) btnContact.style.display = 'block';
         }
     }
@@ -415,21 +418,23 @@
     updateVariantUI();
 
     let currentSlideIndex = 0;
-    
     function changeImage(src, slideIndex, element) {
         document.getElementById('mainImage').src = src;
         document.getElementById('mainImageBlur').style.backgroundImage = `url('${src}')`;
-        currentSlideIndex = slideIndex;
+        currentSlideIndex = parseInt(slideIndex);
         let thumbs = document.querySelectorAll('.thumb-box');
         thumbs.forEach(t => t.classList.remove('active'));
         element.classList.add('active');
     }
 
     function zoomImage() {
-        const zoomModalEl = document.getElementById('imageZoomModal');
-        const myModal = new bootstrap.Modal(zoomModalEl);
+        const modalEl = document.getElementById('imageZoomModal');
+        if (!document.body.contains(modalEl) || modalEl.parentNode !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+        const myModal = bootstrap.Modal.getOrCreateInstance(modalEl);
         const carouselEl = document.getElementById('zoomCarousel');
-        const carousel = new bootstrap.Carousel(carouselEl);
+        const carousel = bootstrap.Carousel.getOrCreateInstance(carouselEl);
         carousel.to(currentSlideIndex);
         myModal.show();
     }

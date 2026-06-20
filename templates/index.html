@@ -4,113 +4,62 @@
 
 {% block extra_css %}
 <style>
-    /* --- 1. HERO BANNER CÓ OVERLAY & TEXT --- */
+    /* --- HERO BANNER --- */
     .hero-banner-wrap { position: relative; width: 100%; height: 500px; overflow: hidden; }
     .hero-banner { width: 100%; height: 100%; object-fit: cover; }
-    .hero-overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
-        z-index: 1;
-    }
-    .hero-content {
-        position: absolute; top: 50%; left: 10%; transform: translateY(-50%);
-        z-index: 2; color: white; max-width: 600px; text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
-    }
-    @keyframes pulseGlow {
-        0% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(230, 0, 18, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0); }
-    }
+    .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%); z-index: 1; }
+    .hero-content { position: absolute; top: 50%; left: 10%; transform: translateY(-50%); z-index: 2; color: white; max-width: 600px; text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+    @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(230, 0, 18, 0); } 100% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0); } }
     .btn-hero { animation: pulseGlow 2s infinite; }
 
-    /* --- 2. DỊCH VỤ (SERVICE BOX) --- */
-    .service-box {
-        display: flex; align-items: center; padding: 20px 15px;
-        border-radius: 15px; height: 100%; transition: transform 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.03);
-    }
+    /* --- DỊCH VỤ --- */
+    .service-box { display: flex; align-items: center; padding: 20px 15px; border-radius: 15px; height: 100%; transition: transform 0.3s ease; border: 1px solid rgba(0,0,0,0.03); background: #fff; }
     .service-box:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     .service-box i { font-size: 2.5rem; margin-right: 15px; }
     .service-box h6 { font-weight: 800; margin-bottom: 5px; font-size: 0.95rem; }
     .service-box p { font-size: 0.8rem; margin: 0; color: #666; }
-    .bg-blue-light { background-color: #eef2ff; }
-    .bg-pink-light { background-color: #fdf2f8; }
-    .bg-yellow-light { background-color: #fefce8; }
-    .bg-green-light { background-color: #f0fdf4; }
+    .bg-blue-light { border-left: 4px solid #0d6efd; }
+    .bg-pink-light { border-left: 4px solid #dc3545; }
+    .bg-yellow-light { border-left: 4px solid #ffc107; }
+    .bg-green-light { border-left: 4px solid #198754; }
 
-    /* --- 3. THẺ SẢN PHẨM PREMIUM --- */
-    .tms-card {
-        display: flex; flex-direction: column; text-decoration: none;
-        background-color: #fff; border: 1px solid #eef0f2;
-        transition: all 0.3s ease; height: 100%;
-        border-radius: 15px; position: relative; overflow: hidden;
-    }
-    .tms-card:hover {
-        transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-        border-color: var(--main-color);
-    }
-    .tms-img-wrap {
-        background-color: #fff; aspect-ratio: 1 / 1;
-        display: flex; align-items: center; justify-content: center;
-        padding: 15px; position: relative; overflow: hidden;
-    }
+    /* --- THẺ SẢN PHẨM PREMIUM --- */
+    .tms-card { display: flex; flex-direction: column; text-decoration: none; background-color: #fff; border: 1px solid #eef0f2; transition: all 0.3s ease; height: 100%; border-radius: 15px; position: relative; overflow: hidden; }
+    .tms-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08); border-color: var(--main-color); }
+    .discount-badge { position: absolute; top: 10px; right: 10px; background: #e60012; color: #fff; font-weight: 900; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; z-index: 5; box-shadow: 0 4px 10px rgba(230,0,18,0.3); }
+    .tms-img-wrap { background-color: #fff; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; padding: 15px; position: relative; overflow: hidden; }
     .tms-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
     .tms-card:hover .tms-img-wrap img { transform: scale(1.1); }
-    .quick-action-bar {
-        position: absolute; bottom: -50px; left: 0; right: 0;
-        padding: 10px; text-align: center; transition: bottom 0.3s ease;
-        background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent);
-    }
+    .quick-action-bar { position: absolute; bottom: -50px; left: 0; right: 0; padding: 10px; text-align: center; transition: bottom 0.3s ease; background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent); z-index: 4; }
     .tms-card:hover .quick-action-bar { bottom: 0; }
-    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
-    .tms-name {
-        color: #111; font-weight: 700; font-size: 0.9rem;
-        height: 2.6em; overflow: hidden; display: -webkit-box;
-        -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 10px;
-    }
-    .rating-stars { color: #ffc107; font-size: 0.75rem; margin-bottom: 8px; }
-    .tms-price { color: #e60012; font-weight: 900; font-size: 1.15rem; margin-top: auto; }
-    .badge-item { font-size: 0.6rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-    .bg-brand { background-color: #f1f1f1; color: #555; }
-    .bg-cat { background-color: #eee; color: #888; }
+    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; border-top: 1px solid #f5f5f5; }
+    .tms-name { color: #111; font-weight: 700; font-size: 0.9rem; height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 10px; }
+    .tms-price { color: #e60012; font-weight: 900; font-size: 1.15rem; }
+    .tms-price-old { text-decoration: line-through; color: #999; font-size: 0.85rem; font-weight: bold; margin-bottom: 0; }
+    .badge-item { font-size: 0.65rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+    .bg-brand { background-color: #f1f1f1; color: #555; border: 1px solid #ddd; }
 
-    /* --- 4. TÙY CHỈNH SECTION CÓ SẴN --- */
-    .section-avail-frame {
-        background: linear-gradient(135deg, #981616 0%, #d32f2f 100%);
-        border-radius: 20px; padding: 30px; margin: 30px 0;
-        box-shadow: 0 10px 30px rgba(148, 30, 30, 0.4);
-    }
-    .avail-header h2 { color: #fff; font-weight: 900; letter-spacing: 1px; }
-    .btn-view-all-white {
-        border: 2px solid #fff; color: #fff; padding: 10px 35px;
-        border-radius: 30px; text-decoration: none; font-weight: 800; transition: 0.3s;
-    }
+    /* --- SECTION BACKGROUND LỬA --- */
+    .section-avail-frame { background: linear-gradient(135deg, #981616 0%, #d32f2f 100%); border-radius: 20px; padding: 30px; margin: 30px 0; box-shadow: 0 10px 30px rgba(148, 30, 30, 0.3); }
+    .btn-view-all-white { border: 2px solid #fff; color: #fff; padding: 10px 35px; border-radius: 30px; text-decoration: none; font-weight: 800; transition: 0.3s; display: inline-block; }
     .btn-view-all-white:hover { background: #fff; color: #981616; transform: scale(1.05); }
 
-    /* --- 5. TABS & TOP TRENDING --- */
-    .pill-tab {
-        padding: 8px 20px; border-radius: 30px; border: 1px solid #ddd;
-        color: #666; font-weight: 700; font-size: 0.85rem; text-decoration: none;
-        transition: all 0.3s ease; text-transform: uppercase;
-    }
+    /* --- TABS BỘ SƯU TẬP --- */
+    .pill-tab { padding: 8px 20px; border-radius: 30px; border: 1px solid #ddd; color: #666; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: all 0.3s ease; text-transform: uppercase; }
     .pill-tab:hover { background-color: #f8f9fa; border-color: #bbb; color: #111; }
-    .pill-tab.active {
-        background-color: var(--main-color); color: #fff; border-color: var(--main-color);
-        box-shadow: 0 4px 10px rgba(230,0,18,0.3);
-    }
+    .pill-tab.active { background-color: var(--main-color); color: #fff; border-color: var(--main-color); box-shadow: 0 4px 10px rgba(230,0,18,0.3); }
     .trending-item:hover { background-color: #f8f9fa; border-radius: 12px; }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- 1. HERO BANNER -->
 <div id="hero" class="carousel slide carousel-fade" data-bs-ride="carousel">
     <div class="carousel-inner">
         <div class="carousel-item active hero-banner-wrap">
             <div class="hero-overlay"></div>
             <img src="{{ settings.banner_1 }}" class="hero-banner">
             <div class="hero-content">
-                <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold fs-6 rounded-pill">🔥 CHÍNH HÃNG 100%</span>
+                <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold fs-6 rounded-pill"><i class="fas fa-fire"></i> CHÍNH HÃNG 100%</span>
                 <h1 class="display-4 fw-black mb-3" style="font-weight: 900; letter-spacing: -1px;">THẾ GIỚI MÔ HÌNH<br>ĐỈNH CAO</h1>
                 <p class="fs-5 opacity-75 mb-4 d-none d-md-block">Khám phá hàng ngàn mô hình Action Figure, Statue phiên bản giới hạn. Cập nhật liên tục từ Nhật Bản.</p>
                 <a href="/san-pham" class="btn btn-danger btn-lg rounded-pill px-5 py-3 fw-bold shadow btn-hero">
@@ -123,7 +72,7 @@
             <div class="hero-overlay"></div>
             <img src="{{ settings.banner_2 }}" class="hero-banner">
             <div class="hero-content">
-                <span class="badge bg-info text-dark mb-3 px-3 py-2 fw-bold fs-6 rounded-pill">💎 PRE-ORDER NOW</span>
+                <span class="badge bg-info text-dark mb-3 px-3 py-2 fw-bold fs-6 rounded-pill"><i class="fas fa-gem"></i> PRE-ORDER NOW</span>
                 <h1 class="display-4 fw-black mb-3" style="font-weight: 900; letter-spacing: -1px;">SĂN DEAL HÀNG HOT<br>TRƯỚC MỌI NGƯỜI</h1>
                 <a href="/san-pham?kieu_hang=Pre-order" class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow">
                     ĐẶT TRƯỚC NGAY <i class="fas fa-shopping-basket ms-2"></i>
@@ -140,7 +89,6 @@
     </button>
 </div>
 
-<!-- 2. DỊCH VỤ -->
 <div class="container mt-5 mb-4">
     <div class="row g-3">
         <div class="col-md-3 col-6"><div class="service-box bg-blue-light"><i class="fas fa-shipping-fast text-primary"></i><div><h6>Giao hàng hỏa tốc</h6><p>Đóng gói siêu kỹ</p></div></div></div>
@@ -150,32 +98,39 @@
     </div>
 </div>
 
-<!-- 3. HÀNG CÓ SẴN (GIAO DIỆN LỬA) -->
 <div class="container">
     <div class="section-avail-frame">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="text-white fw-bold m-0"><i class="fas fa-fire-alt text-warning me-2"></i> HÀNG CÓ SẴN GIAO NGAY</h2>
-            <a href="/san-pham?kieu_hang=Co+san" class="text-white text-decoration-none d-none d-md-block fw-bold">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+            <a href="/san-pham?kieu_hang=Co+san" class="btn-view-all-white d-none d-md-inline-block">XEM TẤT CẢ <i class="fas fa-arrow-right ms-1"></i></a>
         </div>
         <div class="row row-cols-2 row-cols-md-4 g-4">
             {% for sp in hang_co_san[:4] %}
             <div class="col">
                 <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow border-0">
+                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                        {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
+                        <div class="discount-badge">-{{ percent }}%</div>
+                    {% endif %}
+
                     <div class="tms-img-wrap">
+                        <span class="position-absolute top-0 start-0 m-2 badge bg-success shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
+                            <i class="fas fa-check-circle me-1"></i> SẴN HÀNG
+                        </span>
                         <img src="{{ sp.hinh_anh }}" loading="lazy">
                         <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">MUA NGAY</span></div>
                     </div>
-                    <div class="tms-info">
+                    <div class="tms-info bg-white">
                         <div class="mb-2 d-flex flex-wrap gap-1">
                             <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
-                            <span class="badge-item bg-danger text-white"><i class="fas fa-bolt"></i> SẴN HÀNG</span>
                         </div>
                         <div class="tms-name">{{ sp.ten }}</div>
-                        <div class="rating-stars mt-auto">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> 
-                            <span class="text-muted ms-1" style="font-size: 0.7rem;">(Đã bán {{ (sp.id * 5) % 30 + 10 }})</span>
+                        <div class="mt-auto d-flex align-items-center flex-wrap gap-2">
+                            <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                            {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                            <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
+                            {% endif %}
                         </div>
-                        <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
                     </div>
                 </a>
             </div>
@@ -185,7 +140,6 @@
     </div>
 </div>
 
-<!-- 4. LỌC THEO HÃNG BẰNG PILL TABS -->
 <section style="padding: 60px 0; background-color: #fff;">
     <div class="container">
         <div class="text-center mb-5">
@@ -204,24 +158,39 @@
             {% for sp in san_phams %}
             <div class="col topic-item brand-{{ sp.hang_sx }} {{ 'd-block' if loop.index <= 8 else 'd-none' }}">
                 <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm">
+                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                        {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
+                        <div class="discount-badge">-{{ percent }}%</div>
+                    {% endif %}
+
                     <div class="tms-img-wrap">
+                        <span class="position-absolute top-0 start-0 m-2 badge {% if sp.kieu_hang == 'Co san' %}bg-success{% else %}bg-warning text-dark{% endif %} shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
+                            {% if sp.kieu_hang == 'Co san' %}
+                                <i class="fas fa-check-circle me-1"></i> CÓ SẴN
+                            {% else %}
+                                <i class="fas fa-clock me-1"></i> ORDER
+                            {% endif %}
+                        </span>
                         <img src="{{ sp.hinh_anh }}" loading="lazy">
                         <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
                     </div>
-                    <div class="tms-info">
+                    <div class="tms-info bg-white">
                         <div class="mb-2 d-flex flex-wrap gap-1">
                             <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
-                            <span class="badge-item bg-cat">{{ sp.the_loai }}</span>
-                            <span class="badge-item {% if sp.kieu_hang == 'Co san' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
-                                {{ 'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'ORD' }}
-                            </span>
+                            <span class="badge-item bg-light border text-muted">{{ sp.the_loai }}</span>
                         </div>
                         <div class="tms-name">{{ sp.ten }}</div>
-                        <div class="rating-stars mt-auto">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> 
-                            <span class="text-muted ms-1" style="font-size: 0.7rem;">({{ (sp.id * 3) % 20 + 5 }})</span>
+                        <div class="mt-auto">
+                            {% if sp.kieu_hang == 'Pre-order' and sp.ngay_phat_hanh %}
+                            <div class="small text-warning fw-bold mb-2"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp.ngay_phat_hanh }}</div>
+                            {% endif %}
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                                {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                                <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
                     </div>
                 </a>
             </div>
@@ -235,7 +204,6 @@
     </div>
 </section>
 
-<!-- 5. HÀNG PRE-ORDER (SLIDER) -->
 <section style="padding: 60px 0; background-color: #f8f9fa;">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
@@ -255,15 +223,29 @@
                 {% for sp in hang_order %}
                 <div class="px-2" style="flex: 0 0 calc(100% / 4); min-width: 250px; scroll-snap-align: start;">
                     <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm">
+                        {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                            {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
+                            <div class="discount-badge">-{{ percent }}%</div>
+                        {% endif %}
                         <div class="tms-img-wrap">
-                            <span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark fw-bold rounded-pill z-3 shadow-sm" style="font-size: 0.7rem;"><i class="far fa-clock"></i> SẮP VỀ</span>
+                            <span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark fw-bold rounded-pill z-3 shadow-sm" style="font-size: 0.7rem;"><i class="fas fa-clock me-1"></i> SẮP VỀ</span>
                             <img src="{{ sp.hinh_anh }}" loading="lazy">
                             <div class="quick-action-bar"><span class="btn btn-warning btn-sm rounded-pill fw-bold w-75 shadow-sm text-dark">ĐẶT TRƯỚC</span></div>
                         </div>
-                        <div class="tms-info bg-white border-top">
+                        <div class="tms-info bg-white">
                             <div class="mb-2"><span class="badge-item bg-brand">{{ sp.hang_sx }}</span></div>
                             <div class="tms-name">{{ sp.ten }}</div>
-                            <div class="tms-price mt-auto">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
+                            <div class="mt-auto">
+                                {% if sp.ngay_phat_hanh %}
+                                <div class="small text-warning fw-bold mb-2"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp.ngay_phat_hanh }}</div>
+                                {% endif %}
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
+                                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                                    <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </a>
                 </div>
@@ -273,25 +255,20 @@
     </div>
 </section>
 
-<!-- 6. VIDEO UNBOX & BẢNG XẾP HẠNG (THÊM MỚI) -->
 <section style="padding: 60px 0; background-color: #fff;">
     <div class="container">
         <div class="row g-5">
-            <!-- Cột Video Youtube -->
             <div class="col-lg-8">
                 <h3 class="fw-bold mb-4 text-uppercase"><i class="fab fa-youtube text-danger me-2"></i> Trải nghiệm Unbox</h3>
                 <div class="ratio ratio-16x9 rounded-4 shadow-sm overflow-hidden border bg-light">
                     <iframe src="https://www.youtube.com/embed/{{ settings.video_trang_chu | default('HGCsAcFzaFw') }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 </div>
             </div>
-            
-            <!-- Cột Bảng Xếp Hạng Top 5 -->
             <div class="col-lg-4">
                 <h3 class="fw-bold mb-4 text-uppercase"><i class="fas fa-fire text-warning me-2"></i> BẢNG XẾP HẠNG</h3>
                 <div class="bg-white shadow-sm rounded-4 border p-3">
                     {% for sp in san_phams[:5] %}
                     <a href="/san-pham/{{ encode_id(sp.id) }}" class="trending-item d-flex align-items-center gap-3 p-2 mb-2 text-decoration-none text-dark border-bottom" style="transition: 0.3s;">
-                        <!-- Màu Huy chương Vàng, Bạc, Đồng cho Top 3 -->
                         <div class="fw-black fs-4" style="color: {% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#C0C0C0{% elif loop.index == 3 %}#cd7f32{% else %}#ccc{% endif %}; width: 30px; text-align: center;">
                             #{{ loop.index }}
                         </div>

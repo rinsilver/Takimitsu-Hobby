@@ -4,76 +4,51 @@
 
 {% block extra_css %}
 <style>
-    /* --- CSS CHO THẺ MÔ HÌNH --- */
+    .discount-badge {
+        position: absolute; top: 10px; right: 10px; background: #e60012; color: #fff;
+        font-weight: 900; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; z-index: 2;
+        box-shadow: 0 4px 10px rgba(230,0,18,0.3);
+    }
+    /* --- CSS CHO THẺ MÔ HÌNH (Đã xóa height cứng để không bị gãy) --- */
     .tms-card { display: flex; flex-direction: column; text-decoration: none; background-color: #fff; border: 1px solid #eef0f2; transition: all 0.3s ease; height: 100%; border-radius: 15px; overflow: hidden; position: relative; }
     .tms-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08); border-color: var(--main-color); }
-    .tms-img-wrap { background-color: #fff; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; padding: 15px; overflow: hidden; position: relative; }
+    .tms-img-wrap { background-color: #fff; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; padding: 15px; position: relative; overflow: hidden; }
     .tms-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
     .tms-card:hover .tms-img-wrap img { transform: scale(1.1); }
-    .quick-action-bar { position: absolute; bottom: -50px; left: 0; right: 0; padding: 10px; background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent); transition: bottom 0.3s ease; text-align: center; }
+    .quick-action-bar { position: absolute; bottom: -50px; left: 0; right: 0; padding: 10px; background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.7), transparent); transition: bottom 0.3s ease; text-align: center; z-index: 4; }
     .tms-card:hover .quick-action-bar { bottom: 0; }
     .badge-item { font-size: 0.6rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-    .bg-brand { background-color: #f1f1f1; color: #555; }
-    .bg-cat { background-color: #eee; color: #888; }
-    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+    .bg-brand { background-color: #f1f1f1; color: #555; border: 1px solid #ddd; }
+    .tms-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; border-top: 1px solid #f5f5f5;}
     .tms-name { color: #111; font-weight: 700; font-size: 0.9rem; height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 10px; }
-    .rating-stars { color: #ffc107; font-size: 0.75rem; margin-bottom: 8px; }
     .tms-price { color: #e60012; font-weight: 800; font-size: 1.1rem; margin-top: auto; }
+    .tms-price-old { text-decoration: line-through; color: #999; font-size: 0.85rem; font-weight: bold; margin-bottom: 0;}
     
-    /* --- CSS NÂNG CẤP CHO BỘ LỌC (SIDEBAR) --- */
-    .filter-sidebar { 
-        background: #fff; border: none; border-radius: 20px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.04); position: sticky; top: 100px; padding: 25px; 
-    }
-    .filter-title { 
-        font-weight: 900; font-size: 1.1rem; border-bottom: 2px solid #f1f1f1; 
-        padding-bottom: 15px; margin-bottom: 20px; position: relative; color: #111;
-    }
-    .filter-title::after { 
-        content: ''; position: absolute; left: 0; bottom: -2px; 
-        width: 50px; height: 3px; background: var(--main-color); border-radius: 3px;
-    }
-    .form-label-sm { 
-        font-size: 0.75rem; font-weight: 800; color: #444; 
-        text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; 
-    }
-    .custom-filter-input { 
-        border: 1px solid #eef0f2; background-color: #fcfcfc; 
-        border-radius: 10px; padding: 10px 15px; font-size: 0.9rem; transition: all 0.3s; font-weight: 500;
-    }
-    .custom-filter-input:focus { 
-        background-color: #fff; border-color: var(--main-color); box-shadow: 0 0 0 4px rgba(230,0,18,0.1); outline: none;
-    }
+    .filter-sidebar { background: #fff; border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); position: sticky; top: 100px; padding: 25px; }
+    .filter-title { font-weight: 900; font-size: 1.1rem; border-bottom: 2px solid #f1f1f1; padding-bottom: 15px; margin-bottom: 20px; position: relative; color: #111;}
+    .filter-title::after { content: ''; position: absolute; left: 0; bottom: -2px; width: 50px; height: 3px; background: var(--main-color); border-radius: 3px;}
+    .form-label-sm { font-size: 0.75rem; font-weight: 800; color: #444; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .custom-filter-input { border: 1px solid #eef0f2; background-color: #fcfcfc; border-radius: 10px; padding: 10px 15px; font-size: 0.9rem; transition: all 0.3s; font-weight: 500;}
+    .custom-filter-input:focus { background-color: #fff; border-color: var(--main-color); box-shadow: 0 0 0 4px rgba(230,0,18,0.1); outline: none;}
 
-    /* --- CSS NÂNG CẤP CHO NÚT SẮP XẾP TRÊN ĐẦU --- */
-    .sort-select-wrapper {
-        display: flex; align-items: center; background: #fff; border: 1px solid #eef0f2;
-        border-radius: 30px; padding: 4px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.3s;
-    }
+    .sort-select-wrapper { display: flex; align-items: center; background: #fff; border: 1px solid #eef0f2; border-radius: 30px; padding: 4px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.3s;}
     .sort-select-wrapper:hover { border-color: #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    .sort-select { 
-        border: none; background: transparent; font-weight: 700; font-size: 0.9rem; 
-        color: #333; padding: 5px 10px; cursor: pointer; outline: none;
-    }
+    .sort-select { border: none; background: transparent; font-weight: 700; font-size: 0.9rem; color: #333; padding: 5px 10px; cursor: pointer; outline: none;}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-5 mb-5">
-    <!-- BAO BỌC TOÀN BỘ TRANG VÀO FORM ĐỂ TÌM KIẾM VÀ SẮP XẾP HOẠT ĐỘNG CÙNG NHAU -->
     <form method="GET" id="filterForm" class="w-100">
         <div class="row g-4">
             
-            <!-- ================= CỘT TRÁI: BỘ LỌC ĐÃ ĐƯỢC LÀM SẠCH VÀ THÊM MÀU SẮC ================= -->
             <div class="col-lg-3">
                 <div class="filter-sidebar">
                     <div class="filter-title text-uppercase"><i class="fas fa-sliders-h me-2 text-dark"></i> BỘ LỌC TÌM KIẾM</div>
-
                     <div class="mb-4">
                         <label class="form-label-sm"><i class="fas fa-search text-secondary" style="font-size: 0.9rem;"></i> Tên Sản Phẩm</label>
                         <input type="text" name="tu_khoa" class="w-100 custom-filter-input" placeholder="Nhập từ khóa..." value="{{ tu_khoa }}">
                     </div>
-
                     <div class="mb-4">
                         <label class="form-label-sm"><i class="fas fa-tags text-success" style="font-size: 0.9rem;"></i> Danh mục</label>
                         <select name="danh_muc" class="w-100 custom-filter-input">
@@ -81,7 +56,6 @@
                             {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if dm_chon==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
                         </select>
                     </div>
-
                     <div class="mb-4">
                         <label class="form-label-sm"><i class="fas fa-industry text-primary" style="font-size: 0.9rem;"></i> Hãng sản xuất</label>
                         <select name="hang_sx" class="w-100 custom-filter-input">
@@ -89,7 +63,6 @@
                             {% for h in hangs %}<option value="{{ h.ten_hang }}" {% if hang_chon==h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>{% endfor %}
                         </select>
                     </div>
-
                     <div class="mb-4">
                         <label class="form-label-sm"><i class="fas fa-box-open text-warning" style="font-size: 0.9rem;"></i> Trạng thái kho</label>
                         <select name="ton_kho" class="w-100 custom-filter-input">
@@ -98,7 +71,6 @@
                             <option value="het_hang" {{ 'selected' if ton_kho_chon=='het_hang' }}>🔴 Hết hàng</option>
                         </select>
                     </div>
-
                     <div class="mb-4">
                         <label class="form-label-sm"><i class="fas fa-gem text-info" style="font-size: 0.9rem;"></i> Tình trạng</label>
                         <select name="kieu_hang" class="w-100 custom-filter-input">
@@ -107,23 +79,17 @@
                             <option value="Pre-order" {% if kieu_chon=='Pre-order' %}selected{% endif %}>Hàng Order (Đặt trước)</option>
                         </select>
                     </div>
-
                     <button type="submit" class="btn btn-dark w-100 fw-bold py-2 mb-2 rounded-pill shadow-sm" style="font-size: 0.9rem;"><i class="fas fa-check me-2"></i> ÁP DỤNG LỌC</button>
                     <a href="/san-pham" class="btn btn-light border w-100 fw-bold py-2 rounded-pill text-muted shadow-sm" style="font-size: 0.9rem;"><i class="fas fa-undo-alt me-2"></i> XÓA BỘ LỌC</a>
                 </div>
             </div>
 
-            <!-- ================= CỘT PHẢI: HIỂN THỊ SẢN PHẨM ================= -->
             <div class="col-lg-9">
-                
-                <!-- HEADER & NÚT SẮP XẾP -->
-                <!-- HEADER & NÚT SẮP XẾP -->
                 <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 pb-3 border-bottom">
                     <div>
                         <h3 class="fw-black m-0 text-uppercase text-dark" style="letter-spacing: -0.5px; font-weight: 900;">TẤT CẢ SẢN PHẨM</h3>
                         <p class="text-muted mb-0 mt-1 small">Hiển thị toàn bộ các sản phẩm của shop</p>
                     </div>
-                    
                     <div class="sort-select-wrapper mt-3 mt-md-0">
                         <i class="fas fa-sort-amount-down text-danger me-1"></i>
                         <span class="text-muted fw-bold small me-1">Sắp xếp:</span>
@@ -136,29 +102,46 @@
                     </div>
                 </div>
 
-                <!-- GRID SẢN PHẨM -->
                 <div class="row row-cols-2 row-cols-md-3 g-4">
                     {% for sp in san_phams %}
                     <div class="col">
-                        <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm">
+                        <a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm h-100 text-decoration-none">
+                            {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                                {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
+                                <div class="discount-badge">-{{ percent }}%</div>
+                            {% endif %}
+                    
                             <div class="tms-img-wrap">
+                                <span class="position-absolute top-0 start-0 m-2 badge {% if sp.kieu_hang == 'Co san' %}bg-success{% else %}bg-warning text-dark{% endif %} shadow-sm rounded-pill z-3" style="font-size: 0.7rem;">
+                                    {% if sp.kieu_hang == 'Co san' %}
+                                        <i class="fas fa-check-circle me-1"></i> CÓ SẴN
+                                    {% else %}
+                                        <i class="fas fa-clock me-1"></i> ORDER
+                                    {% endif %}
+                                </span>
                                 <img src="{{ sp.hinh_anh }}" loading="lazy">
                                 <div class="quick-action-bar"><span class="btn btn-danger btn-sm rounded-pill fw-bold w-75 shadow-sm">XEM CHI TIẾT</span></div>
                             </div>
-                            <div class="tms-info d-flex flex-column flex-grow-1">
+                    
+                            <div class="tms-info bg-white">
                                 <div class="mb-2 d-flex flex-wrap gap-1">
                                     <span class="badge-item bg-brand">{{ sp.hang_sx }}</span>
-                                    <span class="badge-item bg-cat">{{ sp.the_loai }}</span>
-                                    <span class="badge-item {% if sp.kieu_hang == 'Co san' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
-                                        {{ 'CÓ SẴN' if sp.kieu_hang == 'Co san' else 'ORD' }}
-                                    </span>
+                                    <span class="badge-item bg-light border text-muted">SKU: {{ sp.id }}</span>
                                 </div>
-                                <div class="tms-name">{{ sp.ten }}</div>
-                                <div class="rating-stars mt-auto">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> 
-                                    <span class="text-muted ms-1" style="font-size: 0.7rem;">(Đã bán {{ (sp.id * 3) % 20 + 5 }})</span>
+                                <h6 class="tms-name">{{ sp.ten }}</h6>
+                                
+                                <div class="mt-auto">
+                                    {% if sp.kieu_hang == 'Pre-order' and sp.ngay_phat_hanh %}
+                                    <div class="small text-warning fw-bold mb-2"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp.ngay_phat_hanh }}</div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex align-items-center flex-wrap gap-2">
+                                        <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
+                                        {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                                        <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <div class="tms-price mt-1">{{ "{:,.0f}".format(sp.gia_ban) }}đ</div>
                             </div>
                         </a>
                     </div>
@@ -171,7 +154,6 @@
                     {% endfor %}
                 </div>
 
-                <!-- PHÂN TRANG -->
                 {% if tong_trang > 1 %}
                 <nav class="mt-5">
                     <ul class="pagination justify-content-center shadow-sm p-2 bg-white border rounded-pill mx-auto" style="width: fit-content;">
@@ -200,7 +182,6 @@
                     </ul>
                 </nav>
                 {% endif %}
-                
             </div>
         </div>
     </form>
