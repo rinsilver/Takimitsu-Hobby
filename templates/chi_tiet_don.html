@@ -88,17 +88,19 @@
                         </div>
 
                         <div class="p-3 bg-light rounded-3 mb-4">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted fw-bold">Tổng Bill:</span>
-                                <span class="fw-bold fs-5">{{ "{:,.0f}".format(dh.tong_tien) }}đ</span>
+                            <div class="mb-3">
+                                <label class="fw-bold small text-muted mb-2 text-uppercase"><i class="fas fa-calculator me-1"></i> Tổng giá trị đơn hàng (Tổng Bill)</label>
+                                <input type="number" name="tong_tien" class="form-control text-dark fw-bold fs-5 border-2" value="{{ dh.tong_tien }}" required>
                             </div>
                             
-                            <label class="fw-bold small text-muted mb-2 text-uppercase mt-2">Khách đã thanh toán (VNĐ)</label>
-                            <input type="number" name="tien_da_tra" class="form-control text-success fw-bold fs-5" value="{{ dh.tien_da_tra }}" required>
+                            <div class="mb-3">
+                                <label class="fw-bold small text-muted mb-2 text-uppercase"><i class="fas fa-money-bill-wave text-success me-1"></i> Khách đã thanh toán (VNĐ)</label>
+                                <input type="number" name="tien_da_tra" class="form-control text-success fw-bold fs-5 border-2" value="{{ dh.tien_da_tra }}" required>
+                            </div>
                             
                             <div class="d-flex justify-content-between mt-3 pt-3 border-top border-secondary border-opacity-25">
-                                <span class="text-danger fw-bold">Còn nợ:</span>
-                                <span class="text-danger fw-bold fs-5">{{ "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</span>
+                                <span class="text-danger fw-bold">Còn nợ COD:</span>
+                                <span class="text-danger fw-bold fs-5" id="con_no_hien_thi">{{ "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</span>
                             </div>
                         </div>
 

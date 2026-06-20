@@ -842,10 +842,20 @@ def xem_sua_don_hang(id):
         conn.close(); return "<script>alert('Sếp không có quyền xem đơn của người khác!'); window.history.back();</script>"
 
     if request.method == 'POST' and admin_id:
-        trang_thai = request.form['trang_thai']
-        tien_da_tra = request.form.get('tien_da_tra', 0)
-        conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ? WHERE id = ?', (trang_thai, tien_da_tra, id))
-        conn.commit(); conn.close()
+        tong_tien_moi = float(request.form.get('tong_tien', 0))
+        tien_da_tra_moi = float(request.form.get('tien_da_tra', 0))
+        trang_thai_moi = request.form['trang_thai']
+        
+        # Tự động kích hoạt trạng thái "Hoàn thành" nếu sếp đã thu đủ tiền
+        if tien_da_tra_moi >= tong_tien_moi and trang_thai_moi in ['Chờ xử lý', 'Đang giao hàng']:
+            trang_thai_moi = 'Hoàn thành'
+            
+        # Cập nhật cả trạng thái, tiền đã trả và TỔNG TIỀN MỚI vào đơn hàng
+        conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ?, tong_tien = ? WHERE id = ?', 
+                     (trang_thai_moi, tien_da_tra_moi, tong_tien_moi, id))
+        conn.commit()
+        conn.close()
+        flash(f'Đã cập nhật tài chính đơn hàng #{id} thành công!', 'success')
         return redirect(url_for('quan_ly_don_hang'))
 
     items = conn.execute('''SELECT c.*, s.ten, s.hinh_anh, s.hang_sx FROM chi_tiet_don c 
