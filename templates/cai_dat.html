@@ -26,6 +26,9 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="menu-tab" data-bs-toggle="pill" data-bs-target="#tab-menu" type="button" role="tab"><i class="fas fa-list-ul me-2"></i>Quản Lý Menu</button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="topics-tab" data-bs-toggle="pill" data-bs-target="#tab-topics" type="button" role="tab"><i class="fas fa-newspaper me-2"></i>Topics / Hàng Về</button>
+    </li>
 </ul>
 
 <div class="tab-content" id="settingsTabsContent">
@@ -226,6 +229,46 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="tab-pane fade anime-fade-in" id="tab-topics" role="tabpanel">
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="hanh_dong" value="luu_topics">
+            
+            <div class="alert alert-info border-0 rounded-4 shadow-sm mb-4">
+                <i class="fas fa-info-circle me-2"></i> <strong>Hướng dẫn:</strong> Sếp hãy thiết lập 3 ô tin tức "Hàng Về". Link có thể dẫn đến 1 đợt hàng cụ thể (VD: <code>/san-pham?tu_khoa=hàng+về+15/6</code>). Ảnh nên dùng khổ ngang (16:9).
+            </div>
+
+            <div class="row g-4">
+                {% for i in range(1, 4) %}
+                <div class="col-md-4">
+                    <div class="premium-card p-4 border-top border-warning border-4 h-100">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-bullhorn text-warning"></i> TOPIC SỐ {{ i }}</h6>
+                        
+                        <label class="small fw-bold mb-1">Ảnh Banner ngang (16:9)</label>
+                        <input type="file" name="topic_{{ i }}_img" class="form-control mb-2" accept="image/*">
+                        {% if settings['topic_' ~ i ~ '_img'] %}
+                        <img src="{{ settings['topic_' ~ i ~ '_img'] }}" class="w-100 rounded mb-3 shadow-sm" style="height: 100px; object-fit: cover;">
+                        {% endif %}
+
+                        <label class="small fw-bold mb-1 mt-2">Tiêu đề đợt hàng</label>
+                        <input type="text" name="topic_{{ i }}_title" class="form-control mb-3 fw-bold" value="{{ settings['topic_' ~ i ~ '_title'] }}">
+
+                        <label class="small fw-bold mb-1 text-primary">Ngày về (VD: 15/06/2026)</label>
+                        <input type="text" name="topic_{{ i }}_date" class="form-control mb-3 border-primary" value="{{ settings['topic_' ~ i ~ '_date'] }}">
+
+                        <label class="small fw-bold mb-1 text-danger">Đường link khi click vào</label>
+                        <input type="text" name="topic_{{ i }}_link" class="form-control mb-3 border-danger" value="{{ settings['topic_' ~ i ~ '_link'] }}">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="sticky-save-btn mt-4">
+                <button type="submit" class="btn btn-warning px-5 py-2 fw-bold fs-5 rounded-pill shadow-sm"><i class="fas fa-save me-2"></i> LƯU TOPICS HÀNG VỀ</button>
+            </div>
+        </form>
     </div>
 
 </div>

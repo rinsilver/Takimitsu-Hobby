@@ -43,10 +43,13 @@ def get_settings():
             "banner_1": "", "banner_2": "", 
             "thong_tin_footer": "Shop online chuyên sản phẩm mô hình chính hãng",
             "dia_chi": "TP. Hồ Chí Minh", "dien_thoai": "091.416.5278", "email": "0914165278",
-            "ma_so_thue": "", # <--- THÊM MỚI
+            "ma_so_thue": "",
             "link_fb": "#", "link_ig": "#", "link_yt": "#",
             "cs_cua_hang": "", "cs_doi_tra": "", "cs_van_chuyen": "", "hd_mua_hang": "",
-            "video_trang_chu": "HGCsAcFzaFw"
+            "video_trang_chu": "HGCsAcFzaFw",
+            "topic_1_img": "", "topic_1_title": "Đợt hàng S.H.F tháng 6 đã cập bến!", "topic_1_date": "20/06/2026", "topic_1_link": "/san-pham",
+            "topic_2_img": "", "topic_2_title": "Hàng Hot Pre-order đang trả khách", "topic_2_date": "15/06/2026", "topic_2_link": "/san-pham",
+            "topic_3_img": "", "topic_3_title": "Nendoroid & Figma về ngập kho", "topic_3_date": "10/06/2026", "topic_3_link": "/san-pham"
         }
         save_settings(default_settings)
     with open(SETTINGS_FILE, 'r', encoding='utf-8') as f: 
@@ -939,6 +942,23 @@ def cai_dat_giao_dien():
             settings['hd_mua_hang'] = request.form.get('hd_mua_hang', '')
             save_settings(settings)
             flash('Đã lưu Nội dung Chính Sách!', 'success')
+
+        elif hanh_dong == 'luu_topics':
+            def xu_ly_anh_topic(ten_input, file_cu):
+                file = request.files.get(ten_input)
+                if file and file.filename != '':
+                    filepath = os.path.join('static/uploads', secure_filename(file.filename))
+                    file.save(filepath); return '/' + filepath
+                return file_cu
+
+            for i in range(1, 4):
+                settings[f'topic_{i}_title'] = request.form.get(f'topic_{i}_title', '')
+                settings[f'topic_{i}_date'] = request.form.get(f'topic_{i}_date', '')
+                settings[f'topic_{i}_link'] = request.form.get(f'topic_{i}_link', '/san-pham')
+                settings[f'topic_{i}_img'] = xu_ly_anh_topic(f'topic_{i}_img', settings.get(f'topic_{i}_img'))
+            
+            save_settings(settings)
+            flash('Đã lưu các Banner Topics Hàng Về!', 'success')
             
         # 3. XỬ LÝ THÊM LINK MENU
         elif hanh_dong == 'them_menu':
