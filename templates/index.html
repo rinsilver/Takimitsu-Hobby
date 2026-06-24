@@ -5,12 +5,43 @@
 
 {% block extra_css %}
 <style>
-    .hero-banner-wrap { position: relative; width: 100%; height: 500px; overflow: hidden; }
-    .hero-banner { width: 100%; height: 100%; object-fit: cover; }
-    .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%); z-index: 1; }
-    .hero-content { position: absolute; top: 50%; left: 10%; transform: translateY(-50%); z-index: 2; color: white; max-width: 600px; text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
-    @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(230, 0, 18, 0); } 100% { box-shadow: 0 0 0 0 rgba(230, 0, 18, 0); } }
-    .btn-hero { animation: pulseGlow 2s infinite; }
+    /* --- CSS NÂNG CẤP THEO PHONG CÁCH FLAT MINIMALIST CỦA TAMASHII --- */
+    
+    /* 1. SLIDER TRÀN VIỀN VUÔNG VỨC CHUẨN ĐẸP */
+    .tamashii-hero-wrap { position: relative; width: 100%; height: 520px; overflow: hidden; background: #000; }
+    .tamashii-hero-bg { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: transform 6s ease; }
+    .carousel-item.active .tamashii-hero-bg { transform: scale(1.04); }
+    
+    .tamashii-hero-content { 
+        position: absolute; bottom: 12%; left: 8%; z-index: 2; color: white; max-width: 600px;
+        border-left: 4px solid var(--main-color); padding-left: 20px;
+    }
+    .tamashii-control { width: 5%; opacity: 0; transition: 0.3s; background: rgba(0,0,0,0.2); border: none; }
+    .tamashii-hero-wrap:hover .tamashii-control { opacity: 1; }
+    .tamashii-control-icon { font-size: 1.8rem; color: #fff; }
+
+    /* 2. CÁC KHỐI SECTION TIÊU ĐỀ PHẲNG */
+    .tamashii-section-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px; }
+    .tamashii-title-main { font-weight: 900; font-size: 1.6rem; letter-spacing: 1px; color: #111; text-transform: uppercase; margin: 0; display: inline-block; }
+    .tamashii-title-sub { font-size: 0.75rem; font-weight: 800; color: var(--main-color); letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    
+    .btn-tamashii-viewall { border: 2px solid #000; color: #000; padding: 6px 25px; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.5px; text-decoration: none; transition: 0.2s; }
+    .btn-tamashii-viewall:hover { background: #000; color: #fff; }
+
+    /* 3. KHỐI TOPICS / HÀNG VỀ (DƯỚI CÙNG) */
+    .topic-card { position: relative; overflow: hidden; display: block; border: 1px solid #e2e8f0; background: #000; }
+    .topic-img-wrap { aspect-ratio: 16/9; width: 100%; overflow: hidden; background: #fff; }
+    .topic-img-wrap img { width: 100%; height: 100%; object-fit: contain; padding: 10px; opacity: 0.9; transition: transform 0.4s ease; }
+    .topic-card:hover .topic-img-wrap img { transform: scale(1.04); opacity: 1; }
+    
+    .topic-content { 
+        position: absolute; bottom: 0; left: 0; right: 0; padding: 35px 20px 15px; 
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); 
+    }
+    .topic-title { color: #fff; font-weight: 700; font-size: 0.95rem; line-height: 1.4; margin-bottom: 4px; }
+    .topic-meta { color: #cbd5e1; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* GIỮ STYLE CŨ CỦA SẾP */
     .service-box { display: flex; align-items: center; padding: 20px 15px; border-radius: 15px; height: 100%; transition: transform 0.3s ease; border: 1px solid rgba(0,0,0,0.03); background: #fff; }
     .service-box:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     .service-box i { font-size: 2.5rem; margin-right: 15px; }
@@ -31,36 +62,34 @@
 {% endblock %}
 
 {% block content %}
-<div id="hero" class="carousel slide carousel-fade" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        <div class="carousel-item active hero-banner-wrap">
-            <div class="hero-overlay"></div>
-            <img src="{{ settings.banner_1 }}" class="hero-banner">
-            <div class="hero-content">
-                <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold fs-6 rounded-pill"><i class="fas fa-fire"></i> CHÍNH HÃNG 100%</span>
-                <h1 class="display-4 fw-black mb-3" style="font-weight: 900; letter-spacing: -1px;">THẾ GIỚI MÔ HÌNH<br>ĐỈNH CAO</h1>
-                <p class="fs-5 opacity-75 mb-4 d-none d-md-block">Khám phá hàng ngàn mô hình Action Figure, Statue phiên bản giới hạn. Cập nhật liên tục từ Nhật Bản.</p>
-                <a href="/san-pham" class="btn btn-danger btn-lg rounded-pill px-5 py-3 fw-bold shadow btn-hero">
-                    KHÁM PHÁ NGAY <i class="fas fa-rocket ms-2"></i>
-                </a>
+<div id="hero" class="carousel slide carousel-fade tamashii-hero-wrap" data-bs-ride="carousel">
+    <div class="carousel-inner h-100">
+        <div class="carousel-item active h-100">
+            <img src="{{ settings.banner_1 }}" class="tamashii-hero-bg">
+            <div class="tamashii-hero-content">
+                <span class="badge bg-danger rounded-0 mb-3 px-3 py-2 fw-bold" style="letter-spacing: 1px;">S.H.FIGUARTS LINEUP</span>
+                <h1 class="display-5 fw-black mb-2" style="font-weight: 900; letter-spacing: -1px; text-transform: uppercase;">THẾ GIỚI MÔ HÌNH<br>ĐỈNH CAO</h1>
+                <p class="fs-6 opacity-75 mb-4 d-none d-md-block fw-bold">Khám phá hàng ngàn mô hình Action Figure chính hãng nhập khẩu từ Nhật Bản.</p>
+                <a href="/san-pham" class="btn-tamashii-viewall text-white border-white">EXPLORE NOW <i class="fas fa-chevron-right ms-1"></i></a>
             </div>
         </div>
         {% if settings.banner_2 %}
-        <div class="carousel-item hero-banner-wrap">
-            <div class="hero-overlay"></div>
-            <img src="{{ settings.banner_2 }}" class="hero-banner">
-            <div class="hero-content">
-                <span class="badge bg-info text-dark mb-3 px-3 py-2 fw-bold fs-6 rounded-pill"><i class="fas fa-gem"></i> PRE-ORDER NOW</span>
-                <h1 class="display-4 fw-black mb-3" style="font-weight: 900; letter-spacing: -1px;">SĂN DEAL HÀNG HOT<br>TRƯỚC MỌI NGƯỜI</h1>
-                <a href="/san-pham?kieu_hang=Pre-order" class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow">
-                    ĐẶT TRƯỚC NGAY <i class="fas fa-shopping-basket ms-2"></i>
-                </a>
+        <div class="carousel-item h-100">
+            <img src="{{ settings.banner_2 }}" class="tamashii-hero-bg">
+            <div class="tamashii-hero-content">
+                <span class="badge bg-warning text-dark rounded-0 mb-3 px-3 py-2 fw-bold" style="letter-spacing: 1px;">PRE-ORDER SPECIAL</span>
+                <h1 class="display-5 fw-black mb-2" style="font-weight: 900; letter-spacing: -1px; text-transform: uppercase;">SĂN DEAL HÀNG HOT<br>TRƯỚC MỌI NGƯỜI</h1>
+                <a href="/san-pham?kieu_hang=Pre-order" class="btn-tamashii-viewall text-white border-white">PRE-ORDER NOW <i class="fas fa-chevron-right ms-1"></i></a>
             </div>
         </div>
         {% endif %}
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#hero" data-bs-slide="prev"><span class="carousel-control-prev-icon shadow-lg"></span></button>
-    <button class="carousel-control-next" type="button" data-bs-target="#hero" data-bs-slide="next"><span class="carousel-control-next-icon shadow-lg"></span></button>
+    <button class="carousel-control-prev tamashii-control" type="button" data-bs-target="#hero" data-bs-slide="prev">
+        <i class="fas fa-chevron-left tamashii-control-icon"></i>
+    </button>
+    <button class="carousel-control-next tamashii-control" type="button" data-bs-target="#hero" data-bs-slide="next">
+        <i class="fas fa-chevron-right tamashii-control-icon"></i>
+    </button>
 </div>
 
 <div class="container mt-5 mb-4">
@@ -124,8 +153,8 @@
                 <p class="text-muted mb-0 mt-1">Sở hữu những mô hình mới nhất ngay khi vừa ra mắt.</p>
             </div>
             <div class="d-none d-md-flex gap-2">
-                <button onclick="scrollPreOrder(-1)" class="btn btn-outline-dark rounded-circle shadow-sm" style="width:40px; height:40px;"><i class="fas fa-chevron-left"></i></button>
-                <button onclick="scrollPreOrder(1)" class="btn btn-dark rounded-circle shadow-sm" style="width:40px; height:40px;"><i class="fas fa-chevron-right"></i></button>
+                <button type="button" onclick="scrollPreOrder(-1)" class="btn btn-outline-dark rounded-circle shadow-sm" style="width:40px; height:40px;"><i class="fas fa-chevron-left"></i></button>
+                <button type="button" onclick="scrollPreOrder(1)" class="btn btn-dark rounded-circle shadow-sm" style="width:40px; height:40px;"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     
@@ -167,6 +196,35 @@
                     <div class="text-center mt-3"><a href="/san-pham" class="text-muted fw-bold text-decoration-none small">Xem bảng xếp hạng đầy đủ <i class="fas fa-chevron-right ms-1"></i></a></div>
                 </div>
             </div>
+        </div>
+    </div>
+</section>
+
+<section style="padding: 60px 0; background-color: #f8f9fa; border-top: 1px solid #eef0f2;">
+    <div class="container">
+        <div class="tamashii-section-header d-flex justify-content-between align-items-end">
+            <div>
+                <span class="tamashii-title-sub">News & New Arrivals</span>
+                <h2 class="tamashii-title-main">TOPICS / HÀNG VỀ</h2>
+            </div>
+            <a href="/san-pham?kieu_hang=Co+san" class="btn-tamashii-viewall">VIEW ALL TOPICS</a>
+        </div>
+
+        <div class="row g-4">
+            {% for sp in hang_co_san[:3] %}
+            <div class="col-md-4">
+                <a href="/san-pham/{{ encode_id(sp.id) }}" class="topic-card text-decoration-none shadow-sm">
+                    <div class="topic-img-wrap">
+                        <img src="{{ sp.hinh_anh }}" alt="{{ sp.ten }}">
+                    </div>
+                    <div class="topic-content">
+                        <span class="badge bg-danger rounded-0 mb-2 p-1" style="font-size: 0.65rem; font-weight: 800;">NEW ARRIVAL</span>
+                        <div class="topic-title text-truncate">{{ sp.ten }}</div>
+                        <div class="topic-meta"><i class="fas fa-box me-1"></i> {{ sp.hang_sx }} / ĐÃ CẬP BẾN KHO</div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
