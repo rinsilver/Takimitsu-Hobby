@@ -30,7 +30,7 @@
         </div>
     </div>
     
-    <div class="tms-info bg-white">
+    <div class="tms-info bg-white d-flex flex-column">
         <div class="mb-2 d-flex flex-wrap gap-2 align-items-center">
             <span class="badge rounded-pill bg-dark fw-bold shadow-sm" style="font-size: 0.65rem; padding: 4px 10px; letter-spacing: 0.5px;">
                 <i class="fas fa-crown text-warning me-1"></i>{{ sp.hang_sx }}
@@ -40,21 +40,33 @@
             </span>
         </div>
 
-        <h6 class="tms-name {{ 'text-muted' if het_hang else '' }}">{{ sp.ten }}</h6>
+        <h6 class="tms-name flex-grow-1 {{ 'text-muted' if het_hang else '' }}">{{ sp.ten }}</h6>
         
-        <div class="mt-auto">
-            {% if sp.kieu_hang == 'Pre-order' and sp.ngay_phat_hanh %}
-            <div class="small text-warning fw-bold mb-2 w-100"><i class="fas fa-calendar-alt"></i> Dự kiến: {{ sp.ngay_phat_hanh }}</div>
+        <div class="mt-auto pt-3 border-top" style="border-color: #f1f5f9 !important;">
+            {% if het_hang %}
+                <div class="text-secondary fw-bold mb-2" style="font-size: 1.1rem;">Liên hệ sau</div>
+            {% else %}
+                <div class="d-flex flex-column mb-1">
+                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
+                    <div class="text-muted text-decoration-line-through" style="font-size: 0.85rem; font-weight: 600; line-height: 1;">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
+                    {% else %}
+                    <div style="font-size: 0.85rem; line-height: 1; opacity: 0;">&nbsp;</div>
+                    {% endif %}
+                    
+                    <div class="d-flex align-items-baseline gap-1 mt-1">
+                        <div class="tms-price text-danger fw-black" style="font-size: 1.3rem; font-weight: 900; line-height: 1;">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
+                        <span class="text-muted" style="font-size: 0.65rem; font-weight: 600;">(Đã bao gồm VAT)</span>
+                    </div>
+                </div>
             {% endif %}
             
-            <div class="tms-price-box">
-                {% if het_hang %}
-                    <div class="text-secondary fw-bold" style="font-size: 1.1rem;">Liên hệ sau</div>
+            <div class="mt-2" style="font-size: 0.75rem; color: #111; font-weight: 600; line-height: 1.4;">
+                {% if sp.kieu_hang == 'Pre-order' and sp.ngay_phat_hanh %}
+                <div><i class="far fa-calendar-alt text-muted me-1"></i> Phát hành: {{ sp.ngay_phat_hanh }}</div>
+                {% elif sp.ngay_du_kien_ve %}
+                <div><i class="fas fa-box text-muted me-1"></i> Dự kiến nhập kho: {{ sp.ngay_du_kien_ve }}</div>
                 {% else %}
-                    <div class="tms-price">{{ "{:,.0f}".format(sp.gia_ban | default(0)) }}đ</div>
-                    {% if sp.gia_goc and sp.gia_goc > sp.gia_ban %}
-                    <div class="tms-price-old">{{ "{:,.0f}".format(sp.gia_goc) }}đ</div>
-                    {% endif %}
+                <div style="opacity: 0;">&nbsp;</div> 
                 {% endif %}
             </div>
         </div>
