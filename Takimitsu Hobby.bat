@@ -5,7 +5,8 @@ color 0A
 echo ===================================================
 echo    DANG KIEM TRA VA CAI DAT THU VIEN TU DONG...
 echo ===================================================
-pip install -r requirements.txt
+:: Gọi pip thông qua module trực tiếp của Python để chắc chắn ăn 100%
+python -m pip install -r requirements.txt
 
 echo.
 echo ===================================================

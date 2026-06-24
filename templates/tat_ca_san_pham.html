@@ -5,111 +5,141 @@
 
 {% block extra_css %}
 <style>
-    .filter-sidebar { background: #fff; border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); position: sticky; top: 100px; padding: 25px; }
-    .filter-title { font-weight: 900; font-size: 1.1rem; border-bottom: 2px solid #f1f1f1; padding-bottom: 15px; margin-bottom: 20px; position: relative; color: #111;}
-    .filter-title::after { content: ''; position: absolute; left: 0; bottom: -2px; width: 50px; height: 3px; background: var(--main-color); border-radius: 3px;}
-    .form-label-sm { font-size: 0.75rem; font-weight: 800; color: #444; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .custom-filter-input { border: 1px solid #eef0f2; background-color: #fcfcfc; border-radius: 10px; padding: 10px 15px; font-size: 0.9rem; transition: all 0.3s; font-weight: 500;}
-    .custom-filter-input:focus { background-color: #fff; border-color: var(--main-color); box-shadow: 0 0 0 4px rgba(230,0,18,0.1); outline: none;}
-    .sort-select-wrapper { display: flex; align-items: center; background: #fff; border: 1px solid #eef0f2; border-radius: 30px; padding: 4px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.3s;}
-    .sort-select-wrapper:hover { border-color: #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    .sort-select { border: none; background: transparent; font-weight: 700; font-size: 0.9rem; color: #333; padding: 5px 10px; cursor: pointer; outline: none;}
+    /* --- BỐ CỤC PHẲNG NGANG (ĐÃ THÊM MÀU SẮC & BO TRÒN) --- */
+    .filter-top-bar { 
+        background: #fff; border: 1px solid #eef0f2; border-radius: 20px; 
+        box-shadow: 0 8px 25px rgba(0,0,0,0.03); padding: 20px; 
+        border-top: 4px solid var(--main-color); /* Thêm dải màu chủ đạo viền trên */
+    }
+    .form-label-sm { font-size: 0.75rem; font-weight: 800; color: #444; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    
+    /* Bo tròn Dropdown và Input */
+    /* Bo tròn Dropdown và cập nhật sang màu Xanh Nhạt Premium */
+    .custom-filter-input { 
+        border: 1px solid #e2e8f0; 
+        background-color: #f0f7ff9f; /* Đổi từ #f8f9fa (Xám) sang #f0f7ff (Xanh nhạt dịu mát) */
+        border-radius: 25px; 
+        padding: 10px 18px; 
+        font-size: 0.85rem; 
+        transition: all 0.3s; 
+        font-weight: 600; 
+        width: 100%; 
+        color: #333;
+        cursor: pointer;
+    }
+    .custom-filter-input:focus { background-color: #fff; border-color: var(--main-color); box-shadow: 0 0 0 4px rgba(230,0,18,0.1); outline: none; }
+    
+    .sort-select-wrapper { display: flex; align-items: center; background: #fff; border: 1px solid #eef0f2; border-radius: 30px; padding: 4px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+    .sort-select { border: none; background: transparent; font-weight: 700; font-size: 0.85rem; color: #333; padding: 5px 0; cursor: pointer; outline: none; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
+<div class="container mt-4 mb-5">
     <form method="GET" id="filterForm" class="w-100">
-        <div class="row g-4">
-            <div class="col-lg-3">
-                <div class="filter-sidebar">
-                    <div class="filter-title text-uppercase"><i class="fas fa-sliders-h me-2 text-dark"></i> BỘ LỌC TÌM KIẾM</div>
-                    <div class="mb-4">
-                        <label class="form-label-sm"><i class="fas fa-search text-secondary" style="font-size: 0.9rem;"></i> Tên Sản Phẩm</label>
-                        <input type="text" name="tu_khoa" class="w-100 custom-filter-input" placeholder="Nhập từ khóa..." value="{{ tu_khoa }}">
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label-sm"><i class="fas fa-tags text-success" style="font-size: 0.9rem;"></i> Danh mục</label>
-                        <select name="danh_muc" class="w-100 custom-filter-input">
-                            <option value="">Tất cả danh mục</option>
-                            {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if dm_chon==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label-sm"><i class="fas fa-industry text-primary" style="font-size: 0.9rem;"></i> Hãng sản xuất</label>
-                        <select name="hang_sx" class="w-100 custom-filter-input">
-                            <option value="">Tất cả hãng</option>
-                            {% for h in hangs %}<option value="{{ h.ten_hang }}" {% if hang_chon==h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>{% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label-sm"><i class="fas fa-box-open text-warning" style="font-size: 0.9rem;"></i> Trạng thái kho</label>
-                        <select name="ton_kho" class="w-100 custom-filter-input">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="con_hang" {{ 'selected' if ton_kho_chon=='con_hang' }}>🟢 Còn hàng</option>
-                            <option value="het_hang" {{ 'selected' if ton_kho_chon=='het_hang' }}>🔴 Hết hàng</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label-sm"><i class="fas fa-gem text-info" style="font-size: 0.9rem;"></i> Tình trạng</label>
-                        <select name="kieu_hang" class="w-100 custom-filter-input">
-                            <option value="">Tất cả tình trạng</option>
-                            <option value="Co san" {% if kieu_chon=='Co san' %}selected{% endif %}>Hàng Có Sẵn</option>
-                            <option value="Pre-order" {% if kieu_chon=='Pre-order' %}selected{% endif %}>Hàng Order (Đặt trước)</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-dark w-100 fw-bold py-2 mb-2 rounded-pill shadow-sm" style="font-size: 0.9rem;"><i class="fas fa-check me-2"></i> ÁP DỤNG LỌC</button>
-                    <a href="/san-pham" class="btn btn-light border w-100 fw-bold py-2 rounded-pill text-muted shadow-sm" style="font-size: 0.9rem;"><i class="fas fa-undo-alt me-2"></i> XÓA BỘ LỌC</a>
+        
+        <div class="filter-top-bar mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3 col-sm-6">
+                    <label class="form-label-sm"><i class="fas fa-search text-primary"></i> Tên Sản Phẩm</label>
+                    <input type="text" name="tu_khoa" class="custom-filter-input shadow-sm" placeholder="Nhập từ khóa..." value="{{ tu_khoa }}">
                 </div>
-            </div>
-
-            <div class="col-lg-9">
-                <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 pb-3 border-bottom">
-                    <div>
-                        <h3 class="fw-black m-0 text-uppercase text-dark" style="letter-spacing: -0.5px; font-weight: 900;">TẤT CẢ SẢN PHẨM</h3>
-                        <p class="text-muted mb-0 mt-1 small">Hiển thị toàn bộ các sản phẩm của shop</p>
-                    </div>
-                    <div class="sort-select-wrapper mt-3 mt-md-0">
-                        <i class="fas fa-sort-amount-down text-danger me-1"></i>
-                        <span class="text-muted fw-bold small me-1">Sắp xếp:</span>
-                        <select name="sap_xep" class="sort-select" onchange="this.form.submit()">
-                            <option value="moi_nhat" {{ 'selected' if sap_xep_chon=='moi_nhat' }}>✨ Sản phẩm mới nhất</option>
-                            <option value="cu_nhat" {{ 'selected' if sap_xep_chon=='cu_nhat' }}>⏳ Sản phẩm cũ nhất</option>
-                            <option value="gia_tang" {{ 'selected' if sap_xep_chon=='gia_tang' }}>📈 Giá: Thấp đến Cao</option>
-                            <option value="gia_giam" {{ 'selected' if sap_xep_chon=='gia_giam' }}>📉 Giá: Cao đến Thấp</option>
+                <div class="col-md-2 col-sm-6">
+                    <label class="form-label-sm"><i class="fas fa-tags text-success"></i> Danh mục</label>
+                    <select name="danh_muc" class="custom-filter-input shadow-sm">
+                        <option value="">Tất cả</option>
+                        {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if dm_chon==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 col-sm-6">
+                    <label class="form-label-sm"><i class="fas fa-industry text-info"></i> Hãng sản xuất</label>
+                    <select name="hang_sx" class="custom-filter-input shadow-sm">
+                        <option value="">Tất cả hãng</option>
+                        {% for h in hangs %}<option value="{{ h.ten_hang }}" {% if hang_chon==h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 col-sm-6">
+                    <label class="form-label-sm"><i class="fas fa-box-open text-warning"></i> Kho hàng</label>
+                    <select name="ton_kho" class="custom-filter-input shadow-sm">
+                        <option value="">Trạng thái kho</option>
+                        <option value="con_hang" {{ 'selected' if ton_kho_chon=='con_hang' }}>📦 Còn hàng</option>
+                        <option value="het_hang" {{ 'selected' if ton_kho_chon=='het_hang' }}>🚫 Hết hàng</option>
+                    </select>
+                </div>
+                <div class="col-md-3 col-sm-10 d-flex gap-2">
+                    <div class="w-50">
+                        <label class="form-label-sm"><i class="fas fa-gem text-danger"></i> Hình thức</label>
+                        <select name="kieu_hang" class="custom-filter-input shadow-sm">
+                            <option value="">Tất cả</option>
+                            <option value="Co san" {% if kieu_chon=='Co san' %}selected{% endif %}>📦 Có Sẵn</option>
+                            <option value="Pre-order" {% if kieu_chon=='Pre-order' %}selected{% endif %}>⏳ Order</option>
                         </select>
+                    </div>
+                    <div class="w-50 d-flex gap-2 align-items-end">
+                        <button type="submit" class="btn btn-dark fw-bold rounded-pill w-100 py-2 shadow-sm" style="font-size: 0.85rem;"><i class="fas fa-filter"></i> LỌC</button>
+                        <a href="/san-pham" class="btn btn-light border rounded-pill w-100 py-2 text-muted text-center text-decoration-none shadow-sm" style="font-size: 0.85rem;"><i class="fas fa-undo-alt"></i></a>
                     </div>
                 </div>
-
-                <div class="row row-cols-2 row-cols-md-3 g-4">
-                    {% for sp in san_phams %}
-                    <div class="col">{{ render_card(sp) }}</div>
-                    {% else %}
-                    <div class="col-12 text-center py-5">
-                        <i class="fas fa-box-open text-muted opacity-50 mb-3" style="font-size: 4rem;"></i>
-                        <h5 class="text-muted fw-bold">Không tìm thấy sản phẩm phù hợp!</h5>
-                        <p class="text-muted small">Sếp thử xóa bộ lọc hoặc đổi từ khóa xem sao.</p>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                {% if tong_trang > 1 %}
-                <nav class="mt-5">
-                    <ul class="pagination justify-content-center shadow-sm p-2 bg-white border rounded-pill mx-auto" style="width: fit-content;">
-                        <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page=1&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}"><i class="fas fa-angle-double-left"></i></a></li>
-                        {% for p in range(1, tong_trang + 1) %}
-                        {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
-                        <li class="page-item {{ 'active' if p == page }}"><a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow-sm' if p == page else 'text-dark bg-transparent' }}" href="?page={{ p }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}">{{ p }}</a></li>
-                        {% elif p == page - 2 or p == page + 2 %}
-                        <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
-                        {% endif %}
-                        {% endfor %}
-                        <li class="page-item {{ 'disabled' if page == tong_trang }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}"><i class="fas fa-angle-double-right"></i></a></li>
-                    </ul>
-                </nav>
-                {% endif %}
             </div>
         </div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <h4 class="fw-black m-0 text-uppercase text-dark" style="font-weight: 900; letter-spacing: -0.5px;">DANH SÁCH SẢN PHẨM</h4>
+                <div class="sort-select-wrapper">
+                    <i class="fas fa-sort-amount-down text-danger me-2 small"></i>
+                    <select name="sap_xep" class="sort-select" onchange="this.form.submit()">
+                        <option value="moi_nhat" {{ 'selected' if sap_xep_chon=='moi_nhat' }}>✨ Mới nhất</option>
+                        <option value="cu_nhat" {{ 'selected' if sap_xep_chon=='cu_nhat' }}>⏳ Cũ nhất</option>
+                        <option value="gia_tang" {{ 'selected' if sap_xep_chon=='gia_giam' or sap_xep_chon=='gia_tang' }}>📈 Giá thấp đến cao</option>
+                        <option value="gia_giam" {{ 'selected' if sap_xep_chon=='gia_giam' }}>📉 Giá cao đến thấp</option>
+                    </select>
+                </div>
+            </div>
+            
+            {% if tong_trang > 1 %}
+            <div class="d-none d-sm-block">
+                <ul class="pagination shadow-sm p-1 bg-white border rounded-pill m-0 small" style="width: fit-content;">
+                    <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page=1&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}"><i class="fas fa-angle-double-left fa-xs"></i></a></li>
+                    {% for p in range(1, tong_trang + 1) %}
+                    {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
+                    <li class="page-item {{ 'active' if p == page }}"><a class="page-link fw-bold border-0 mx-1 rounded-circle py-1 px-2 {{ 'bg-dark text-white' if p == page else 'text-dark bg-transparent' }}" href="?page={{ p }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}">{{ p }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    <li class="page-item {{ 'disabled' if page == tong_trang }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}"><i class="fas fa-angle-double-right fa-xs"></i></a></li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-4 g-4">
+            {% for sp in san_phams %}
+            <div class="col">{{ render_card(sp) }}</div>
+            {% else %}
+            <div class="col-12 text-center py-5 bg-white border rounded-4 shadow-none">
+                <i class="fas fa-box-open text-muted opacity-50 mb-3" style="font-size: 4rem;"></i>
+                <h5 class="text-muted fw-bold">Không tìm thấy sản phẩm phù hợp!</h5>
+                <p class="text-muted small mb-0">Sếp thử xóa bộ lọc hoặc đổi từ khóa xem sao nhé.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if tong_trang > 1 %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center shadow-sm p-2 bg-white border rounded-pill mx-auto" style="width: fit-content;">
+                <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page=1&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}"><i class="fas fa-angle-double-left"></i></a></li>
+                {% for p in range(1, tong_trang + 1) %}
+                {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
+                <li class="page-item {{ 'active' if p == page }}"><a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow-sm' if p == page else 'text-dark bg-transparent' }}" href="?page={{ p }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}">{{ p }}</a></li>
+                {% elif p == page - 2 or p == page + 2 %}
+                <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+                {% endif %}
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if page == tong_trang }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}&danh_muc={{ dm_chon }}&hang_sx={{ hang_chon }}&kieu_hang={{ kieu_chon }}&ton_kho={{ ton_kho_chon }}&sap_xep={{ sap_xep_chon }}"><i class="fas fa-arrow-right"></i></a></li>
+            </ul>
+        </nav>
+        {% endif %}
+
     </form>
 </div>
 {% endblock %}
