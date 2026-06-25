@@ -68,22 +68,35 @@
                 
                 <div class="col-md-6">
                     <div class="premium-card p-4 mb-4">
-                        <h5 class="fw-bold mb-3 border-bottom pb-2">BANNER & VIDEO TRANG CHỦ</h5>
-                        <label class="fw-bold small">Banner 1:</label>
-                        <input type="file" name="banner_1_file" class="form-control mb-2" accept="image/*">
-                        {% if settings.banner_1 %}<img src="{{ settings.banner_1 }}" height="60" class="mb-3 rounded shadow-sm">{% endif %}
-                        
-                        <label class="fw-bold small mt-2">Banner 2:</label>
-                        <input type="file" name="banner_2_file" class="form-control mb-2" accept="image/*">
-                        {% if settings.banner_2 %}<img src="{{ settings.banner_2 }}" height="60" class="mb-3 rounded shadow-sm">{% endif %}
-                        
-                        <label class="fw-bold small border-top pt-3 w-100">ID Video YouTube đập hộp:</label>
-                        <div class="input-group mb-2 shadow-sm">
-                            <span class="input-group-text bg-white text-danger"><i class="fab fa-youtube"></i></span>
-                            <input type="text" name="video_trang_chu" class="form-control" value="{{ settings.video_trang_chu }}" placeholder="VD: HGCsAcFzaFw">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">BANNER TRANG CHỦ (Tối đa 5)</h5>
+                        {% for i in range(1, 6) %}
+                        <div class="mb-3 p-2 bg-light rounded border">
+                            <label class="fw-bold small mb-1 text-danger">Banner {{ i }}:</label>
+                            <input type="file" name="banner_{{ i }}_file" class="form-control form-control-sm mb-2" accept="image/*">
+                            {% if settings.get('banner_' ~ i) %}
+                            <div id="banner_{{ i }}_container" class="position-relative d-inline-block mt-1">
+                                <img src="{{ settings.get('banner_' ~ i) }}" height="50" class="rounded shadow-sm">
+                                <button type="button" onclick="deleteImage('banner_{{ i }}_file')" class="btn btn-danger btn-sm position-absolute top-0 start-100 translate-middle rounded-circle" style="width: 20px; height: 20px; padding: 0; line-height: 1; font-size: 10px;">&times;</button>
+                                <input type="hidden" name="is_delete_banner_{{ i }}_file" id="is_delete_banner_{{ i }}_file" value="false">
+                            </div>
+                            {% endif %}
                         </div>
+                        {% endfor %}
                     </div>
                     
+                    <div class="premium-card p-4 mb-4">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">VIDEO YOUTUBE (Tối đa 3)</h5>
+                        {% for i in range(1, 4) %}
+                            {% set vid_val = settings.get('video_' ~ i) %}
+                            {% if i == 1 and not vid_val %}{% set vid_val = settings.get('video_trang_chu') %}{% endif %}
+                            <label class="fw-bold small mt-2">ID Video {{ i }}:</label>
+                            <div class="input-group input-group-sm mb-2 shadow-sm">
+                                <span class="input-group-text bg-white text-danger"><i class="fab fa-youtube"></i></span>
+                                <input type="text" name="video_{{ i }}" class="form-control" value="{{ vid_val }}" placeholder="VD: HGCsAcFzaFw">
+                            </div>
+                        {% endfor %}
+                    </div>
+
                     <div class="premium-card p-4">
                         <h5 class="fw-bold mb-3 border-bottom pb-2">MẠNG XÃ HỘI</h5>
                         <div class="input-group mb-3 shadow-sm">

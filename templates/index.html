@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from 'card_macro.html' import render_card with context %}
 
-{% block title %}Trang Chủ - Thế giới mô hình{% endblock %}
+{% block title %}Trang Chủ - Takimitsu Hobby{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -64,25 +64,21 @@
 {% block content %}
 <div id="hero" class="carousel slide carousel-fade tamashii-hero-wrap" data-bs-ride="carousel">
     <div class="carousel-inner h-100">
-        <div class="carousel-item active h-100">
-            <img src="{{ settings.banner_1 }}" class="tamashii-hero-bg">
-            <div class="tamashii-hero-content">
-                <span class="badge bg-danger rounded-0 mb-3 px-3 py-2 fw-bold" style="letter-spacing: 1px;">S.H.FIGUARTS LINEUP</span>
-                <h1 class="display-5 fw-black mb-2" style="font-weight: 900; letter-spacing: -1px; text-transform: uppercase;">THẾ GIỚI MÔ HÌNH<br>ĐỈNH CAO</h1>
-                <p class="fs-6 opacity-75 mb-4 d-none d-md-block fw-bold">Khám phá hàng ngàn mô hình Action Figure chính hãng nhập khẩu từ Nhật Bản.</p>
-                <a href="/san-pham" class="btn-tamashii-viewall text-white border-white">EXPLORE NOW <i class="fas fa-chevron-right ms-1"></i></a>
+        {% set active_banner = namespace(found=false) %}
+        {% for i in range(1, 6) %}
+            {% set banner_url = settings.get('banner_' ~ i) %}
+            {% if banner_url %}
+            <div class="carousel-item {% if not active_banner.found %}active{% set active_banner.found = true %}{% endif %} h-100">
+                <img src="{{ banner_url }}" class="tamashii-hero-bg">
+                <div class="tamashii-hero-content">
+                    <span class="badge bg-danger rounded-0 mb-3 px-3 py-2 fw-bold" style="letter-spacing: 1px;">HIGHLIGHT LINEUP</span>
+                    <h1 class="display-5 fw-black mb-2" style="font-weight: 900; letter-spacing: -1px; text-transform: uppercase;">NƠI NGHIỆN NHỰA<br>BẮT ĐẦU</h1>
+                    <p class="fs-6 opacity-75 mb-4 d-none d-md-block fw-bold">Khám phá hàng ngàn mô hình Action Figure chính hãng nhập khẩu từ Nhật Bản.</p>
+                    <a href="/san-pham" class="btn-tamashii-viewall text-white border-white mt-2">EXPLORE NOW <i class="fas fa-chevron-right ms-1"></i></a>
+                </div>
             </div>
-        </div>
-        {% if settings.banner_2 %}
-        <div class="carousel-item h-100">
-            <img src="{{ settings.banner_2 }}" class="tamashii-hero-bg">
-            <div class="tamashii-hero-content">
-                <span class="badge bg-warning text-dark rounded-0 mb-3 px-3 py-2 fw-bold" style="letter-spacing: 1px;">PRE-ORDER SPECIAL</span>
-                <h1 class="display-5 fw-black mb-2" style="font-weight: 900; letter-spacing: -1px; text-transform: uppercase;">SĂN DEAL HÀNG HOT<br>TRƯỚC MỌI NGƯỜI</h1>
-                <a href="/san-pham?kieu_hang=Pre-order" class="btn-tamashii-viewall text-white border-white">PRE-ORDER NOW <i class="fas fa-chevron-right ms-1"></i></a>
-            </div>
-        </div>
-        {% endif %}
+            {% endif %}
+        {% endfor %}
     </div>
     <button class="carousel-control-prev tamashii-control" type="button" data-bs-target="#hero" data-bs-slide="prev">
         <i class="fas fa-chevron-left tamashii-control-icon"></i>
@@ -175,11 +171,46 @@
     <div class="container">
         <div class="row g-5">
             <div class="col-lg-8">
-                <h3 class="fw-bold mb-4 text-uppercase"><i class="fab fa-youtube text-danger me-2"></i> Giới thiệu sản phẩm mới</h3>
-                <div class="ratio ratio-16x9 rounded-4 shadow-sm overflow-hidden border bg-light">
-                    <iframe src="https://www.youtube.com/embed/{{ settings.video_trang_chu | default('HGCsAcFzaFw') }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <h3 class="fw-bold mb-4 text-uppercase"><i class="fab fa-youtube text-danger me-2"></i> Trải nghiệm Unbox</h3>
+                
+                <div id="videoCarousel" class="carousel slide shadow-sm rounded-4 overflow-hidden border" data-bs-ride="false">
+                    <div class="carousel-inner bg-dark">
+                        {% set active_vid = namespace(found=false) %}
+                        {% for i in range(1, 4) %}
+                            {% set vid_id = settings.get('video_' ~ i) %}
+                            {% if i == 1 and not vid_id %}{% set vid_id = settings.get('video_trang_chu') %}{% endif %}
+                            
+                            {% if vid_id %}
+                                {% set vid_clean = vid_id %}
+                                {% if 'watch?v=' in vid_id %}
+                                    {% set vid_clean = vid_id.split('watch?v=')[1].split('&')[0] %}
+                                {% elif 'youtu.be/' in vid_id %}
+                                    {% set vid_clean = vid_id.split('youtu.be/')[1].split('?')[0] %}
+                                {% elif 'embed/' in vid_id %}
+                                    {% set vid_clean = vid_id.split('embed/')[1].split('?')[0] %}
+                                {% endif %}
+                                
+                            <div class="carousel-item {% if not active_vid.found %}active{% set active_vid.found = true %}{% endif %}">
+                                <div class="ratio ratio-16x9">
+                                    <div class="w-100 h-100 position-absolute top-0 start-0 d-flex justify-content-center align-items-center" style="cursor: pointer; z-index: 5;" onclick="playYouTubeVideo(this, '{{ vid_clean }}')">
+                                        <img src="https://img.youtube.com/vi/{{ vid_clean }}/maxresdefault.jpg" class="w-100 h-100 position-absolute top-0 start-0" style="object-fit: cover; opacity: 0.85;" onerror="this.src='https://img.youtube.com/vi/{{ vid_clean }}/hqdefault.jpg'">
+                                        <i class="fab fa-youtube text-danger position-relative" style="font-size: 5.5rem; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <button class="carousel-control-prev" type="button" data-bs-target="#videoCarousel" data-bs-slide="prev" style="width: 50px; background: linear-gradient(to right, rgba(0,0,0,0.5), transparent); z-index: 10;">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#videoCarousel" data-bs-slide="next" style="width: 50px; background: linear-gradient(to left, rgba(0,0,0,0.5), transparent); z-index: 10;">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
                 </div>
             </div>
+
             <div class="col-lg-4">
                 <h3 class="fw-bold mb-4 text-uppercase"><i class="fas fa-fire text-warning me-2"></i> BẢNG XẾP HẠNG</h3>
                 <div class="bg-white shadow-sm rounded-4 border p-3">
@@ -207,7 +238,6 @@
                 <span class="tamashii-title-sub">News & New Arrivals</span>
                 <h2 class="tamashii-title-main">TOPICS / HÀNG VỀ</h2>
             </div>
-            <a href="/san-pham?kieu_hang=Co+san" class="btn-tamashii-viewall">XEM TẤT CẢ</a>
         </div>
 
         <div class="row g-4">
@@ -215,26 +245,38 @@
             {% set t_img = settings.get('topic_' ~ i ~ '_img') %}
             {% set t_title = settings.get('topic_' ~ i ~ '_title') %}
             {% set t_date = settings.get('topic_' ~ i ~ '_date') %}
-            {% set t_link = settings.get('topic_' ~ i ~ '_link') %}
             
             {% if t_title %}
             <div class="col-md-4">
-                <a href="{{ t_link }}" class="topic-card text-decoration-none shadow-sm h-100">
+                <div class="topic-card shadow-sm h-100" style="cursor: pointer;" onclick="openTopicModal('{{ t_img if t_img else '/static/uploads/Logo.jpg' }}')">
                     <div class="topic-img-wrap">
-                        <img src="{{ t_img if t_img else '/static/uploads/Logo.jpg' }}">
+                        <img src="{{ t_img if t_img else '/static/uploads/Logo.jpg' }}" alt="Banner">
                     </div>
                     <div class="topic-content">
-                        <span class="badge bg-danger rounded-0 mb-2 p-1 px-2" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">New Arrivals</span>
+                        <span class="badge bg-danger rounded-0 mb-2 p-1 px-2" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">HÀNG VỀ</span>
                         <div class="topic-title">{{ t_title }}</div>
                         <div class="topic-meta mt-2"><i class="fas fa-calendar-alt me-1 text-warning"></i> {{ t_date }} / ĐÃ CẬP BẾN</div>
                     </div>
-                </a>
+                </div>
             </div>
             {% endif %}
             {% endfor %}
         </div>
     </div>
 </section>
+
+<div class="modal fade" id="topicModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 pb-0 position-absolute top-0 end-0" style="z-index: 10;">
+                <button type="button" class="btn-close btn-close-white shadow-none m-3 bg-dark p-2 rounded-circle" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-0 position-relative">
+                <img id="topicModalImg" src="" class="img-fluid rounded shadow-lg border border-3 border-white" style="max-height: 90vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -255,6 +297,15 @@
         const slider = document.getElementById('preOrderSlider');
         const scrollAmount = slider.offsetWidth; 
         slider.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+    function openTopicModal(imgSrc) {
+        document.getElementById('topicModalImg').src = imgSrc;
+        const topicModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('topicModal'));
+        topicModal.show();
+    }
+
+    function playYouTubeVideo(element, videoId) {
+        element.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen class="w-100 h-100 position-absolute top-0 start-0"></iframe>`;
     }
 </script>
 {% endblock %}

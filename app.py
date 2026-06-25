@@ -927,10 +927,19 @@ def cai_dat_giao_dien():
             settings['link_fb'] = request.form.get('link_fb', '#')
             settings['link_ig'] = request.form.get('link_ig', '#')
             settings['link_yt'] = request.form.get('link_yt', '#')
-            settings['video_trang_chu'] = request.form.get('video_trang_chu', 'HGCsAcFzaFw')
             settings['logo_url'] = xu_ly_anh('logo_file', settings.get('logo_url'))
-            settings['banner_1'] = xu_ly_anh('banner_1_file', settings.get('banner_1'))
-            settings['banner_2'] = xu_ly_anh('banner_2_file', settings.get('banner_2'))
+            
+            # --- VÒNG LẶP LƯU 5 BANNER ---
+            for i in range(1, 6):
+                settings[f'banner_{i}'] = xu_ly_anh(f'banner_{i}_file', settings.get(f'banner_{i}'))
+            
+            # --- VÒNG LẶP LƯU 3 VIDEO YOUTUBE ---
+            for i in range(1, 4):
+                settings[f'video_{i}'] = request.form.get(f'video_{i}', '')
+            # Tương thích với data cũ (nếu sếp đã có video_trang_chu)
+            if not settings.get('video_1') and settings.get('video_trang_chu'):
+                settings['video_1'] = settings.get('video_trang_chu')
+
             save_settings(settings)
             flash('Đã lưu Cấu Hình Chung thành công!', 'success')
 
