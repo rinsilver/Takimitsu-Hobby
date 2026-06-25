@@ -38,90 +38,128 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="hanh_dong" value="luu_cai_dat_chung">
             
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="premium-card p-4 h-100">
-                        <h5 class="fw-bold mb-3 border-bottom pb-2">THÔNG TIN CHUNG</h5>
-                        <label class="fw-bold small">Tên Website:</label>
-                        <input type="text" name="ten_web" class="form-control mb-3" value="{{ settings.ten_web }}" required>
-                        
-                        <label class="fw-bold small mb-1">
-                            Upload Logo: 
-                            <span class="text-danger fw-normal">(Khuyên dùng: Vuông 500x500px)</span>
-                        </label>
-                        <input type="file" name="logo_file" class="form-control mb-2">
-                        {% if settings.logo_url %}
-                        <div id="logo_container" class="position-relative d-inline-block">
-                            <img src="{{ settings.logo_url }}" height="60" class="border rounded p-1 shadow-sm">
-                            <button type="button" onclick="deleteImage('logo_file')" class="btn btn-danger btn-sm position-absolute top-0 start-100 translate-middle rounded-circle" style="width: 24px; height: 24px; padding: 0; line-height: 1;">&times;</button>
+            <div class="premium-card p-4 mb-4 border-top border-primary border-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-info-circle text-primary me-2"></i>THÔNG TIN CƠ BẢN & LIÊN HỆ</h5>
+                <div class="row g-4">
+                    <div class="col-md-3 text-center">
+                        <label class="fw-bold small mb-2 text-muted d-block">Logo Thương Hiệu</label>
+                        <div class="border rounded-4 p-3 bg-light shadow-sm position-relative d-inline-block w-100" id="logo_container">
+                            <img src="{{ settings.logo_url if settings.logo_url else '/static/uploads/Logo.jpg' }}" class="img-fluid rounded shadow-sm mb-3" style="width: 120px; height: 120px; object-fit: contain; background: #fff;">
+                            {% if settings.logo_url %}
+                            <button type="button" onclick="deleteImage('logo_file')" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle"><i class="fas fa-times"></i></button>
                             <input type="hidden" name="is_delete_logo_file" id="is_delete_logo_file" value="false">
-                        </div>
-                        {% endif %}
-                        
-                        <label class="fw-bold small mt-3">Màu chủ đạo:</label>
-                        <input type="color" name="mau_chu_dao" class="form-control form-control-color mb-3 w-100" value="{{ settings.mau_chu_dao }}">
-                        
-                        <label class="fw-bold small mt-3 border-bottom pb-1 w-100">Thông tin liên hệ (Footer):</label>
-                        <input type="text" name="dia_chi" value="{{ settings.dia_chi }}" class="form-control mb-2" placeholder="Địa chỉ...">
-                        <input type="text" name="dien_thoai" value="{{ settings.dien_thoai }}" class="form-control mb-2" placeholder="Điện thoại...">
-                        <input type="text" name="email" value="{{ settings.email }}" class="form-control mb-2" placeholder="Email...">
-                        <input type="text" name="ma_so_thue" value="{{ settings.ma_so_thue }}" class="form-control mb-2 border-danger" placeholder="Mã số thuế...">
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="premium-card p-4 mb-4">
-                        <h5 class="fw-bold mb-3 border-bottom pb-2">BANNER TRANG CHỦ (Tối đa 5)</h5>
-                        {% for i in range(1, 6) %}
-                        <div class="mb-3 p-2 bg-light rounded border">
-                            <label class="fw-bold small mb-1 text-danger">
-                                Banner {{ i }}: 
-                                <span class="text-muted fw-normal">(Khuyên dùng: 1920x600px hoặc 1920x800px)</span>
-                            </label>
-                            <input type="file" name="banner_{{ i }}_file" class="form-control form-control-sm mb-2" accept="image/*">
-                            {% if settings.get('banner_' ~ i) %}
-                            <div id="banner_{{ i }}_container" class="position-relative d-inline-block mt-1">
-                                <img src="{{ settings.get('banner_' ~ i) }}" height="50" class="rounded shadow-sm">
-                                <button type="button" onclick="deleteImage('banner_{{ i }}_file')" class="btn btn-danger btn-sm position-absolute top-0 start-100 translate-middle rounded-circle" style="width: 20px; height: 20px; padding: 0; line-height: 1; font-size: 10px;">&times;</button>
-                                <input type="hidden" name="is_delete_banner_{{ i }}_file" id="is_delete_banner_{{ i }}_file" value="false">
-                            </div>
                             {% endif %}
+                            <input type="file" name="logo_file" class="form-control form-control-sm">
                         </div>
-                        {% endfor %}
+                        <small class="text-danger mt-2 d-block">Khuyên dùng: Vuông 500x500px</small>
                     </div>
                     
-                    <div class="premium-card p-4 mb-4">
-                        <h5 class="fw-bold mb-3 border-bottom pb-2">VIDEO YOUTUBE (Tối đa 3)</h5>
-                        {% for i in range(1, 4) %}
-                            {% set vid_val = settings.get('video_' ~ i) %}
-                            {% if i == 1 and not vid_val %}{% set vid_val = settings.get('video_trang_chu') %}{% endif %}
-                            <label class="fw-bold small mt-2">ID Video {{ i }}:</label>
-                            <div class="input-group input-group-sm mb-2 shadow-sm">
-                                <span class="input-group-text bg-white text-danger"><i class="fab fa-youtube"></i></span>
-                                <input type="text" name="video_{{ i }}" class="form-control" value="{{ vid_val }}" placeholder="VD: HGCsAcFzaFw">
+                    <div class="col-md-9">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="fw-bold small text-muted">Tên Website</label>
+                                <input type="text" name="ten_web" class="form-control fw-bold fs-5" value="{{ settings.ten_web }}" required>
                             </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="premium-card p-4">
-                        <h5 class="fw-bold mb-3 border-bottom pb-2">MẠNG XÃ HỘI</h5>
-                        <div class="input-group mb-3 shadow-sm">
-                            <span class="input-group-text bg-white"><i class="fab fa-facebook text-primary"></i></span>
-                            <input type="text" name="link_fb" class="form-control border-start-0" value="{{ settings.link_fb }}">
-                        </div>
-                        <div class="input-group mb-3 shadow-sm">
-                            <span class="input-group-text bg-white"><i class="fab fa-instagram text-danger"></i></span>
-                            <input type="text" name="link_ig" class="form-control border-start-0" value="{{ settings.link_ig }}">
-                        </div>
-                        <div class="input-group mb-2 shadow-sm">
-                            <span class="input-group-text bg-white"><i class="fab fa-youtube text-danger"></i></span>
-                            <input type="text" name="link_yt" class="form-control border-start-0" value="{{ settings.link_yt }}">
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted">Màu chủ đạo</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="color" name="mau_chu_dao" class="form-control form-control-color w-100" value="{{ settings.mau_chu_dao }}">
+                                    <span class="badge bg-light text-dark border">{{ settings.mau_chu_dao }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="fw-bold small text-muted">Mã số thuế / Giấy phép (Tùy chọn)</label>
+                                <input type="text" name="ma_so_thue" value="{{ settings.ma_so_thue }}" class="form-control">
+                            </div>
+                            <div class="col-md-12 mt-4"><hr class="m-0"></div>
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted"><i class="fas fa-phone text-success"></i> Điện thoại</label>
+                                <input type="text" name="dien_thoai" value="{{ settings.dien_thoai }}" class="form-control fw-bold">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fw-bold small text-muted"><i class="fas fa-envelope text-warning"></i> Email</label>
+                                <input type="text" name="email" value="{{ settings.email }}" class="form-control">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="fw-bold small text-muted"><i class="fas fa-map-marker-alt text-danger"></i> Địa chỉ</label>
+                                <input type="text" name="dia_chi" value="{{ settings.dia_chi }}" class="form-control">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="premium-card p-4 h-100 border-top border-danger border-4">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-images text-danger me-2"></i> QUẢN LÝ SLIDER BANNER (Tối đa 5)</h5>
+                        <p class="small text-muted mb-4">Khuyên dùng ảnh khổ ngang siêu rộng (Tỉ lệ 16:5). Kích thước chuẩn: <strong>1920x600px</strong>.</p>
+                        
+                        <div class="row g-3">
+                            {% for i in range(1, 6) %}
+                            <div class="col-md-6">
+                                <div class="border rounded-4 p-3 bg-light position-relative h-100" id="banner_{{ i }}_container">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-dark">Banner {{ i }}</span>
+                                        {% if settings.get('banner_' ~ i) %}
+                                        <button type="button" onclick="deleteImage('banner_{{ i }}_file')" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="fas fa-trash"></i> Xóa</button>
+                                        {% endif %}
+                                    </div>
+                                    <input type="hidden" name="is_delete_banner_{{ i }}_file" id="is_delete_banner_{{ i }}_file" value="false">
+                                    
+                                    {% if settings.get('banner_' ~ i) %}
+                                    <div class="mb-2 rounded overflow-hidden shadow-sm" style="height: 100px; background: #000;">
+                                        <img src="{{ settings.get('banner_' ~ i) }}" class="w-100 h-100" style="object-fit: cover; opacity: 0.9;">
+                                    </div>
+                                    {% else %}
+                                    <div class="mb-2 rounded border border-2 border-dashed d-flex align-items-center justify-content-center text-muted" style="height: 100px;">
+                                        <i class="fas fa-image fa-2x opacity-25"></i>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <input type="file" name="banner_{{ i }}_file" class="form-control form-control-sm" accept="image/*">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="premium-card p-4 mb-4 border-top border-danger border-4">
+                        <h5 class="fw-bold mb-4"><i class="fab fa-youtube text-danger me-2"></i> YOUTUBE UNBOX</h5>
+                        {% for i in range(1, 4) %}
+                            {% set vid_val = settings.get('video_' ~ i) %}
+                            {% if i == 1 and not vid_val %}{% set vid_val = settings.get('video_trang_chu') %}{% endif %}
+                            <label class="fw-bold small text-muted mb-1">ID Video {{ i }}:</label>
+                            <div class="input-group mb-3 shadow-sm">
+                                <span class="input-group-text bg-light text-danger"><i class="fab fa-youtube"></i></span>
+                                <input type="text" name="video_{{ i }}" class="form-control border-start-0 fw-bold" value="{{ vid_val }}" placeholder="VD: HGCsAcFzaFw">
+                            </div>
+                        {% endfor %}
+                        <small class="text-muted d-block mt-2">Dán mã ID hoặc Dán nguyên 1 đường link Youtube đều được hệ thống tự động bóc tách.</small>
+                    </div>
+
+                    <div class="premium-card p-4 border-top border-info border-4">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-share-alt text-info me-2"></i> MẠNG XÃ HỘI</h5>
+                        <div class="input-group mb-3 shadow-sm">
+                            <span class="input-group-text bg-light"><i class="fab fa-facebook text-primary"></i></span>
+                            <input type="text" name="link_fb" class="form-control border-start-0" value="{{ settings.link_fb }}" placeholder="Link Fanpage...">
+                        </div>
+                        <div class="input-group mb-3 shadow-sm">
+                            <span class="input-group-text bg-light"><i class="fab fa-instagram text-danger"></i></span>
+                            <input type="text" name="link_ig" class="form-control border-start-0" value="{{ settings.link_ig }}" placeholder="Link Instagram...">
+                        </div>
+                        <div class="input-group mb-2 shadow-sm">
+                            <span class="input-group-text bg-light"><i class="fab fa-tiktok text-dark"></i></span>
+                            <input type="text" name="link_yt" class="form-control border-start-0" value="{{ settings.link_yt }}" placeholder="Link Tiktok / Youtube...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="sticky-save-btn mt-4">
-                <button type="submit" class="btn btn-dark px-5 py-2 fw-bold fs-5 rounded-pill shadow-sm"><i class="fas fa-save me-2"></i> LƯU CẤU HÌNH CHUNG</button>
+                <button type="submit" class="btn btn-dark px-5 py-3 fw-bold fs-5 rounded-pill shadow-lg"><i class="fas fa-save me-2"></i> LƯU CẤU HÌNH</button>
             </div>
         </form>
     </div>
