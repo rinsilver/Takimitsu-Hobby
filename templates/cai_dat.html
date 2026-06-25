@@ -45,7 +45,10 @@
                         <label class="fw-bold small">Tên Website:</label>
                         <input type="text" name="ten_web" class="form-control mb-3" value="{{ settings.ten_web }}" required>
                         
-                        <label class="fw-bold small">Upload Logo:</label>
+                        <label class="fw-bold small mb-1">
+                            Upload Logo: 
+                            <span class="text-danger fw-normal">(Khuyên dùng: Vuông 500x500px)</span>
+                        </label>
                         <input type="file" name="logo_file" class="form-control mb-2">
                         {% if settings.logo_url %}
                         <div id="logo_container" class="position-relative d-inline-block">
@@ -71,7 +74,10 @@
                         <h5 class="fw-bold mb-3 border-bottom pb-2">BANNER TRANG CHỦ (Tối đa 5)</h5>
                         {% for i in range(1, 6) %}
                         <div class="mb-3 p-2 bg-light rounded border">
-                            <label class="fw-bold small mb-1 text-danger">Banner {{ i }}:</label>
+                            <label class="fw-bold small mb-1 text-danger">
+                                Banner {{ i }}: 
+                                <span class="text-muted fw-normal">(Khuyên dùng: 1920x600px hoặc 1920x800px)</span>
+                            </label>
                             <input type="file" name="banner_{{ i }}_file" class="form-control form-control-sm mb-2" accept="image/*">
                             {% if settings.get('banner_' ~ i) %}
                             <div id="banner_{{ i }}_container" class="position-relative d-inline-block mt-1">
@@ -259,7 +265,10 @@
                     <div class="premium-card p-4 border-top border-warning border-4 h-100">
                         <h6 class="fw-bold mb-3"><i class="fas fa-bullhorn text-warning"></i> TOPIC SỐ {{ i }}</h6>
                         
-                        <label class="small fw-bold mb-1">Ảnh Banner ngang (16:9)</label>
+                        <label class="small fw-bold mb-1">
+                            Ảnh Banner ngang 
+                            <span class="text-danger">(Chuẩn 16:9 - VD: 1280x720px)</span>
+                        </label>
                         <input type="file" name="topic_{{ i }}_img" class="form-control mb-2" accept="image/*">
                         {% if settings['topic_' ~ i ~ '_img'] %}
                         <img src="{{ settings['topic_' ~ i ~ '_img'] }}" class="w-100 rounded mb-3 shadow-sm" style="height: 100px; object-fit: cover;">
