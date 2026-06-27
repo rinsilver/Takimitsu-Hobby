@@ -172,41 +172,71 @@
             <div class="col-lg-8">
                 <h3 class="fw-bold mb-4 text-uppercase"><i class="fab fa-youtube text-danger me-2"></i> Trải nghiệm Unbox</h3>
                 
-                <div id="videoCarousel" class="carousel slide shadow-sm rounded-4 overflow-hidden border" data-bs-ride="false">
-                    <div class="carousel-inner bg-dark">
-                        {% set active_vid = namespace(found=false) %}
-                        {% for i in range(1, 4) %}
-                            {% set vid_id = settings.get('video_' ~ i) %}
-                            {% if i == 1 and not vid_id %}{% set vid_id = settings.get('video_trang_chu') %}{% endif %}
-                            
-                            {% if vid_id %}
-                                {% set vid_clean = vid_id %}
-                                {% if 'watch?v=' in vid_id %}
-                                    {% set vid_clean = vid_id.split('watch?v=')[1].split('&')[0] %}
-                                {% elif 'youtu.be/' in vid_id %}
-                                    {% set vid_clean = vid_id.split('youtu.be/')[1].split('?')[0] %}
-                                {% elif 'embed/' in vid_id %}
-                                    {% set vid_clean = vid_id.split('embed/')[1].split('?')[0] %}
-                                {% endif %}
+                <div class="position-relative shadow-sm rounded-4 overflow-hidden border bg-dark">
+                    
+                    <div id="videoCarousel" class="carousel slide" data-bs-ride="false">
+                        <div class="carousel-inner">
+                            {% set active_vid = namespace(found=false) %}
+                            {% for i in range(1, 4) %}
+                                {% set vid_id = settings.get('video_' ~ i) %}
+                                {% if i == 1 and not vid_id %}{% set vid_id = settings.get('video_trang_chu') %}{% endif %}
                                 
-                            <div class="carousel-item {% if not active_vid.found %}active{% set active_vid.found = true %}{% endif %}">
-                                <div class="ratio ratio-16x9">
-                                    <div class="w-100 h-100 position-absolute top-0 start-0 d-flex justify-content-center align-items-center" style="cursor: pointer; z-index: 5;" onclick="playYouTubeVideo(this, '{{ vid_clean }}')">
-                                        <img src="https://img.youtube.com/vi/{{ vid_clean }}/maxresdefault.jpg" class="w-100 h-100 position-absolute top-0 start-0" style="object-fit: cover; opacity: 0.85;" onerror="this.src='https://img.youtube.com/vi/{{ vid_clean }}/hqdefault.jpg'">
-                                        <i class="fab fa-youtube text-danger position-relative" style="font-size: 5.5rem; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></i>
+                                {% if vid_id %}
+                                    {% set vid_clean = vid_id %}
+                                    {% if 'watch?v=' in vid_id %}{% set vid_clean = vid_id.split('watch?v=')[1].split('&')[0] %}
+                                    {% elif 'youtu.be/' in vid_id %}{% set vid_clean = vid_id.split('youtu.be/')[1].split('?')[0] %}
+                                    {% elif 'embed/' in vid_id %}{% set vid_clean = vid_id.split('embed/')[1].split('?')[0] %}
+                                    {% endif %}
+                                    
+                                <div class="carousel-item {% if not active_vid.found %}active{% set active_vid.found = true %}{% endif %}">
+                                    <div class="ratio ratio-16x9">
+                                        <div class="w-100 h-100 position-absolute top-0 start-0 d-flex justify-content-center align-items-center" style="cursor: pointer; z-index: 5;" onclick="playYouTubeVideo(this, '{{ vid_clean }}')">
+                                            <img src="https://img.youtube.com/vi/{{ vid_clean }}/maxresdefault.jpg" class="w-100 h-100 position-absolute top-0 start-0" style="object-fit: cover; opacity: 0.85;" onerror="this.src='https://img.youtube.com/vi/{{ vid_clean }}/hqdefault.jpg'">
+                                            <i class="fab fa-youtube text-danger position-relative" style="font-size: 5rem; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></i>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <button class="carousel-control-prev" type="button" data-bs-target="#videoCarousel" data-bs-slide="prev" style="width: 50px; background: linear-gradient(to right, rgba(0,0,0,0.4), transparent); z-index: 12; height: calc(100% - 75px);">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#videoCarousel" data-bs-slide="next" style="width: 50px; background: linear-gradient(to left, rgba(0,0,0,0.4), transparent); z-index: 12; height: calc(100% - 75px);">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
                     </div>
-                    
-                    <button class="carousel-control-prev" type="button" data-bs-target="#videoCarousel" data-bs-slide="prev" style="width: 50px; background: linear-gradient(to right, rgba(0,0,0,0.5), transparent); z-index: 10;">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#videoCarousel" data-bs-slide="next" style="width: 50px; background: linear-gradient(to left, rgba(0,0,0,0.5), transparent); z-index: 10;">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
+
+                    <div class="position-absolute bottom-0 start-0 w-100 p-2 d-flex justify-content-center align-items-center" style="z-index: 15; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);">
+                        <div class="d-flex gap-2" id="videoThumbnails" style="max-width: 420px; width: 85%;">
+                            {% set slide_idx = namespace(count=0) %}
+                            {% for i in range(1, 4) %}
+                                {% set vid_id = settings.get('video_' ~ i) %}
+                                {% if i == 1 and not vid_id %}{% set vid_id = settings.get('video_trang_chu') %}{% endif %}
+                                
+                                {% if vid_id %}
+                                    {% set vid_clean = vid_id %}
+                                    {% if 'watch?v=' in vid_id %}{% set vid_clean = vid_id.split('watch?v=')[1].split('&')[0] %}
+                                    {% elif 'youtu.be/' in vid_id %}{% set vid_clean = vid_id.split('youtu.be/')[1].split('?')[0] %}
+                                    {% elif 'embed/' in vid_id %}{% set vid_clean = vid_id.split('embed/')[1].split('?')[0] %}
+                                    {% endif %}
+                                    
+                                    <div style="flex: 1;">
+                                        <div class="ratio ratio-16x9 rounded border video-thumb {% if slide_idx.count == 0 %}border-danger active-thumb{% else %}border-secondary border-opacity-50{% endif %}" 
+                                             style="cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.5);" 
+                                             data-bs-target="#videoCarousel" data-bs-slide-to="{{ slide_idx.count }}"
+                                             onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                            <img src="https://img.youtube.com/vi/{{ vid_clean }}/mqdefault.jpg" class="w-100 h-100" style="object-fit: cover;">
+                                            <div class="thumb-overlay position-absolute w-100 h-100 top-0 start-0 bg-dark" style="opacity: {% if slide_idx.count == 0 %}0{% else %}0.55{% endif %}; transition: 0.3s; pointer-events: none;"></div>
+                                        </div>
+                                    </div>
+                                    {% set slide_idx.count = slide_idx.count + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -303,8 +333,35 @@
         topicModal.show();
     }
 
+    // --- HÀM MỚI: BIẾN ẢNH BÌA THÀNH VIDEO KHI CLICK ĐỂ CHỐNG LAG VÀ NÉT CĂNG ---
     function playYouTubeVideo(element, videoId) {
         element.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen class="w-100 h-100 position-absolute top-0 start-0"></iframe>`;
     }
+
+    // --- HÀM ĐỒNG BỘ THUMBNAIL VỚI SLIDER VIDEO ---
+    document.addEventListener("DOMContentLoaded", function() {
+        let videoCarousel = document.getElementById('videoCarousel');
+        if(videoCarousel) {
+            videoCarousel.addEventListener('slide.bs.carousel', function (e) {
+                let index = e.to; // Lấy vị trí slide sắp chuyển tới
+                let thumbs = document.querySelectorAll('.video-thumb');
+                
+                thumbs.forEach((thumb, i) => {
+                    let overlay = thumb.querySelector('.thumb-overlay');
+                    if(i === index) {
+                        // Thắp sáng và bật viền đỏ cho ô đang chọn
+                        thumb.classList.add('border-danger', 'active-thumb');
+                        thumb.classList.remove('border-transparent');
+                        if(overlay) overlay.style.opacity = '0';
+                    } else {
+                        // Làm mờ và tắt viền các ô khác
+                        thumb.classList.remove('border-danger', 'active-thumb');
+                        thumb.classList.add('border-transparent');
+                        if(overlay) overlay.style.opacity = '0.6';
+                    }
+                });
+            });
+        }
+    });
 </script>
 {% endblock %}

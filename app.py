@@ -663,8 +663,17 @@ def quan_ly_don_hang():
     cau_lenh_base = ' FROM don_hang WHERE 1=1'
     dk = []
     if tu_khoa:
-        cau_lenh_base += ' AND (ten_khach LIKE ? OR sdt LIKE ? OR id LIKE ?)'
-        dk.extend([f'%{tu_khoa}%', f'%{tu_khoa}%', f'%{tu_khoa}%'])
+        cau_lenh_base += ''' AND (
+            ten_khach LIKE ? 
+            OR sdt LIKE ? 
+            OR id LIKE ? 
+            OR id IN (
+                SELECT don_hang_id FROM chi_tiet_don c 
+                JOIN san_pham s ON c.san_pham_id = s.id 
+                WHERE s.ten LIKE ?
+            )
+        )'''
+        dk.extend([f'%{tu_khoa}%', f'%{tu_khoa}%', f'%{tu_khoa}%', f'%{tu_khoa}%'])
     if trang_thai_loc:
         cau_lenh_base += ' AND trang_thai = ?'; dk.append(trang_thai_loc)
 
