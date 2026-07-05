@@ -1,48 +1,98 @@
 {% extends "admin_base.html" %}
 {% set active_page = 'thong_ke' %}
 
-{% block title %}Báo Cáo Thống Kê{% endblock %}
+{% block title %}Báo Cáo Thống Kê Tài Chính{% endblock %}
 
 {% block extra_css %}
 <style>
-    .premium-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .premium-card:hover { 
-        transform: translateY(-5px); 
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
-    }
+    .premium-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .premium-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important; }
+    .filter-select { cursor: pointer; font-size: 0.9rem; color: #495057; background-position: right 0.5rem center; padding-right: 1.8rem; }
+    .filter-select:focus { box-shadow: none; border-color: transparent; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
-    <h3 class="fw-bold m-0 text-dark"><i class="fas fa-chart-pie text-warning me-2"></i> BÁO CÁO KINH DOANH TOÀN TIỆM</h3>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 mt-2">
+    <h4 class="fw-bold m-0 text-dark"><i class="fas fa-chart-pie text-warning me-2"></i> BIỂU ĐỒ DOANH THU</h4>
+    
+    <form method="GET" action="/admin/thong-ke" id="filterForm" class="d-flex align-items-center gap-1 bg-white p-1 px-2 rounded-pill shadow-sm border">
+        <input type="hidden" name="thue_pct" value="{{ thue_pct }}">
+        
+        <div class="px-2">
+            <select name="nam" class="form-select form-select-sm border-0 fw-bold filter-select bg-transparent" onchange="this.form.submit()">
+                <option value="">Toàn bộ năm</option>
+                {% for y in years_list %}
+                <option value="{{ y.y }}" {{ 'selected' if nam_chon == y.y }}>Năm {{ y.y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="vr text-muted opacity-25" style="height: 20px;"></div>
+        <div class="px-2">
+            <select name="thang" class="form-select form-select-sm border-0 fw-bold filter-select bg-transparent" onchange="this.form.submit()">
+                <option value="">Toàn bộ tháng</option>
+                {% for m in range(1, 13) %}
+                {% set m_str = "{:02d}".format(m) %}
+                <option value="{{ m_str }}" {{ 'selected' if thang_chon == m_str }}>Tháng {{ m_str }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold px-3 py-1.5 ms-2 text-nowrap" onclick="xuatExcelThongKe()">
+            <i class="fas fa-file-excel me-1"></i> Xuất Excel
+        </button>
+    </form>
 </div>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-3">
+<div class="row g-3 mb-4">
+    <div class="col-md">
         <div class="premium-card border-start border-primary border-5 p-4 h-100 shadow-sm bg-white">
-            <small class="text-muted fw-bold text-uppercase d-block mb-1">Tổng Doanh Thu</small>
-            <h3 class="fw-black text-dark mt-1 mb-0">{{ "{:,.0f}".format(doanh_thu) }}đ</h3>
+            <small class="text-muted fw-bold text-uppercase d-block mb-1">Doanh Thu Thuần</small>
+            <h3 class="fw-black text-dark mt-1 mb-0" style="font-size: 1.4rem;">{{ "{:,.0f}".format(doanh_thu) }}đ</h3>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="premium-card border-start border-success border-5 p-4 h-100 shadow-sm bg-white">
-            <small class="text-muted fw-bold text-uppercase d-block mb-1">Lợi Nhuận Ước Tính (30%)</small>
-            <h3 class="fw-black text-success mt-1 mb-0">{{ "{:,.0f}".format(doanh_thu * 0.3) }}đ</h3>
+    <div class="col-md">
+        <div class="premium-card border-start border-secondary border-5 p-4 h-100 shadow-sm bg-white">
+            <small class="text-muted fw-bold text-uppercase d-block mb-1">Giá Vốn Kho (COGS)</small>
+            <h3 class="fw-black text-secondary mt-1 mb-0" style="font-size: 1.4rem;">{{ "{:,.0f}".format(gia_von) }}đ</h3>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md">
+        <div class="premium-card border-start border-info border-5 p-4 h-100 shadow-sm bg-white">
+            <small class="text-muted fw-bold text-uppercase d-block mb-1">Lợi Nhuận Gộp</small>
+            <h3 class="fw-black text-info mt-1 mb-0" style="font-size: 1.4rem;">{{ "{:,.0f}".format(loi_nhuan_gop) }}đ</h3>
+        </div>
+    </div>
+    
+    <div class="col-md">
         <div class="premium-card border-start border-danger border-5 p-4 h-100 shadow-sm bg-white">
-            <small class="text-muted fw-bold text-uppercase d-block mb-1">Thuế Ước Tính (3%)</small>
-            <h3 class="fw-black text-danger mt-1 mb-0">{{ "{:,.0f}".format(thue_vat) }}đ</h3>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-muted fw-bold text-uppercase">Tiền Thuế Phải Nộp</small>
+                <form method="GET" action="/admin/thong-ke" class="m-0 d-flex align-items-center">
+                    <input type="hidden" name="nam" value="{{ nam_chon }}">
+                    <input type="hidden" name="thang" value="{{ thang_chon }}">
+                    <div class="d-flex align-items-center bg-light rounded-pill px-2 border" style="padding: 2px 4px;">
+                        <input type="number" name="thue_pct" value="{{ thue_pct }}" step="0.1" min="0" max="100" 
+                               class="form-control form-control-sm text-center fw-bold text-danger border-0 p-0 bg-transparent shadow-none" 
+                               style="width: 35px; font-size: 0.75rem;" onchange="this.form.submit()">
+                        <span class="text-muted fw-bold" style="font-size: 0.7rem;">%</span>
+                    </div>
+                </form>
+            </div>
+            <h3 class="fw-black text-danger mt-1 mb-0" style="font-size: 1.4rem;">{{ "{:,.0f}".format(thue_vat) }}đ</h3>
         </div>
     </div>
-    <div class="col-md-3">
+    
+    <div class="col-md">
+        <div class="premium-card border-start border-success border-5 p-4 h-100 shadow-sm bg-success bg-opacity-10">
+            <small class="text-success fw-bold text-uppercase d-block mb-1">Lợi Nhuận Ròng (Bỏ túi)</small>
+            <h3 class="fw-black text-success mt-1 mb-0" style="font-size: 1.4rem;">{{ "{:,.0f}".format(loi_nhuan_rong) }}đ</h3>
+        </div>
+    </div>
+    <div class="col-md-2">
         <div class="premium-card border-start border-warning border-5 p-4 h-100 shadow-sm bg-white">
-            <small class="text-muted fw-bold text-uppercase d-block mb-1">Đơn Hàng Chờ Xử Lý</small>
-            <h3 class="fw-black text-warning mt-1 mb-0">{{_don_moi if so_don_moi else 0}} đơn</h3>
+            <small class="text-muted fw-bold text-uppercase d-block mb-1">Đơn Chờ Xử Lý</small>
+            <h3 class="fw-black text-warning mt-1 mb-0" style="font-size: 1.4rem;">{{ so_don_moi }} đơn</h3>
         </div>
     </div>
 </div>
@@ -50,7 +100,13 @@
 <div class="row g-4">
     <div class="col-md-8">
         <div class="premium-card p-4 shadow-sm bg-white">
-            <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-chart-line text-primary me-2"></i>Biểu đồ Doanh thu (7 ngày gần nhất)</h5>
+            <h5 class="fw-bold mb-4 text-dark" style="font-size: 1.05rem;">
+                <i class="fas fa-chart-line text-primary me-2"></i>
+                {% if nam_chon and thang_chon %}Biến thiên Doanh thu các ngày trong Tháng {{ thang_chon }}/{{ nam_chon }}
+                {% elif nam_chon %}Biến thiên Doanh thu 12 Tháng trong Năm {{ nam_chon }}
+                {% else %}Doanh thu 7 ngày gần nhất (Toàn thời gian)
+                {% endif %}
+            </h5>
             <div style="height: 350px; position: relative;">
                 <canvas id="revenueChart"></canvas>
             </div>
@@ -59,11 +115,11 @@
 
     <div class="col-md-4">
         <div class="premium-card p-4 shadow-sm bg-white h-100">
-            <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-trophy text-warning me-2"></i>Top 5 Sản Phẩm Bán Chạy</h5>
+            <h5 class="fw-bold mb-4 text-dark" style="font-size: 1.05rem;"><i class="fas fa-trophy text-warning me-2"></i>Top 5 Sản Phẩm Bán Chạy</h5>
             <div class="list-group list-group-flush">
                 {% for sp in top_sps %}
                 <div class="list-group-item bg-transparent px-0 py-3 d-flex justify-content-between align-items-center border-bottom">
-                    <div class="text-truncate fw-bold text-dark" style="max-width: 220px;" title="{{ sp.ten }}">
+                    <div class="text-truncate fw-bold text-dark" style="max-width: 200px;" title="{{ sp.ten }}">
                         {{ loop.index }}. {{ sp.ten }}
                     </div>
                     <span class="badge bg-danger rounded-pill px-3 py-2 fw-black" style="font-size: 0.8rem;">x{{ sp.total_qty }}</span>
@@ -71,7 +127,7 @@
                 {% else %}
                 <div class="text-center py-5 text-muted small">
                     <i class="fas fa-box-open fs-2 mb-2 opacity-25"></i><br>
-                    Chưa có dữ liệu bán hàng hoàn thành sếp ơi!
+                    Không có đơn hàng hoàn thành trong kỳ này!
                 </div>
                 {% endfor %}
             </div>
@@ -83,6 +139,16 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Tự thu thập bộ lọc hiện tại để truyền đi xuất Excel chính xác kì đối soát
+    function xuatExcelThongKe() {
+        const urlParams = new URLSearchParams(window.location.search);
+        // Nếu trên URL chưa có thue_pct thì lấy mặc định trong ô input của card thuế
+        if(!urlParams.has('thue_pct')) {
+            urlParams.append('thue_pct', document.querySelector('input[name="thue_pct"]').value);
+        }
+        window.location.href = '/admin/xuat-excel-thong-ke?' + urlParams.toString();
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const ctx = document.getElementById('revenueChart').getContext('2d');
         new Chart(ctx, {
@@ -95,7 +161,7 @@
                     borderColor: '#0d6efd',
                     backgroundColor: 'rgba(13, 110, 253, 0.04)',
                     borderWidth: 3,
-                    tension: 0.4,
+                    tension: 0.3,
                     fill: true,
                     pointBackgroundColor: '#0d6efd',
                     pointRadius: 4
@@ -115,9 +181,7 @@
                     } 
                 },
                 plugins: {
-                    legend: {
-                        display: false
-                    }
+                    legend: { display: false }
                 }
             }
         });

@@ -644,19 +644,153 @@ def in_hoa_don(id):
 def thong_ke():
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
-    dt = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai='Hoàn thành'").fetchone()[0] or 0
+    
+    # Nhận bộ lọc từ giao diện
+    nam = request.args.get('nam', '')
+    thang = request.args.get('thang', '')
+    try: thue_pct = float(request.args.get('thue_pct', 2))
+    except: thue_pct = 2.0
+    
+    where_clause = " WHERE d.trang_thai = 'Hoàn thành'"
+    params = []
+    if nam:
+        where_clause += " AND strftime('%Y', d.ngay_dat) = ?"
+        params.append(nam)
+    if thang:
+        where_clause += " AND strftime('%m', d.ngay_dat) = ?"
+        params.append(thang)
+        
+    # 1. Tính tổng doanh thu thực tế
+    dt_row = conn.execute(f"SELECT SUM(d.tong_tien) FROM don_hang d {where_clause}", params).fetchone()
+    doanh_thu = dt_row[0] if dt_row and dt_row[0] else 0
+    
+    # 2. Tính giá vốn hàng bán dựa trên Lô Nhập thực tế
+    cogs_query = f"""
+        SELECT SUM(c.so_luong * IFNULL((SELECT gia_nhap FROM lo_hang_nhap WHERE san_pham_id = c.san_pham_id ORDER BY id DESC LIMIT 1), s.gia_nhap))
+        FROM chi_tiet_don c
+        JOIN san_pham s ON c.san_pham_id = s.id
+        JOIN don_hang d ON c.don_hang_id = d.id
+        {where_clause}
+    """
+    cogs_row = conn.execute(cogs_query, params).fetchone()
+    gia_von = cogs_row[0] if cogs_row and cogs_row[0] else 0
+    
+    loi_nhuan_gop = doanh_thu - gia_von
+    thue_phai_tra = doanh_thu * (thue_pct / 100)
+    loi_nhuan_rong = loi_nhuan_gop - thue_phai_tra
+    
+    # Số đơn chờ xử lý toàn tiệm
     sd = conn.execute("SELECT COUNT(*) FROM don_hang WHERE trang_thai='Chờ xử lý'").fetchone()[0] or 0
     
-    chart_labels = []; chart_data = []
-    for i in range(6, -1, -1):
-        ngay_str = (datetime.date.today() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-        chart_labels.append(ngay_str)
-        row = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai='Hoàn thành' AND DATE(ngay_dat) = ?", (ngay_str,)).fetchone()
-        chart_data.append(row[0] or 0)
-
-    top_products = conn.execute("SELECT s.ten, SUM(c.so_luong) as total_qty FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id JOIN don_hang d ON c.don_hang_id = d.id WHERE d.trang_thai = 'Hoàn thành' GROUP BY s.id ORDER BY total_qty DESC LIMIT 5").fetchall()
+    # 3. Xử lý dữ liệu Biểu đồ thích ứng động
+    chart_labels = []
+    chart_data = []
+    
+    if nam and thang:
+        days_in_month = 31
+        if thang in ['04', '06', '09', '11']: days_in_month = 30
+        elif thang == '02':
+            y_int = int(nam)
+            days_in_month = 29 if (y_int % 4 == 0 and (y_int % 100 != 0 or y_int % 400 == 0)) else 28
+            
+        for day in range(1, days_in_month + 1):
+            day_str = f"{day:02d}"
+            full_date = f"{nam}-{thang}-{day_str}"
+            chart_labels.append(f"Ngày {day_str}")
+            r = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai='Hoàn thành' AND DATE(ngay_dat) = ?", (full_date,)).fetchone()
+            chart_data.append(r[0] or 0)
+            
+    elif nam and not thang:
+        for m in range(1, 13):
+            m_str = f"{m:02d}"
+            chart_labels.append(f"Tháng {m_str}")
+            r = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai='Hoàn thành' AND strftime('%Y-%m', ngay_dat) = ?", (f"{nam}-{m_str}",)).fetchone()
+            chart_data.append(r[0] or 0)
+            
+    else:
+        import datetime
+        for i in range(6, -1, -1):
+            ngay_str = (datetime.date.today() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+            chart_labels.append(ngay_str)
+            row = conn.execute("SELECT SUM(tong_tien) FROM don_hang WHERE trang_thai='Hoàn thành' AND DATE(ngay_dat) = ?", (ngay_str,)).fetchone()
+            chart_data.append(row[0] or 0)
+            
+    # Top sản phẩm bán chạy trong kỳ lọc
+    top_query = f"""
+        SELECT s.ten, SUM(c.so_luong) as total_qty 
+        FROM chi_tiet_don c 
+        JOIN san_pham s ON c.san_pham_id = s.id 
+        JOIN don_hang d ON c.don_hang_id = d.id 
+        {where_clause}
+        GROUP BY s.id ORDER BY total_qty DESC LIMIT 5
+    """
+    top_products = conn.execute(top_query, params).fetchall()
+    years_list = conn.execute("SELECT DISTINCT strftime('%Y', ngay_dat) as y FROM don_hang WHERE ngay_dat IS NOT NULL ORDER BY y DESC").fetchall()
+    
     conn.close()
-    return render_template('thong_ke.html', doanh_thu=dt, so_don_moi=sd, thue_vat=dt*0.03, labels=json.dumps(chart_labels), values=json.dumps(chart_data), top_sps=top_products)
+    return render_template('thong_ke.html', 
+                           doanh_thu=doanh_thu, gia_von=gia_von, loi_nhuan_gop=loi_nhuan_gop,
+                           thue_vat=thue_phai_tra, loi_nhuan_rong=loi_nhuan_rong, so_don_moi=sd,
+                           labels=json.dumps(chart_labels), values=json.dumps(chart_data), 
+                           top_sps=top_products, years_list=years_list,
+                           nam_chon=nam, thang_chon=thang, thue_pct=thue_pct)
+
+@admin_bp.route('/admin/xuat-excel-thong-ke')
+def xuat_excel_thong_ke():
+    if 'admin_id' not in session: return redirect('/dang-nhap')
+    conn = ket_noi_db()
+    
+    nam = request.args.get('nam', '')
+    thang = request.args.get('thang', '')
+    try: thue_pct = float(request.args.get('thue_pct', 3))
+    except: thue_pct = 3.0
+    
+    where_clause = " WHERE d.trang_thai = 'Hoàn thành'"
+    params = []
+    filename_part = "Toan_Thoi_Gian"
+    if nam:
+        where_clause += " AND strftime('%Y', d.ngay_dat) = ?"
+        params.append(nam); filename_part = f"Nam_{nam}"
+    if thang:
+        where_clause += " AND strftime('%m', d.ngay_dat) = ?"
+        params.append(thang); filename_part += f"_Thang_{thang}"
+        
+    query = f"""
+        SELECT d.id as don_id, d.ngay_dat, d.ten_khach, d.tong_tien,
+        (SELECT SUM(c.so_luong * IFNULL((SELECT gia_nhap FROM lo_hang_nhap WHERE san_pham_id = c.san_pham_id ORDER BY id DESC LIMIT 1), s.gia_nhap)) 
+         FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id WHERE c.don_hang_id = d.id) as don_gia_von
+        FROM don_hang d
+        {where_clause}
+        ORDER BY d.id DESC
+    """
+    orders = conn.execute(query, params).fetchall()
+    conn.close()
+    
+    output = io.StringIO()
+    output.write('\ufeff')
+    writer = csv.writer(output)
+    
+    writer.writerow(['BÁO CÁO DOANH SỐ VÀ TÀI CHÍNH CHI TIẾT - TAKIMITSU HOBBY'])
+    writer.writerow([f'Kỳ báo cáo: {filename_part.replace("_", " ")}'])
+    writer.writerow([f'Tỷ lệ thuế: {thue_pct}%'])
+    writer.writerow([])
+    writer.writerow(['Mã Đơn', 'Ngày Đặt', 'Tên Khách Hàng', 'Doanh Thu (VNĐ)', 'Giá Vốn Kho (VNĐ)', 'Lợi Nhuận Gộp (VNĐ)', 'Thuế Phải Nộp (VNĐ)', 'Lợi Nhuận Ròng (VNĐ)'])
+    
+    tong_dt, tong_von, tong_gop, tong_thue, tong_rong = 0, 0, 0, 0, 0
+    for o in orders:
+        dt = o['tong_tien'] or 0
+        von = o['don_gia_von'] or 0
+        gop = dt - von
+        thue = dt * (thue_pct / 100)
+        rong = gop - thue
+        
+        tong_dt += dt; tong_von += von; tong_gop += gop; tong_thue += thue; tong_rong += rong
+        writer.writerow([f"#{o['don_id']}", o['ngay_dat'], o['ten_khach'], dt, von, gop, thue, rong])
+        
+    writer.writerow([])
+    writer.writerow(['TỔNG KẾT KỲ LỌC', '', '', tong_dt, tong_von, tong_gop, tong_thue, tong_rong])
+    
+    return Response(output.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment;filename=BaoCao_TaiChinh_{filename_part}.csv"})
 
 @admin_bp.route('/admin/cai-dat', methods=['GET', 'POST'])
 def cai_dat_giao_dien():
