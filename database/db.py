@@ -5,7 +5,6 @@ from werkzeug.security import generate_password_hash
 from hashids import Hashids
 
 SETTINGS_FILE = 'settings.json'
-# Khởi tạo công cụ mã hóa ID dùng chung cho toàn hệ thống
 hashids = Hashids(salt="takimitsu_hobby_sieu_bao_mat", min_length=8)
 
 def ket_noi_db():
@@ -57,7 +56,6 @@ def get_mega_menu():
     return cots
 
 def tao_bang_va_cap_nhat():
-    # Hàm này tự động tạo bảng và update các cột mới nếu Sếp chưa có
     conn = ket_noi_db()
     conn.execute('''CREATE TABLE IF NOT EXISTS san_pham (
         id INTEGER PRIMARY KEY AUTOINCREMENT, ten TEXT, the_loai TEXT, hang_sx TEXT, 
@@ -86,5 +84,22 @@ def tao_bang_va_cap_nhat():
         hashed_pw = generate_password_hash('123')
         conn.execute("INSERT INTO khach_hang (tai_khoan, mat_khau, ho_ten, vai_tro) VALUES ('admin', ?, 'Quản trị viên', 'admin')", (hashed_pw,))
         
-    conn.commit()
-    conn.close()
+    # --- BẢN CẬP NHẬT MỚI V7: TÁCH BẢNG LÔ HÀNG ---
+    conn.execute('''CREATE TABLE IF NOT EXISTS lo_hang_nhap (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, san_pham_id INTEGER, nguon_nhap_id INTEGER, 
+        so_luong_nhap INTEGER, gia_nhap REAL, tien_da_tra_nguon REAL DEFAULT 0, 
+        trang_thai_nhap TEXT DEFAULT 'Còn nợ', ngay_du_kien_ve TEXT, ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+
+    try: conn.execute("ALTER TABLE lich_su_tra_nguon ADD COLUMN lo_hang_id INTEGER")
+    except: pass 
+
+    # AUTO MIGRATION: Dời dữ liệu nguồn cũ sang bảng lô hàng
+    if conn.execute("SELECT COUNT(*) FROM lo_hang_nhap").fetchone()[0] == 0:
+        sps = conn.execute("SELECT id, nguon_nhap_id, so_luong_nhap, gia_nhap, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve FROM san_pham WHERE so_luong_nhap > 0 OR gia_nhap > 0").fetchall()
+        for sp in sps:
+            cur = conn.cursor()
+            cur.execute('''INSERT INTO lo_hang_nhap (san_pham_id, nguon_nhap_id, so_luong_nhap, gia_nhap, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve) VALUES (?, ?, ?, ?, ?, ?, ?)''', (sp['id'], sp['nguon_nhap_id'], sp['so_luong_nhap'], sp['gia_nhap'], sp['tien_da_tra_nguon'], sp['trang_thai_nhap'], sp['ngay_du_kien_ve']))
+            new_lo_id = cur.lastrowid
+            conn.execute("UPDATE lich_su_tra_nguon SET lo_hang_id = ? WHERE san_pham_id = ?", (new_lo_id, sp['id']))
+            
+    conn.commit(); conn.close()

@@ -16,26 +16,72 @@ admin_bp = Blueprint('admin', __name__)
 def admin_dashboard():
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
+    
+    # Lấy các tham số từ bộ lọc
     tu_khoa = request.args.get('tu_khoa', '')
+    danh_muc = request.args.get('danh_muc', '')
+    hang_sx = request.args.get('hang_sx', '')
+    kieu_hang = request.args.get('kieu_hang', '')
+    sap_xep = request.args.get('sap_xep', 'moi_nhat')
     page = request.args.get('page', 1, type=int)
     per_page = 10
     
-    query_count = "SELECT COUNT(*) FROM san_pham"
-    query = "SELECT * FROM san_pham"
-    params = []
-    if tu_khoa:
-        where_clause = " WHERE ten LIKE ? OR id LIKE ?"
-        query_count += where_clause
-        query += where_clause
-        params = [f'%{tu_khoa}%', f'%{tu_khoa}%']
+    # ĐÃ SỬA LỖI: Thêm bí danh 's' cho bảng san_pham
+    query_count = "SELECT COUNT(*) FROM san_pham s WHERE 1=1"
     
+    # Câu lệnh chính lấy giá nhập thực tế từ Lô Hàng
+    query = """
+        SELECT s.*, 
+        IFNULL((SELECT gia_nhap FROM lo_hang_nhap WHERE san_pham_id = s.id ORDER BY id DESC LIMIT 1), s.gia_nhap) as gia_nhap_thuc_te
+        FROM san_pham s WHERE 1=1
+    """
+    params = []
+    
+    # Nối các điều kiện lọc vào câu SQL
+    if tu_khoa:
+        clause = " AND (s.ten LIKE ? OR s.id LIKE ?)"
+        query_count += clause; query += clause
+        params.extend([f'%{tu_khoa}%', f'%{tu_khoa}%'])
+        
+    if danh_muc:
+        clause = " AND s.the_loai = ?"
+        query_count += clause; query += clause
+        params.append(danh_muc)
+        
+    if hang_sx:
+        clause = " AND s.hang_sx = ?"
+        query_count += clause; query += clause
+        params.append(hang_sx)
+        
+    if kieu_hang:
+        clause = " AND s.kieu_hang = ?"
+        query_count += clause; query += clause
+        params.append(kieu_hang)
+    
+    # Tính tổng trang
     tong_sp = conn.execute(query_count, params).fetchone()[0]
     tong_trang = (tong_sp + per_page - 1) // per_page
-    query += " ORDER BY id DESC LIMIT ? OFFSET ?"
+    
+    # Sắp xếp
+    if sap_xep == 'moi_nhat': query += " ORDER BY s.id DESC"
+    elif sap_xep == 'cu_nhat': query += " ORDER BY s.id ASC"
+    elif sap_xep == 'ton_nhieu': query += " ORDER BY s.so_luong DESC"
+    elif sap_xep == 'ton_it': query += " ORDER BY s.so_luong ASC"
+    else: query += " ORDER BY s.id DESC"
+    
+    # Phân trang
+    query += " LIMIT ? OFFSET ?"
     params.extend([per_page, (page - 1) * per_page])
     sps = conn.execute(query, params).fetchall()
+    
+    # Lấy dữ liệu cho các ô Select box
+    dms = conn.execute('SELECT * FROM danh_muc').fetchall()
+    hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
+    
     conn.close()
-    return render_template('admin.html', san_phams=sps, tu_khoa=tu_khoa, page=page, tong_trang=tong_trang)
+    return render_template('admin.html', san_phams=sps, tu_khoa=tu_khoa, 
+                           danh_muc=danh_muc, hang_sx=hang_sx, kieu_hang=kieu_hang, sap_xep=sap_xep,
+                           danh_mucs=dms, hangs=hgs, page=page, tong_trang=tong_trang)
 
 @admin_bp.route('/them', methods=['GET', 'POST'])
 def them_san_pham():
@@ -61,21 +107,27 @@ def them_san_pham():
         gia_ban = float(request.form.get('gia_ban', gia_san_new)) 
         gia_goc = float(request.form.get('gia_goc', 0) or 0)
         
-        cur.execute('''INSERT INTO san_pham (ten, the_loai, hang_sx, gia_nhap, gia_goc, gia_ban, so_luong, so_luong_nhap, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh, nguon_nhap_id, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve, gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', 
+        cur.execute('''INSERT INTO san_pham (ten, the_loai, hang_sx, gia_goc, gia_ban, so_luong, hinh_anh, mo_ta, kieu_hang, tien_coc, ngay_phat_hanh, gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', 
                     (request.form['ten'], request.form['the_loai'], request.form['hang_sx'], 
-                     float(request.form.get('gia_nhap', 0) or 0), gia_goc, gia_ban, 
-                     int(request.form.get('so_luong', 0) or 0), int(request.form.get('so_luong', 0) or 0), 
+                     gia_goc, gia_ban, int(request.form.get('so_luong', 0) or 0), 
                      img, request.form['mo_ta'], request.form['kieu_hang'], 
                      float(request.form.get('tien_coc', 0) or 0), request.form.get('ngay_phat_hanh', ''), 
-                     request.form.get('nguon_nhap_id'), float(request.form.get('tien_da_tra_nguon', 0) or 0), 
-                     request.form.get('trang_thai_nhap', 'Còn nợ'), request.form.get('ngay_ve', ''),
                      gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew))
         sid = cur.lastrowid
 
-        tien_da_tra_nguon = float(request.form.get('tien_da_tra_nguon', 0) or 0)
-        if tien_da_tra_nguon > 0:
-            conn.execute('INSERT INTO lich_su_tra_nguon (san_pham_id, so_tien) VALUES (?, ?)', (sid, tien_da_tra_nguon))
+        # TỰ ĐỘNG TẠO LÔ HÀNG ĐẦU TIÊN
+        gia_nhap = float(request.form.get('gia_nhap', 0) or 0)
+        sl_nhap = int(request.form.get('so_luong', 0) or 0)
+        nguon_id = request.form.get('nguon_nhap_id')
+        tien_tra = float(request.form.get('tien_da_tra_nguon', 0) or 0)
+        tt_nhap = request.form.get('trang_thai_nhap', 'Còn nợ')
+        ngay_ve = request.form.get('ngay_ve', '')
+
+        if nguon_id or gia_nhap > 0 or sl_nhap > 0:
+            cur.execute('''INSERT INTO lo_hang_nhap (san_pham_id, nguon_nhap_id, so_luong_nhap, gia_nhap, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve) VALUES (?,?,?,?,?,?,?)''', (sid, nguon_id, sl_nhap, gia_nhap, tien_tra, tt_nhap, ngay_ve))
+            lo_id = cur.lastrowid
+            if tien_tra > 0: conn.execute('INSERT INTO lich_su_tra_nguon (san_pham_id, lo_hang_id, so_tien) VALUES (?, ?, ?)', (sid, lo_id, tien_tra))
         
         for pf in request.files.getlist('hinh_anh_phu'):
             if pf and pf.filename != '':
@@ -117,7 +169,10 @@ def sua_san_pham(id):
         f = request.files.get('hinh_anh')
         img_sql = ""
         tham_so = [
-            ten_sp, the_loai, hang_sx, float(request.form.get('gia_nhap', 0) or 0), gia_goc, gia_ban, so_luong, mo_ta, kieu_hang, float(request.form.get('tien_coc', 0) or 0), request.form.get('ngay_phat_hanh', ''), request.form.get('nguon_nhap_id'), float(request.form.get('tien_da_tra_nguon', 0) or 0), request.form.get('trang_thai_nhap', 'Còn nợ'), request.form.get('ngay_ve', ''), gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew
+            ten_sp, the_loai, hang_sx, gia_goc, gia_ban, so_luong, mo_ta, 
+            kieu_hang, float(request.form.get('tien_coc', 0) or 0), 
+            request.form.get('ngay_phat_hanh', ''), 
+            gia_san_new, gia_san_likenew, gia_order_new, gia_order_likenew
         ]
         
         if f and f.filename != '':
@@ -138,9 +193,8 @@ def sua_san_pham(id):
         tham_so.append(id)
 
         conn.execute(f'''UPDATE san_pham SET 
-            ten=?, the_loai=?, hang_sx=?, gia_nhap=?, gia_goc=?, gia_ban=?, so_luong=?, mo_ta=?, 
-            kieu_hang=?, tien_coc=?, ngay_phat_hanh=?, nguon_nhap_id=?, tien_da_tra_nguon=?, 
-            trang_thai_nhap=?, ngay_du_kien_ve=?, gia_san_new=?, gia_san_likenew=?, gia_order_new=?, gia_order_likenew=? {img_sql} 
+            ten=?, the_loai=?, hang_sx=?, gia_goc=?, gia_ban=?, so_luong=?, mo_ta=?, 
+            kieu_hang=?, tien_coc=?, ngay_phat_hanh=?, gia_san_new=?, gia_san_likenew=?, gia_order_new=?, gia_order_likenew=? {img_sql} 
             WHERE id=?''', tuple(tham_so))
         
         files_phu = request.files.getlist('hinh_anh_phu')
@@ -162,22 +216,61 @@ def sua_san_pham(id):
                     conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (id, '/static/uploads/' + webp_name_phu))
         
         conn.commit(); conn.close()
+        flash('Đã lưu thông tin Sản phẩm thành công!', 'success')
         return redirect('/admin') 
 
     sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
+    lo_hangs = conn.execute('SELECT l.*, n.ten_nguon FROM lo_hang_nhap l LEFT JOIN nguon_nhap n ON l.nguon_nhap_id = n.id WHERE l.san_pham_id = ? ORDER BY l.id DESC', (id,)).fetchall()
     anh_phu = conn.execute('SELECT * FROM hinh_anh_sp WHERE san_pham_id = ?', (id,)).fetchall()
     dms = conn.execute('SELECT * FROM danh_muc').fetchall()
     hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
     ngs = conn.execute('SELECT * FROM nguon_nhap').fetchall()
     conn.close()
-    return render_template('sua.html', sp=sp, anh_phu=anh_phu, danh_mucs=dms, hangs=hgs, nguons=ngs)
+    return render_template('sua.html', sp=sp, lo_hangs=lo_hangs, anh_phu=anh_phu, danh_mucs=dms, hangs=hgs, nguons=ngs)
+
+@admin_bp.route('/admin/them-lo-hang', methods=['POST'])
+def them_lo_hang():
+    if 'admin_id' not in session: return redirect('/dang-nhap')
+    conn = ket_noi_db()
+    sp_id = request.form['san_pham_id']
+    nguon_id = request.form.get('nguon_nhap_id')
+    sl = int(request.form.get('so_luong_nhap', 0) or 0)
+    gia = float(request.form.get('gia_nhap', 0) or 0)
+    tra = float(request.form.get('tien_da_tra_nguon', 0) or 0)
+    ngay_ve = request.form.get('ngay_ve', '')
+    tt = 'Hoàn thành' if tra >= (sl * gia) else 'Còn nợ'
+    
+    cur = conn.cursor()
+    cur.execute('''INSERT INTO lo_hang_nhap (san_pham_id, nguon_nhap_id, so_luong_nhap, gia_nhap, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve) 
+                   VALUES (?,?,?,?,?,?,?)''', (sp_id, nguon_id, sl, gia, tra, tt, ngay_ve))
+    lo_id = cur.lastrowid
+    
+    conn.execute('UPDATE san_pham SET so_luong = so_luong + ? WHERE id = ?', (sl, sp_id))
+    if tra > 0: conn.execute('INSERT INTO lich_su_tra_nguon (san_pham_id, lo_hang_id, so_tien) VALUES (?, ?, ?)', (sp_id, lo_id, tra))
+        
+    conn.commit(); conn.close()
+    flash('Đã nhập lô hàng mới thành công!', 'success')
+    return redirect(f'/sua/{sp_id}')
+
+@admin_bp.route('/admin/xoa-lo-hang/<int:lo_id>', methods=['POST'])
+def xoa_lo_hang(lo_id):
+    if 'admin_id' not in session: return redirect('/dang-nhap')
+    conn = ket_noi_db()
+    lo = conn.execute('SELECT san_pham_id, so_luong_nhap FROM lo_hang_nhap WHERE id = ?', (lo_id,)).fetchone()
+    if lo:
+        conn.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (lo['so_luong_nhap'], lo['san_pham_id']))
+        conn.execute('DELETE FROM lo_hang_nhap WHERE id = ?', (lo_id,))
+        conn.execute('DELETE FROM lich_su_tra_nguon WHERE lo_hang_id = ?', (lo_id,))
+        conn.commit()
+    conn.close()
+    flash('Đã xóa lô hàng!', 'success')
+    return redirect(request.referrer or '/admin')
 
 @admin_bp.route('/xoa/<int:id>', methods=['POST'])
 def xoa_san_pham(id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
-    don_hang_dang_chua = conn.execute('''SELECT d.id, d.trang_thai FROM chi_tiet_don c
-        JOIN don_hang d ON c.don_hang_id = d.id WHERE c.san_pham_id = ? AND d.trang_thai NOT IN ('Hoàn thành', 'Đã hủy')''', (id,)).fetchone()
+    don_hang_dang_chua = conn.execute('''SELECT d.id, d.trang_thai FROM chi_tiet_don c JOIN don_hang d ON c.don_hang_id = d.id WHERE c.san_pham_id = ? AND d.trang_thai NOT IN ('Hoàn thành', 'Đã hủy')''', (id,)).fetchone()
     if don_hang_dang_chua:
         conn.close()
         return f"<script>alert('SẾP KHOAN XÓA! Sản phẩm này đang nằm trong Đơn hàng #{don_hang_dang_chua['id']}. Vui lòng Hủy đơn hoặc Hoàn thành đơn trước khi xóa.'); window.location.href='/admin';</script>"
@@ -193,6 +286,7 @@ def xoa_san_pham(id):
 
     conn.execute('DELETE FROM san_pham WHERE id=?', (id,))
     conn.execute('DELETE FROM hinh_anh_sp WHERE san_pham_id=?', (id,))
+    conn.execute('DELETE FROM lo_hang_nhap WHERE san_pham_id=?', (id,))
     conn.commit(); conn.close()
     return redirect('/admin')
 
@@ -210,29 +304,39 @@ def cong_no_nguon():
     per_page = 10
     offset = (page - 1) * per_page
     
-    query = "SELECT sp.*, n.ten_nguon FROM san_pham sp LEFT JOIN nguon_nhap n ON sp.nguon_nhap_id = n.id WHERE 1=1"
+    query = """
+        SELECT l.id, l.san_pham_id, l.nguon_nhap_id, l.so_luong_nhap, l.gia_nhap, l.tien_da_tra_nguon, l.trang_thai_nhap, l.ngay_du_kien_ve, l.ngay_tao,
+               s.ten, s.hinh_anh, s.kieu_hang, n.ten_nguon 
+        FROM lo_hang_nhap l 
+        JOIN san_pham s ON l.san_pham_id = s.id 
+        LEFT JOIN nguon_nhap n ON l.nguon_nhap_id = n.id 
+        WHERE 1=1
+    """
     params = []
     
-    if tu_khoa: query += " AND sp.ten LIKE ?"; params.append(f'%{tu_khoa}%')
-    if nguon_id: query += " AND sp.nguon_nhap_id = ?"; params.append(nguon_id)
-    if kieu_hang: query += " AND sp.kieu_hang = ?"; params.append(kieu_hang)
-    if trang_thai_loc: query += " AND sp.trang_thai_nhap = ?"; params.append(trang_thai_loc)
+    if tu_khoa: query += " AND s.ten LIKE ?"; params.append(f'%{tu_khoa}%')
+    if nguon_id: query += " AND l.nguon_nhap_id = ?"; params.append(nguon_id)
+    if kieu_hang: query += " AND s.kieu_hang = ?"; params.append(kieu_hang)
+    if trang_thai_loc: query += " AND l.trang_thai_nhap = ?"; params.append(trang_thai_loc)
         
     total_items = conn.execute("SELECT COUNT(*) FROM (" + query + ")", params).fetchone()[0]
     total_pages = (total_items + per_page - 1) // per_page
     
-    if sap_xep == 'moi_nhat': query += " ORDER BY sp.id DESC LIMIT ? OFFSET ?"
-    elif sap_xep == 'cu_nhat': query += " ORDER BY sp.id ASC LIMIT ? OFFSET ?"
-    else: query += " ORDER BY CASE WHEN sp.trang_thai_nhap = 'Còn nợ' THEN 1 ELSE 2 END, sp.id DESC LIMIT ? OFFSET ?"
+    if sap_xep == 'moi_nhat': query += " ORDER BY l.id DESC LIMIT ? OFFSET ?"
+    elif sap_xep == 'cu_nhat': query += " ORDER BY l.id ASC LIMIT ? OFFSET ?"
+    else: query += " ORDER BY CASE WHEN l.trang_thai_nhap = 'Còn nợ' THEN 1 ELSE 2 END, l.id DESC LIMIT ? OFFSET ?"
         
     params.extend([per_page, offset])
     items = conn.execute(query, params).fetchall()
     
-    tong_no_query = "SELECT SUM(sp.gia_nhap * sp.so_luong_nhap - sp.tien_da_tra_nguon) FROM san_pham sp WHERE sp.trang_thai_nhap = 'Còn nợ'"
+    tong_no_query = """
+        SELECT SUM(l.gia_nhap * l.so_luong_nhap - l.tien_da_tra_nguon) 
+        FROM lo_hang_nhap l JOIN san_pham s ON l.san_pham_id = s.id WHERE l.trang_thai_nhap = 'Còn nợ'
+    """
     tong_no_params = []
-    if tu_khoa: tong_no_query += " AND sp.ten LIKE ?"; tong_no_params.append(f'%{tu_khoa}%')
-    if nguon_id: tong_no_query += " AND sp.nguon_nhap_id = ?"; tong_no_params.append(nguon_id)
-    if kieu_hang: tong_no_query += " AND sp.kieu_hang = ?"; tong_no_params.append(kieu_hang)
+    if tu_khoa: tong_no_query += " AND s.ten LIKE ?"; tong_no_params.append(f'%{tu_khoa}%')
+    if nguon_id: tong_no_query += " AND l.nguon_nhap_id = ?"; tong_no_params.append(nguon_id)
+    if kieu_hang: tong_no_query += " AND s.kieu_hang = ?"; tong_no_params.append(kieu_hang)
         
     tong_no_result = conn.execute(tong_no_query, tong_no_params).fetchone()[0]
     tong_no = tong_no_result if tong_no_result else 0
@@ -243,52 +347,54 @@ def cong_no_nguon():
 def xuat_excel_nguon(nguon_id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
-    logs = conn.execute('SELECT l.so_tien, l.ngay_tra, s.ten as ten_sp FROM lich_su_tra_nguon l JOIN san_pham s ON l.san_pham_id = s.id WHERE s.nguon_nhap_id = ? ORDER BY l.id DESC', (nguon_id,)).fetchall()
+    logs = conn.execute('''
+        SELECT l.so_tien, l.ngay_tra, s.ten as ten_sp 
+        FROM lich_su_tra_nguon l 
+        JOIN lo_hang_nhap lo ON l.lo_hang_id = lo.id 
+        JOIN san_pham s ON lo.san_pham_id = s.id 
+        WHERE lo.nguon_nhap_id = ? ORDER BY l.id DESC
+    ''', (nguon_id,)).fetchall()
     ten_nguon = conn.execute("SELECT ten_nguon FROM nguon_nhap WHERE id = ?", (nguon_id,)).fetchone()
     conn.close()
-    
     if not ten_nguon: return "Không tìm thấy nguồn", 404
-
-    output = io.StringIO()
-    output.write('\ufeff')
+    output = io.StringIO(); output.write('\ufeff')
     writer = csv.writer(output)
     writer.writerow(['Ngày Chuyển Khoản', 'Sản Phẩm', 'Số Tiền Đã Chuyển (VNĐ)'])
     for l in logs: writer.writerow([l['ngay_tra'], l['ten_sp'], l['so_tien']])
-        
     safe_name = secure_filename(ten_nguon['ten_nguon'])
     return Response(output.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment;filename=LichSu_ChuyenTien_{safe_name}.csv"})
 
-@admin_bp.route('/admin/cap-nhat-tra-tien/<int:id>', methods=['POST'])
-def cap_nhat_tra_tien(id):
+@admin_bp.route('/admin/cap-nhat-tra-tien/<int:lo_id>', methods=['POST'])
+def cap_nhat_tra_tien(lo_id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
-    sp = conn.execute('SELECT gia_nhap, so_luong_nhap, tien_da_tra_nguon FROM san_pham WHERE id=?', (id,)).fetchone()
+    lo = conn.execute('SELECT gia_nhap, so_luong_nhap, tien_da_tra_nguon, san_pham_id FROM lo_hang_nhap WHERE id=?', (lo_id,)).fetchone()
     so_tien_nhap_vao = float(request.form.get('so_tien', 0))
     hanh_dong = request.form.get('hanh_dong')
     
     if hanh_dong == 'cong':
-        tien_moi = sp['tien_da_tra_nguon'] + so_tien_nhap_vao
+        tien_moi = lo['tien_da_tra_nguon'] + so_tien_nhap_vao
         tien_ghi_log = so_tien_nhap_vao
     else:
         tien_moi = so_tien_nhap_vao
-        tien_ghi_log = tien_moi - sp['tien_da_tra_nguon']
+        tien_ghi_log = tien_moi - lo['tien_da_tra_nguon']
         
     if tien_ghi_log > 0:
-        conn.execute('INSERT INTO lich_su_tra_nguon (san_pham_id, so_tien) VALUES (?, ?)', (id, tien_ghi_log))
+        conn.execute('INSERT INTO lich_su_tra_nguon (san_pham_id, lo_hang_id, so_tien) VALUES (?, ?, ?)', (lo['san_pham_id'], lo_id, tien_ghi_log))
         
-    tong_nhap = sp['gia_nhap'] * sp['so_luong_nhap']
+    tong_nhap = lo['gia_nhap'] * lo['so_luong_nhap']
     trang_thai = request.form.get('trang_thai', 'Còn nợ')
     if tien_moi >= tong_nhap: trang_thai = 'Đã thanh toán'
         
-    conn.execute('UPDATE san_pham SET tien_da_tra_nguon=?, trang_thai_nhap=?, ngay_du_kien_ve=? WHERE id=?', (tien_moi, trang_thai, request.form.get('ngay_ve', ''), id))
+    conn.execute('UPDATE lo_hang_nhap SET tien_da_tra_nguon=?, trang_thai_nhap=?, ngay_du_kien_ve=? WHERE id=?', (tien_moi, trang_thai, request.form.get('ngay_ve', ''), lo_id))
     conn.commit(); conn.close()
-    return redirect('/admin/cong-no-nguon')
+    return redirect(request.referrer or '/admin/cong-no-nguon')
 
-@admin_bp.route('/api/lich-su-tra-nguon/<int:sp_id>')
-def api_lich_su_tra_nguon(sp_id):
+@admin_bp.route('/api/lich-su-tra-nguon/<int:lo_id>')
+def api_lich_su_tra_nguon(lo_id):
     if 'admin_id' not in session: return jsonify([])
     conn = ket_noi_db()
-    logs = conn.execute('SELECT so_tien, ngay_tra FROM lich_su_tra_nguon WHERE san_pham_id = ? ORDER BY id DESC', (sp_id,)).fetchall()
+    logs = conn.execute('SELECT so_tien, ngay_tra FROM lich_su_tra_nguon WHERE lo_hang_id = ? ORDER BY id DESC', (lo_id,)).fetchall()
     conn.close()
     return jsonify([{'so_tien': "{:,.0f}".format(l['so_tien']), 'ngay_tra': l['ngay_tra']} for l in logs])
 
@@ -296,7 +402,12 @@ def api_lich_su_tra_nguon(sp_id):
 def api_lich_su_nguon(nguon_id):
     if 'admin_id' not in session: return jsonify([])
     conn = ket_noi_db()
-    logs = conn.execute('SELECT l.so_tien, l.ngay_tra, s.ten as ten_sp FROM lich_su_tra_nguon l JOIN san_pham s ON l.san_pham_id = s.id WHERE s.nguon_nhap_id = ? ORDER BY l.id DESC', (nguon_id,)).fetchall()
+    logs = conn.execute('''
+        SELECT l.so_tien, l.ngay_tra, s.ten as ten_sp 
+        FROM lich_su_tra_nguon l JOIN lo_hang_nhap lo ON l.lo_hang_id = lo.id 
+        JOIN san_pham s ON lo.san_pham_id = s.id 
+        WHERE lo.nguon_nhap_id = ? ORDER BY l.id DESC
+    ''', (nguon_id,)).fetchall()
     conn.close()
     return jsonify([{'so_tien': "{:,.0f}".format(l['so_tien']), 'ngay_tra': l['ngay_tra'], 'ten_sp': l['ten_sp']} for l in logs])
 

@@ -3,109 +3,112 @@
 {% block title %}Sửa: {{ sp.ten }}{% endblock %}
 
 {% block content %}
-<form method="POST" enctype="multipart/form-data" class="anime-fade-in mt-3">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="anime-fade-in mt-3">
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold"><i class="fas fa-edit text-primary"></i> Sửa SP: #{{ sp.id }}</h4>
         <div>
-            <a href="/admin" class="btn btn-light border fw-bold px-4 me-2">HỦY</a>
-            <button type="submit" class="btn btn-dark fw-bold px-5 shadow"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
+            <a href="/admin" class="btn btn-light border fw-bold px-4 me-2">QUAY LẠI KHO</a>
+            <button type="submit" form="formSuaSP" class="btn btn-dark fw-bold px-5 shadow"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
         </div>
     </div>
 
     <div class="row g-4 mb-5">
         <div class="col-lg-8">
-            <div class="premium-card p-4 mb-4">
-                <h6 class="fw-bold mb-3 border-bottom pb-2">THÔNG TIN CHUNG</h6>
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Tên sản phẩm *</label>
-                    <input type="text" name="ten" class="form-control fw-bold" value="{{ sp.ten }}" required>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small fw-bold">Danh mục</label>
-                        <select name="the_loai" class="form-select">
-                            {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if sp.the_loai==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
-                        </select>
+            <form method="POST" enctype="multipart/form-data" id="formSuaSP">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="premium-card p-4 mb-4">
+                    <h6 class="fw-bold mb-3 border-bottom pb-2">THÔNG TIN CHUNG</h6>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Tên sản phẩm *</label>
+                        <input type="text" name="ten" class="form-control fw-bold" value="{{ sp.ten }}" required>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small fw-bold">Hãng sản xuất</label>
-                        <select name="hang_sx" class="form-select">
-                            {% for h in hangs %}<option value="{{ h.ten_hang }}" {% if sp.hang_sx==h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>{% endfor %}
-                        </select>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Danh mục</label>
+                            <select name="the_loai" class="form-select">
+                                {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if sp.the_loai==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Hãng sản xuất</label>
+                            <select name="hang_sx" class="form-select">
+                                {% for h in hangs %}<option value="{{ h.ten_hang }}" {% if sp.hang_sx==h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>{% endfor %}
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Mô tả chi tiết</label>
-                    <textarea name="mo_ta" class="form-control" rows="6">{{ sp.mo_ta }}</textarea>
-                </div>
-            </div>
-
-            <div class="premium-card p-4 mb-4">
-                <h6 class="fw-bold mb-3 border-bottom pb-2">GIÁ BÁN GỐC & TỒN KHO</h6>
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <label class="form-label text-muted small fw-bold">Giá Gốc (Niêm yết)</label>
-                        <input type="number" name="gia_goc" class="form-control" value="{{ sp.gia_goc }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label text-danger small fw-bold">Giá Bán Thực tế *</label>
-                        <input type="number" name="gia_ban" class="form-control fw-bold text-danger" value="{{ sp.gia_ban }}" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label text-primary small fw-bold">Giá Nhập Kế toán *</label>
-                        <input type="number" name="gia_nhap" class="form-control" value="{{ sp.gia_nhap }}" required>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Mô tả chi tiết</label>
+                        <textarea name="mo_ta" class="form-control" rows="6">{{ sp.mo_ta }}</textarea>
                     </div>
                 </div>
 
-                <div class="bg-light p-3 rounded mb-3 border shadow-sm">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-tags text-primary"></i> Bảng giá Phân loại (Nhập 0 nếu hết hàng)</h6>
-                    <div class="row g-2">
-                        <div class="col-md-3">
-                            <label class="small fw-bold text-success">Có sẵn - New</label>
-                            <input type="number" name="gia_san_new" class="form-control border-success" value="{{ sp.gia_san_new }}">
+                <div class="premium-card p-4 mb-4">
+                    <h6 class="fw-bold mb-3 border-bottom pb-2">ĐỊNH GIÁ & PHÂN LOẠI HÀNG</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small fw-bold">Giá Gốc (Niêm yết)</label>
+                            <input type="number" name="gia_goc" class="form-control" value="{{ sp.gia_goc }}">
                         </div>
-                        <div class="col-md-3">
-                            <label class="small fw-bold text-success">Có sẵn - LikeNew</label>
-                            <input type="number" name="gia_san_likenew" class="form-control" value="{{ sp.gia_san_likenew }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="small fw-bold text-warning">Order - New</label>
-                            <input type="number" name="gia_order_new" class="form-control border-warning" value="{{ sp.gia_order_new }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="small fw-bold text-warning">Order - LikeNew</label>
-                            <input type="number" name="gia_order_likenew" class="form-control" value="{{ sp.gia_order_likenew }}">
+                        <div class="col-md-4">
+                            <label class="form-label text-danger small fw-bold">Giá Bán Thực tế *</label>
+                            <input type="number" name="gia_ban" class="form-control fw-bold text-danger" value="{{ sp.gia_ban }}" required>
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small fw-bold">Kiểu Hàng (Mặc định)</label>
-                        <select name="kieu_hang" id="kieuHangSelect" class="form-select fw-bold" onchange="togglePre()">
-                            <option value="Co san" {% if sp.kieu_hang=='Co san' %}selected{% endif %}>🟢 Hàng Có Sẵn</option>
-                            <option value="Pre-order" {% if sp.kieu_hang=='Pre-order' %}selected{% endif %}>⏳ Pre-Order</option>
-                        </select>
+                    <div class="bg-light p-3 rounded mb-3 border shadow-sm">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-tags text-primary"></i> Bảng giá Phân loại (Nhập 0 nếu hết hàng)</h6>
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <label class="small fw-bold text-success">Có sẵn - New</label>
+                                <input type="number" name="gia_san_new" class="form-control border-success" value="{{ sp.gia_san_new }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="small fw-bold text-success">Có sẵn - LikeNew</label>
+                                <input type="number" name="gia_san_likenew" class="form-control" value="{{ sp.gia_san_likenew }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="small fw-bold text-warning">Order - New</label>
+                                <input type="number" name="gia_order_new" class="form-control border-warning" value="{{ sp.gia_order_new }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="small fw-bold text-warning">Order - LikeNew</label>
+                                <input type="number" name="gia_order_likenew" class="form-control" value="{{ sp.gia_order_likenew }}">
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small fw-bold">Tồn kho chung *</label>
-                        <input type="number" name="so_luong" class="form-control fw-bold" value="{{ sp.so_luong }}" required>
-                    </div>
-                </div>
 
-                <div id="preOrderFields" class="row mt-3" style="display: {% if sp.kieu_hang == 'Pre-order' %}flex{% else %}none{% endif %};">
-                    <div class="col-md-6">
-                        <label class="form-label text-warning small fw-bold">Tiền cọc (VNĐ)</label>
-                        <input type="number" name="tien_coc" class="form-control border-warning" value="{{ sp.tien_coc }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Kiểu Hàng (Mặc định)</label>
+                            <select name="kieu_hang" id="kieuHangSelect" class="form-select fw-bold" onchange="togglePre()">
+                                <option value="Co san" {% if sp.kieu_hang=='Co san' %}selected{% endif %}>🟢 Hàng Có Sẵn</option>
+                                <option value="Pre-order" {% if sp.kieu_hang=='Pre-order' %}selected{% endif %}>⏳ Pre-Order</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-primary small fw-bold">TỔNG TỒN KHO (Chỉnh tay để sửa lỗi) *</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" name="so_luong" class="form-control fw-black fs-5 text-primary border-primary" value="{{ sp.so_luong }}" required>
+                                <span class="input-group-text bg-light text-muted small fw-bold">Hộp</span>
+                            </div>
+                            <small class="text-muted d-block mt-1">Hệ thống tự cộng khi nhập lô, nhưng Sếp có thể sửa tay nếu bị lệch số.</small>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-warning small fw-bold">Ngày phát hành dự kiến</label>
-                        <input type="date" name="ngay_phat_hanh" class="form-control border-warning" value="{{ sp.ngay_phat_hanh }}">
+
+                    <div id="preOrderFields" class="row mt-3" style="display: {% if sp.kieu_hang == 'Pre-order' %}flex{% else %}none{% endif %};">
+                        <div class="col-md-6">
+                            <label class="form-label text-warning small fw-bold">Tiền cọc (VNĐ)</label>
+                            <input type="number" name="tien_coc" class="form-control border-warning" value="{{ sp.tien_coc }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-warning small fw-bold">Ngày phát hành dự kiến</label>
+                            <input type="date" name="ngay_phat_hanh" class="form-control border-warning" value="{{ sp.ngay_phat_hanh }}">
+                        </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
 
         <div class="col-lg-4">
@@ -113,7 +116,7 @@
                 <h6 class="fw-bold mb-3 border-bottom pb-2">HÌNH ẢNH SẢN PHẨM</h6>
                 <div class="text-center mb-3">
                     <img id="main_preview_img" src="{{ sp.hinh_anh }}" class="img-thumbnail shadow-sm mb-2" style="max-height: 150px;">
-                    <input type="file" name="hinh_anh" class="form-control form-control-sm" accept="image/*">
+                    <input type="file" name="hinh_anh" form="formSuaSP" class="form-control form-control-sm" accept="image/*">
                     <small class="text-muted">Bỏ trống nếu không đổi ảnh chính</small>
                 </div>
                 
@@ -131,37 +134,102 @@
                 {% endif %}
 
                 <label class="form-label text-muted small fw-bold mt-2">Tải THÊM ảnh phụ</label>
-                <input type="file" name="hinh_anh_phu" class="form-control form-control-sm" multiple accept="image/*">
+                <input type="file" name="hinh_anh_phu" form="formSuaSP" class="form-control form-control-sm" multiple accept="image/*">
             </div>
 
-            <div class="premium-card p-4 bg-danger bg-opacity-10 border border-danger">
-                <h6 class="fw-bold text-danger mb-3 border-bottom border-danger pb-2"><i class="fas fa-user-secret"></i> DỮ LIỆU MẬT (ADMIN)</h6>
-                <div class="mb-3">
-                    <label class="form-label text-dark small fw-bold">Nguồn nhập hàng</label>
-                    <select name="nguon_nhap_id" class="form-select border-danger">
-                        <option value="">-- Trống --</option>
-                        {% for n in nguons %}<option value="{{ n.id }}" {% if sp.nguon_nhap_id==n.id %}selected{% endif %}>{{ n.ten_nguon }}</option>{% endfor %}
-                    </select>
+            <div class="premium-card p-4 mb-4 border-top border-primary border-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold m-0"><i class="fas fa-boxes text-primary me-2"></i>QUẢN LÝ LÔ NHẬP</h6>
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalThemLo">
+                        <i class="fas fa-plus"></i> Nhập Lô Mới
+                    </button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label text-dark small fw-bold">Trạng thái công nợ</label>
-                    <select name="trang_thai_nhap" class="form-select border-danger">
-                        <option value="Còn nợ" {% if sp.trang_thai_nhap=='Còn nợ' %}selected{% endif %}>🔴 Còn nợ</option>
-                        <option value="Đã thanh toán" {% if sp.trang_thai_nhap=='Đã thanh toán' %}selected{% endif %}>🟢 Đã thanh toán</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-dark small fw-bold">Ngày hàng về (Dự kiến)</label>
-                    <input type="date" name="ngay_ve" class="form-control border-danger" value="{{ sp.ngay_du_kien_ve }}">
-                </div>
-                <div class="mb-2">
-                    <label class="form-label text-dark small fw-bold">Đã trả nguồn (VNĐ)</label>
-                    <input type="number" name="tien_da_tra_nguon" class="form-control border-danger" value="{{ sp.tien_da_tra_nguon }}">
+                <div class="table-responsive">
+                    <table class="table premium-table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nguồn & Lô</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Tài chính</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lo in lo_hangs %}
+                            <tr>
+                                <td class="fw-bold text-dark">
+                                    <div class="text-truncate" style="max-width: 100px;">{{ lo.ten_nguon if lo.ten_nguon else 'Không rõ' }}</div>
+                                    <small class="text-muted fw-normal"><i class="fas fa-calendar-alt"></i> {{ lo.ngay_tao[:10] }}</small>
+                                </td>
+                                <td class="text-center fw-black text-danger fs-6">{{ lo.so_luong_nhap }}<br><small class="text-muted fw-normal">hộp</small></td>
+                                <td class="text-end fw-bold">
+                                    Nhập: {{ "{:,.0f}".format(lo.gia_nhap) }}đ<br>
+                                    <span class="text-success">Trả: {{ "{:,.0f}".format(lo.tien_da_tra_nguon) }}đ</span>
+                                </td>
+                                <td class="text-end pe-2">
+                                    <form action="/admin/xoa-lo-hang/{{ lo.id }}" method="POST" class="d-inline ms-1" onsubmit="return confirm('Xóa lô hàng này sẽ Trừ thẳng vào Tồn kho đang có. Chắc chắn chứ?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger p-1 px-2 rounded-circle"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">Chưa có lô hàng nào.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
         </div>
     </div>
-</form>
+</div>
+
+<div class="modal fade" id="modalThemLo" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="fw-bold" id="modalTitle"><i class="fas fa-box-open text-primary"></i> NHẬP LÔ HÀNG MỚI</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/them-lo-hang" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="san_pham_id" value="{{ sp.id }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="small fw-bold">Nguồn nhập hàng *:</label>
+                        <select name="nguon_nhap_id" class="form-select rounded-pill" required>
+                            <option value="">-- Chọn nguồn --</option>
+                            {% for n in nguons %}<option value="{{ n.id }}">{{ n.ten_nguon }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="small fw-bold text-danger">Số lượng nhập *:</label>
+                            <input type="number" name="so_luong_nhap" class="form-control rounded-pill fw-bold text-danger" required min="1">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="small fw-bold">Giá nhập / hộp (VNĐ) *:</label>
+                            <input type="number" name="gia_nhap" class="form-control rounded-pill fw-bold" required min="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold text-success">Đã thanh toán trước cho Nguồn (VNĐ):</label>
+                        <input type="number" name="tien_da_tra_nguon" class="form-control rounded-pill fw-bold text-success" value="0" min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold">Ngày hàng về (Dự kiến):</label>
+                        <input type="date" name="ngay_ve" class="form-control rounded-pill">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">LƯU LÔ HÀNG</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -185,8 +253,6 @@
     hinhAnhPhuInput.parentElement.appendChild(phuContainer);
 
     hinhAnhPhuInput.addEventListener('change', function(e) {
-        
-        // THÊM 2 DÒNG NÀY ĐỂ ẨN ẢNH CŨ ĐI
         let khuVucAnhCu = document.getElementById('khu_vuc_anh_cu');
         if (khuVucAnhCu) khuVucAnhCu.style.display = 'none';
 
