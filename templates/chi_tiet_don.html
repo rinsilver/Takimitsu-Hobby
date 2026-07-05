@@ -1,20 +1,28 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Chi Tiết Đơn #{{ dh.id }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>body { background-color: #f4f6f9; }</style>
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+    </style>
 </head>
+
 <body>
     <div class="container mt-4 mb-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold m-0"><i class="fas fa-file-invoice text-primary"></i> ĐƠN HÀNG #{{ dh.id }}</h3>
             <div>
-                <a href="javascript:history.back()" class="btn btn-outline-dark fw-bold rounded-pill me-2"><i class="fas fa-arrow-left"></i> Quay lại</a>
+                <a href="javascript:history.back()" class="btn btn-outline-dark fw-bold rounded-pill me-2"><i
+                        class="fas fa-arrow-left"></i> Quay lại</a>
                 {% if is_admin or session.get('admin_id') %}
-                <a href="/admin/in-hoa-don/{{ dh.id }}" target="_blank" class="btn btn-dark fw-bold rounded-pill"><i class="fas fa-print"></i> IN HÓA ĐƠN</a>
+                <a href="/admin/in-hoa-don/{{ dh.id }}" target="_blank" class="btn btn-dark fw-bold rounded-pill"><i
+                        class="fas fa-print"></i> IN HÓA ĐƠN</a>
                 {% endif %}
             </div>
         </div>
@@ -37,16 +45,19 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="{{ item.hinh_anh }}" class="rounded shadow-sm me-3" style="width:50px; height:50px; object-fit:cover;">
+                                        <img src="{{ item.hinh_anh }}" class="rounded shadow-sm me-3"
+                                            style="width:50px; height:50px; object-fit:cover;">
                                         <div>
                                             <span class="fw-bold d-block">{{ item.ten }}</span>
-                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">{{ item.hang_sx }}</span>
+                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">{{ item.hang_sx
+                                                }}</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="text-center fw-bold">x{{ item.so_luong }}</td>
                                 <td class="text-end">{{ "{:,.0f}".format(item.gia) }}đ</td>
-                                <td class="text-end fw-bold text-danger">{{ "{:,.0f}".format(item.gia * item.so_luong) }}đ</td>
+                                <td class="text-end fw-bold text-danger">{{ "{:,.0f}".format(item.gia * item.so_luong)
+                                    }}đ</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -58,13 +69,13 @@
                     <div class="row">
                         <div class="col-sm-4 text-muted fw-bold mb-2">Người nhận:</div>
                         <div class="col-sm-8 fw-bold mb-2">{{ dh.ten_khach }}</div>
-                        
+
                         <div class="col-sm-4 text-muted fw-bold mb-2">Số điện thoại:</div>
                         <div class="col-sm-8 fw-bold mb-2">{{ dh.sdt }}</div>
-                        
+
                         <div class="col-sm-4 text-muted fw-bold mb-2">Địa chỉ:</div>
                         <div class="col-sm-8 mb-2">{{ dh.dia_chi }}</div>
-                        
+
                         <div class="col-sm-4 text-muted fw-bold">Ngày đặt:</div>
                         <div class="col-sm-8">{{ dh.ngay_dat }}</div>
                     </div>
@@ -72,35 +83,68 @@
             </div>
             {% if session.get('admin_id') %}
             <div class="col-md-4">
+                {% if khach_info %}
+                {% if khach_info.nhom_khach != 'Thường' %}
+                <div
+                    class="alert {% if khach_info.nhom_khach == 'VIP' %}alert-warning border-warning{% else %}alert-danger border-danger{% endif %} rounded-4 shadow-sm p-3 mb-4">
+                    <h5 class="fw-black mb-1">
+                        {% if khach_info.nhom_khach == 'VIP' %}<i class="fas fa-crown text-warning me-1"></i> KHÁCH VIP
+                        {% else %}<i class="fas fa-skull-crossbones text-danger me-1"></i> KHÁCH BOM HÀNG{% endif %}
+                    </h5>
+                    {% if khach_info.ghi_chu %}<div class="fw-bold text-dark mt-2" style="font-size: 0.9rem;"><i
+                            class="fas fa-comment-dots text-muted me-1"></i> {{ khach_info.ghi_chu }}</div>{% endif %}
+                </div>
+                {% elif khach_info.ghi_chu %}
+                <div class="alert alert-info border-info rounded-4 shadow-sm p-3 mb-4">
+                    <h6 class="fw-bold mb-1 text-info"><i class="fas fa-info-circle me-1"></i> Ghi chú từ Admin:</h6>
+                    <div class="small fw-bold text-dark">{{ khach_info.ghi_chu }}</div>
+                </div>
+                {% endif %}
+                {% endif %}
+
+
                 <form method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="card border-0 shadow-sm rounded-4 p-4 border-top border-primary border-4">
                         <h5 class="fw-bold mb-4">CẬP NHẬT ĐƠN HÀNG</h5>
-                        
+
                         <div class="mb-4">
                             <label class="fw-bold small text-muted mb-2 text-uppercase">Trạng thái hiện tại</label>
                             <select name="trang_thai" class="form-select fw-bold border-2">
-                                <option value="Chờ xử lý" {% if dh.trang_thai == 'Chờ xử lý' %}selected{% endif %}>Chờ xử lý</option>
-                                <option value="Đang giao hàng" {% if dh.trang_thai == 'Đang giao hàng' %}selected{% endif %}>Đang giao hàng</option>
-                                <option value="Hoàn thành" {% if dh.trang_thai == 'Hoàn thành' %}selected{% endif %}>Hoàn thành</option>
-                                <option value="Đã hủy" {% if dh.trang_thai == 'Đã hủy' %}selected{% endif %}>Đã hủy</option>
+                                <option value="Chờ xử lý" {% if dh.trang_thai=='Chờ xử lý' %}selected{% endif %}>Chờ xử
+                                    lý</option>
+                                <option value="Đang giao hàng" {% if dh.trang_thai=='Đang giao hàng' %}selected{% endif
+                                    %}>Đang giao hàng</option>
+                                <option value="Hoàn thành" {% if dh.trang_thai=='Hoàn thành' %}selected{% endif %}>Hoàn
+                                    thành</option>
+                                <option value="Đã hủy" {% if dh.trang_thai=='Đã hủy' %}selected{% endif %}>Đã hủy
+                                </option>
                             </select>
                         </div>
 
                         <div class="p-3 bg-light rounded-3 mb-4">
                             <div class="mb-3">
-                                <label class="fw-bold small text-muted mb-2 text-uppercase"><i class="fas fa-calculator me-1"></i> Tổng giá trị đơn hàng (Tổng Bill)</label>
-                                <input type="number" name="tong_tien" class="form-control text-dark fw-bold fs-5 border-2" value="{{ dh.tong_tien }}" required>
+                                <label class="fw-bold small text-muted mb-2 text-uppercase"><i
+                                        class="fas fa-calculator me-1"></i> Tổng giá trị đơn hàng (Tổng Bill)</label>
+                                <input type="number" name="tong_tien"
+                                    class="form-control text-dark fw-bold fs-5 border-2" value="{{ dh.tong_tien }}"
+                                    required>
                             </div>
-                            
+
                             <div class="mb-3">
-                                <label class="fw-bold small text-muted mb-2 text-uppercase"><i class="fas fa-money-bill-wave text-success me-1"></i> Khách đã thanh toán (VNĐ)</label>
-                                <input type="number" name="tien_da_tra" class="form-control text-success fw-bold fs-5 border-2" value="{{ dh.tien_da_tra }}" required>
+                                <label class="fw-bold small text-muted mb-2 text-uppercase"><i
+                                        class="fas fa-money-bill-wave text-success me-1"></i> Khách đã thanh toán
+                                    (VNĐ)</label>
+                                <input type="number" name="tien_da_tra"
+                                    class="form-control text-success fw-bold fs-5 border-2" value="{{ dh.tien_da_tra }}"
+                                    required>
                             </div>
-                            
-                            <div class="d-flex justify-content-between mt-3 pt-3 border-top border-secondary border-opacity-25">
+
+                            <div
+                                class="d-flex justify-content-between mt-3 pt-3 border-top border-secondary border-opacity-25">
                                 <span class="text-danger fw-bold">Còn nợ COD:</span>
-                                <span class="text-danger fw-bold fs-5" id="con_no_hien_thi">{{ "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</span>
+                                <span class="text-danger fw-bold fs-5" id="con_no_hien_thi">{{
+                                    "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</span>
                             </div>
                         </div>
 
@@ -114,4 +158,5 @@
         </div>
     </div>
 </body>
+
 </html>

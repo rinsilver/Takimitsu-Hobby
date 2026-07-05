@@ -5,127 +5,165 @@
 
 {% block extra_css %}
 <style>
-    .row-done td { background-color: #f8fff9 !important; border-bottom: 1px solid #d4edda !important; }
-    .input-box-custom {
-        background: #fff; border: 1px solid #dee2e6; border-radius: 30px;
-        padding: 4px 15px; display: flex; align-items: center;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-    }
-    .input-box-custom:focus-within { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
-    .input-box-custom input, .input-box-custom select { border: none !important; outline: none !important; box-shadow: none !important; font-size: 0.85rem; }
-    .btn-save-custom { background: #111; color: white; border: none; border-radius: 30px; padding: 6px 20px; font-weight: bold; transition: 0.3s; font-size: 0.85rem; }
-    .btn-save-custom:hover { background: var(--main-color); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .row-done { opacity: 0.7; background-color: #f8fff9 !important; }
+    .progress-bar-custom { height: 10px; border-radius: 10px; background-color: #e9ecef; overflow: hidden; margin-top: 8px; }
+    .progress-fill { height: 100%; transition: width 0.5s ease; }
+    .input-box-custom { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 5px 12px; display: flex; align-items: center; }
+    .input-box-custom input, .input-box-custom select { border: none !important; outline: none !important; box-shadow: none !important; font-size: 0.85rem; padding: 0; background: transparent; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row mb-4 align-items-stretch mt-2">
-    <div class="col-md-3">
-        <div class="premium-card p-4 h-100 d-flex flex-column justify-content-center border-start border-danger border-5">
-            <h6 class="text-muted fw-bold mb-2"><i class="fas fa-wallet text-warning"></i> TỔNG NỢ NGUỒN:</h6>
-            <h2 class="text-danger fw-bold mb-0">{{ "{:,.0f}".format(tong_no) }} đ</h2>
+<form method="GET" action="/admin/cong-no-nguon" id="filterForm">
+    <div class="row mb-4 mt-2">
+        <div class="col-md-3">
+            <div class="premium-card p-4 h-100 d-flex flex-column justify-content-center border-start border-danger border-5">
+                <h6 class="text-muted fw-bold mb-2"><i class="fas fa-wallet text-warning"></i> TỔNG NỢ CẦN TRẢ:</h6>
+                <h2 class="text-danger fw-black mb-0">{{ "{:,.0f}".format(tong_no) }} đ</h2>
+                {% if nguon_chon %}
+                <a href="/admin/xuat-excel-nguon/{{ nguon_chon }}" class="btn btn-sm btn-success mt-3 fw-bold w-100 rounded-pill shadow-sm">
+                    <i class="fas fa-file-excel"></i> XUẤT EXCEL NGUỒN NÀY
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="premium-card p-4 h-100 d-flex flex-column justify-content-center">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="small fw-bold text-muted mb-1"><i class="fas fa-search"></i> Tên Sản Phẩm:</label>
+                        <input type="text" name="tu_khoa" class="form-control rounded-pill shadow-sm bg-light border-0 px-3" placeholder="Nhập tên..." value="{{ tu_khoa }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small fw-bold text-muted mb-1">Nguồn nhập:</label>
+                        <select name="nguon_id" class="form-select rounded-pill shadow-sm bg-light border-0">
+                            <option value="">-- Tất cả --</option>
+                            {% for n in nguons %}
+                            <option value="{{ n.id }}" {{ 'selected' if nguon_chon==n.id|string }}>{{ n.ten_nguon }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold text-muted mb-1">Kiểu hàng:</label>
+                        <select name="kieu_hang" class="form-select rounded-pill shadow-sm bg-light border-0">
+                            <option value="">-- Tất cả --</option>
+                            <option value="Pre-order" {{ 'selected' if kieu_chon=='Pre-order' }}>⏳ Pre</option>
+                            <option value="Co san" {{ 'selected' if kieu_chon=='Co san' }}>🟢 Sẵn</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold text-muted mb-1">Trạng thái:</label>
+                        <select name="trang_thai_loc" class="form-select rounded-pill shadow-sm bg-light border-0">
+                            <option value="">-- Tất cả --</option>
+                            <option value="Còn nợ" {{ 'selected' if trang_thai_loc=='Còn nợ' }}>🔴 Còn Nợ</option>
+                            <option value="Đã thanh toán" {{ 'selected' if trang_thai_loc=='Đã thanh toán' }}>🟢 Đã Xong</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold shadow-sm"><i class="fas fa-filter"></i> LỌC</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-md-9">
-        <div class="premium-card p-4 h-100 d-flex flex-column justify-content-center">
-            <form method="GET" action="/admin/cong-no-nguon" class="row g-2 align-items-end m-0">
-                <div class="col-md-3">
-                    <label class="small fw-bold text-muted mb-1">Nguồn nhập:</label>
-                    <select name="nguon_id" class="form-select rounded-pill">
-                        <option value="">-- Tất cả nguồn --</option>
-                        {% for n in nguons %}
-                        <option value="{{ n.id }}" {{ 'selected' if nguon_chon==n.id|string }}>{{ n.ten_nguon }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="small fw-bold text-muted mb-1">Kiểu hàng:</label>
-                    <select name="kieu_hang" class="form-select rounded-pill">
-                        <option value="">-- Tất cả kiểu --</option>
-                        <option value="Pre-order" {{ 'selected' if kieu_chon=='Pre-order' }}>⏳ Pre-order</option>
-                        <option value="Co san" {{ 'selected' if kieu_chon=='Co san' }}>🟢 Có sẵn</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="small fw-bold text-muted mb-1">Trạng thái Nợ:</label>
-                    <select name="trang_thai_loc" class="form-select rounded-pill">
-                        <option value="">-- Tất cả trạng thái --</option>
-                        <option value="Còn nợ" {{ 'selected' if trang_thai_loc=='Còn nợ' }}>🔴 Đang Nợ / Cần cọc</option>
-                        <option value="Đã thanh toán" {{ 'selected' if trang_thai_loc=='Đã thanh toán' }}>🟢 Đã xong / Đã cọc</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold"><i class="fas fa-filter"></i> LỌC</button>
-                </div>
-            </form>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold m-0"><i class="fas fa-list text-primary"></i> DANH SÁCH CHI TIẾT</h5>
+        <div class="d-flex align-items-center bg-white border rounded-pill px-3 py-1 shadow-sm">
+            <i class="fas fa-sort-amount-down text-danger me-2 small"></i>
+            <select name="sap_xep" class="border-0 bg-transparent fw-bold small text-dark outline-none" style="outline: none; cursor: pointer;" onchange="document.getElementById('filterForm').submit();">
+                <option value="uu_tien_no" {{ 'selected' if sap_xep_chon=='uu_tien_no' }}>🚨 Ưu tiên đang Nợ</option>
+                <option value="moi_nhat" {{ 'selected' if sap_xep_chon=='moi_nhat' }}>✨ Sản phẩm Mới nhất</option>
+                <option value="cu_nhat" {{ 'selected' if sap_xep_chon=='cu_nhat' }}>⏳ Sản phẩm Cũ nhất</option>
+            </select>
         </div>
     </div>
-</div>
+</form>
 
 <div class="premium-card overflow-hidden mb-4">
-    <table class="table premium-table table-hover mb-0 align-middle">
+    <table class="table table-hover mb-0 align-middle">
         <thead class="table-dark">
             <tr>
-                <th class="ps-4">Sản Phẩm / Nguồn</th>
-                <th>Chi tiết Giá Gốc</th>
-                <th>Đã Trả / Còn Nợ</th>
-                <th class="pe-4">Cập Nhật Thao Tác</th>
+                <th class="ps-4" style="width: 32%;">Sản Phẩm & Nguồn</th>
+                <th class="text-center" style="width: 14%;">Nhập Kho</th>
+                <th style="width: 25%;">Tiến Độ Thanh Toán</th>
+                <th class="pe-4 text-end" style="width: 29%;">Cập Nhật Thao Tác</th>
             </tr>
         </thead>
         <tbody>
             {% for sp in items %}
             {% set tong_nhap = sp.gia_nhap * sp.so_luong_nhap %}
             {% set con_no = tong_nhap - sp.tien_da_tra_nguon %}
+            {% set phan_tram = (sp.tien_da_tra_nguon / tong_nhap * 100) if tong_nhap > 0 else 0 %}
             <tr class="{{ 'row-done' if sp.trang_thai_nhap == 'Đã thanh toán' else '' }}">
                 <td class="ps-4">
-                    <a href="/san-pham/{{ encode_id(sp.id) }}" class="fw-bold fs-6 text-dark text-decoration-none" target="_blank">
-                        <i class="fas fa-external-link-alt fa-xs text-muted me-1"></i> {{ sp.ten }}
-                    </a>
-                    <div class="mt-2 d-flex gap-2">
-                        <span class="badge bg-light text-dark border rounded-pill px-2 py-1 small"><i class="fas fa-truck me-1"></i>{{ sp.ten_nguon if sp.ten_nguon else 'Chưa phân nguồn' }}</span>
-                        <span class="badge {% if sp.kieu_hang == 'Pre-order' %}bg-warning text-dark{% else %}bg-success{% endif %} rounded-pill px-2 py-1 small">{{ sp.kieu_hang }}</span>
-                    </div>
-                </td>
-                <td>
-                    <small class="text-muted d-block">Đơn giá: {{ "{:,.0f}".format(sp.gia_nhap) }}đ x {{ sp.so_luong_nhap }}</small>
-                    <strong class="fs-6 text-dark">TỔNG: {{ "{:,.0f}".format(tong_nhap) }} đ</strong>
-                </td>
-                <td>
-                    <span class="text-success small fw-bold d-block"><i class="fas fa-check-circle me-1"></i>Đã trả: {{ "{:,.0f}".format(sp.tien_da_tra_nguon) }}đ</span>
-                    {% if con_no > 0 %}
-                    <span class="text-danger fw-bold fs-6"><i class="fas fa-exclamation-circle me-1"></i>NỢ: {{ "{:,.0f}".format(con_no) }}đ</span>
-                    {% else %}
-                    <span class="badge bg-success rounded-pill mt-1"><i class="fas fa-check"></i> HOÀN TẤT</span>
-                    {% endif %}
-                </td>
-                <td class="pe-4" style="min-width: 400px;">
-                    <form action="/admin/cap-nhat-tra-tien/{{sp.id}}" method="POST" class="m-0">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="d-flex flex-column gap-2">
-                            <div class="d-flex gap-2">
-                                <div class="input-box-custom flex-grow-1">
-                                    <span class="text-muted small fw-bold me-2"><i class="fas fa-calendar-alt"></i> Hàng về:</span>
-                                    <input type="text" name="ngay_ve" value="{{sp.ngay_du_kien_ve}}" class="form-control p-0" placeholder="VD: 06/2026">
-                                </div>
-                                <div class="input-box-custom" style="width: 140px;">
-                                    <select name="trang_thai" class="form-select p-0 fw-bold {{ 'text-danger' if sp.trang_thai_nhap == 'Còn nợ' else 'text-success' }}">
-                                        <option value="Còn nợ" {{'selected' if sp.trang_thai_nhap=='Còn nợ' }}>🔴 Còn Nợ</option>
-                                        <option value="Đã thanh toán" {{'selected' if sp.trang_thai_nhap=='Đã thanh toán' }}>🟢 Đã Xong</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <div class="input-box-custom flex-grow-1">
-                                    <span class="text-muted small fw-bold me-2"><i class="fas fa-coins text-warning"></i> Tiền trả:</span>
-                                    <input type="number" name="so_tien" value="0" min="0" class="form-control p-0 fw-bold text-dark">
-                                    <select name="han_dong" class="form-select p-0 border-start ms-2 bg-transparent" style="width: 80px;">
-                                        <option value="cong">+ Thêm</option>
-                                        <option value="sua">Sửa</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn-save-custom"><i class="fas fa-save me-1"></i> LƯU</button>
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width: 65px; height: 65px; border-radius: 10px; overflow: hidden; background: #fff;" class="border shadow-sm flex-shrink-0">
+                            <img src="{{ sp.hinh_anh }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div>
+                            <a href="/san-pham/{{ encode_id(sp.id) }}" class="fw-bold fs-6 text-dark text-decoration-none d-block mb-1" target="_blank">{{ sp.ten }}</a>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <span class="badge bg-secondary rounded-pill px-2 small"><i class="fas fa-truck me-1"></i>{{ sp.ten_nguon if sp.ten_nguon else 'Chưa có nguồn' }}</span>
+                                <span class="badge {% if sp.kieu_hang == 'Pre-order' %}bg-warning text-dark{% else %}bg-success{% endif %} rounded-pill px-2 small">{{ sp.kieu_hang }}</span>
+                                <span class="text-muted small fw-bold"><i class="fas fa-calendar-alt ms-1 me-1"></i>Về: {{ sp.ngay_du_kien_ve if sp.ngay_du_kien_ve else '?' }}</span>
                             </div>
                         </div>
+                    </div>
+                </td>
+                
+                <td class="text-center border-start border-end bg-light bg-opacity-50" style="vertical-align: middle;">
+                    <div class="d-inline-flex flex-column bg-white border border-secondary border-opacity-25 rounded-3 shadow-sm p-2 w-100" style="max-width: 120px;">
+                        <div class="d-flex justify-content-center align-items-center mb-1">
+                            <i class="fas fa-box-open text-muted opacity-50 me-2"></i>
+                            <span class="fs-4 fw-black text-danger lh-1">{{ sp.so_luong_nhap }}</span>
+                        </div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Số lượng đặt</div>
+                        <hr class="my-1 opacity-10">
+                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">{{ "{:,.0f}".format(sp.gia_nhap) }}đ</div>
+                    </div>
+                </td>
+
+                <td class="ps-3">
+                    <div class="d-flex justify-content-between small fw-bold mb-1">
+                        <span class="text-success">Đã trả: {{ "{:,.0f}".format(sp.tien_da_tra_nguon) }}đ</span>
+                        <span>Tổng: {{ "{:,.0f}".format(tong_nhap) }}đ</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill {% if phan_tram >= 100 %}bg-success{% else %}bg-danger{% endif %}" style="width: {{ phan_tram }}%;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1 align-items-center">
+                        {% if con_no > 0 %}
+                        <span class="text-danger small fw-bold"><i class="fas fa-exclamation-circle"></i> Nợ: {{ "{:,.0f}".format(con_no) }}đ</span>
+                        {% else %}
+                        <span class="text-success small fw-bold"><i class="fas fa-check-circle"></i> ĐÃ THANH TOÁN</span>
+                        {% endif %}
+                        <button type="button" class="btn btn-link text-primary p-0 text-decoration-none small fw-bold" onclick="xemLichSuTra('{{ sp.id }}', '{{ sp.ten|escape }}')">Lịch sử CK</button>
+                    </div>
+                </td>
+
+                <td class="pe-4">
+                    <form action="/admin/cap-nhat-tra-tien/{{sp.id}}" method="POST" class="m-0 d-flex gap-2 justify-content-end">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="ngay_ve" value="{{sp.ngay_du_kien_ve}}">
+                        
+                        <div class="input-box-custom shadow-sm" style="width: 125px;">
+                            <select name="trang_thai" class="w-100 fw-bold {{ 'text-danger' if sp.trang_thai_nhap == 'Còn nợ' else 'text-success' }}">
+                                <option value="Còn nợ" {{'selected' if sp.trang_thai_nhap=='Còn nợ' }}>🔴 Còn Nợ</option>
+                                <option value="Đã thanh toán" {{'selected' if sp.trang_thai_nhap=='Đã thanh toán' }}>🟢 Đã Xong</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-box-custom shadow-sm" style="width: 160px;">
+                            <input type="number" name="so_tien" value="0" min="0" class="w-100 fw-bold text-dark" placeholder="Số tiền...">
+                            <select name="hanh_dong" class="fw-bold border-start ms-2 pl-1" style="width: 45px; color:var(--main-color);">
+                                <option value="cong">+</option>
+                                <option value="sua">=</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-dark rounded-3 px-3 shadow-sm"><i class="fas fa-save"></i></button>
                     </form>
                 </td>
             </tr>
@@ -134,29 +172,65 @@
     </table>
 </div>
 
+<div class="modal fade" id="modalLichSuTra" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-history"></i> LỊCH SỬ CHUYỂN TIỀN (SẢN PHẨM NÀY)</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted fw-bold mb-3" id="ls_ten_sp"></p>
+                <div id="ls_content" class="list-group list-group-flush border rounded-3 overflow-hidden" style="max-height: 400px; overflow-y: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% if tong_trang and tong_trang > 1 %}
 <nav class="mt-4 mb-4">
     <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto" style="width: fit-content;">
-        <li class="page-item {{ 'disabled' if page == 1 }}">
-            <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page=1&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}">
-                <i class="fas fa-angle-double-left"></i>
-            </a>
-        </li>
+        <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page={{ page-1 }}&tu_khoa={{ tu_khoa }}&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}&sap_xep={{ sap_xep_chon }}"><i class="fas fa-angle-double-left"></i></a></li>
+        
         {% for p in range(1, tong_trang + 1) %}
-            {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
-            <li class="page-item {{ 'active' if p == page }}">
-                <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}" href="?page={{ p }}&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}">{{ p }}</a>
-            </li>
-            {% elif p == page - 2 or p == page + 2 %}
-            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
-            {% endif %}
+        {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
+        <li class="page-item {{ 'active' if p == page }}"><a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}" href="?page={{ p }}&tu_khoa={{ tu_khoa }}&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}&sap_xep={{ sap_xep_chon }}">{{ p }}</a></li>
+        {% elif p == page - 2 or p == page + 2 %}
+        <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+        {% endif %}
         {% endfor %}
-        <li class="page-item {{ 'disabled' if page == tong_trang }}">
-            <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page={{ tong_trang }}&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}">
-                <i class="fas fa-angle-double-right"></i>
-            </a>
-        </li>
+
+        <li class="page-item {{ 'disabled' if page == tong_trang }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page={{ page+1 }}&tu_khoa={{ tu_khoa }}&nguon_id={{ nguon_chon }}&kieu_hang={{ kieu_chon }}&trang_thai_loc={{ trang_thai_loc }}&sap_xep={{ sap_xep_chon }}"><i class="fas fa-angle-double-right"></i></a></li>
     </ul>
 </nav>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function xemLichSuTra(spId, spTen) {
+        document.getElementById('ls_ten_sp').innerText = spTen;
+        const lsContent = document.getElementById('ls_content');
+        lsContent.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
+        new bootstrap.Modal(document.getElementById('modalLichSuTra')).show();
+        
+        fetch('/api/lich-su-tra-nguon/' + spId)
+            .then(res => res.json())
+            .then(data => {
+                if(data.length === 0) {
+                    lsContent.innerHTML = '<div class="p-4 text-center text-muted small"><i class="fas fa-box-open fs-2 mb-2 opacity-50"></i><br>Chưa có lịch sử chuyển khoản nào.</div>';
+                    return;
+                }
+                let html = '';
+                data.forEach(log => {
+                    html += `<div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <div><span class="small text-muted"><i class="fas fa-calendar-check me-1 text-primary"></i> ${log.ngay_tra.substring(0, 16)}</span></div>
+                                <span class="fw-black text-success fs-6">+ ${log.so_tien}đ</span>
+                             </div>`;
+                });
+                lsContent.innerHTML = html;
+            });
+    }
+</script>
 {% endblock %}

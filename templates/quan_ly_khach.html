@@ -39,14 +39,17 @@
             {% for kh in khachs %}
             <tr>
                 <td class="ps-4">
-                    <a href="/admin/khach-hang/{{ kh.id }}" class="fw-bold text-primary text-decoration-none fs-5">
-                        {{ kh.ho_ten }}
-                    </a><br>
+                    <a href="/admin/khach-hang/{{ kh.id }}" class="fw-bold text-primary text-decoration-none fs-5">{{
+                        kh.ho_ten }}</a>
+                    {% if kh.nhom_khach == 'VIP' %}<i class="fas fa-crown text-warning ms-1" title="Khách VIP"></i>
+                    {% elif kh.nhom_khach == 'Blacklist' %}<i class="fas fa-skull-crossbones text-danger ms-1"
+                        title="Khách Bom Hàng"></i>{% endif %}<br>
                     <span class="badge bg-light text-muted border">@{{ kh.tai_khoan }}</span>
                 </td>
                 <td>
                     <small class="d-block text-dark fw-bold"><i class="fas fa-phone me-1"></i> {{ kh.sdt }}</small>
-                    <small class="d-block text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ kh.dia_chi }}</small>
+                    <small class="d-block text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ kh.dia_chi
+                        }}</small>
                 </td>
                 <td class="text-center">
                     <span class="badge bg-light text-dark border">********</span>
@@ -56,7 +59,7 @@
                 <td class="text-end pe-4">
                     <div class="btn-group shadow-sm">
                         <button class="btn btn-sm btn-white border"
-                            onclick="editKhach('{{ kh.id }}', '{{ kh.ho_ten }}', '{{ kh.tai_khoan }}', '{{ kh.sdt }}', '{{ kh.dia_chi }}', '{{ kh.mat_khau }}')">
+                            onclick="editKhach('{{ kh.id }}', '{{ kh.ho_ten }}', '{{ kh.tai_khoan }}', '{{ kh.sdt }}', '{{ kh.dia_chi }}', '{{ kh.mat_khau }}', '{{ kh.nhom_khach }}', '{{ kh.ghi_chu }}')">
                             <i class="fas fa-edit text-primary"></i>
                         </button>
                         <form action="/admin/xoa-khach-hang/{{ kh.id }}" method="POST" class="d-inline">
@@ -72,27 +75,31 @@
     </table>
     {% if tong_trang and tong_trang > 1 %}
     <nav class="mt-4 mb-4">
-        <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto" style="width: fit-content;">
+        <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto"
+            style="width: fit-content;">
             <li class="page-item {{ 'disabled' if page == 1 }}">
-                <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page=1&tu_khoa={{ tu_khoa }}">
+                <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold"
+                    href="?page=1&tu_khoa={{ tu_khoa }}">
                     <i class="fas fa-angle-double-left"></i>
                 </a>
             </li>
             {% for p in range(1, tong_trang + 1) %}
-            {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
-            <li class="page-item {{ 'active' if p == page }}">
+            {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %} <li
+                class="page-item {{ 'active' if p == page }}">
                 <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}"
                     href="?page={{ p }}&tu_khoa={{ tu_khoa }}">{{ p }}</a>
-            </li>
-            {% elif p == page - 2 or p == page + 2 %}
-            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
-            {% endif %}
-            {% endfor %}
-            <li class="page-item {{ 'disabled' if page == tong_trang }}">
-                <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}">
-                    <i class="fas fa-angle-double-right"></i>
-                </a>
-            </li>
+                </li>
+                {% elif p == page - 2 or p == page + 2 %}
+                <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if page == tong_trang }}">
+                    <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold"
+                        href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
         </ul>
     </nav>
     {% endif %}
@@ -126,6 +133,23 @@
                         <label class="small fw-bold">Số điện thoại:</label>
                         <input type="text" name="sdt" class="form-control rounded-pill" required>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="small fw-bold text-danger">Nhóm khách:</label>
+                            <select name="nhom_khach" class="form-select rounded-pill fw-bold border-danger">
+                                <option value="Thường">Thường</option>
+                                <option value="VIP">🌟 VIP</option>
+                                <option value="Blacklist">☠️ Blacklist</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label class="small fw-bold text-primary">Ghi chú kín (Admin xem):</label>
+                            <input type="text" name="ghi_chu" class="form-control rounded-pill text-primary fw-bold"
+                                placeholder="Khách sộp, hay bom, hay hối...">
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="small fw-bold">Địa chỉ:</label>
                         <textarea name="dia_chi" class="form-control rounded-3" rows="2"></textarea>
@@ -149,9 +173,11 @@
         document.getElementById('edit_kh_id').value = "";
         document.querySelector('form').reset();
         document.querySelector('input[name="mat_khau"]').value = "123456";
+        document.querySelector('select[name="nhom_khach"]').value = "Thường";
+        document.querySelector('input[name="ghi_chu"]').value = "";
         new bootstrap.Modal(document.getElementById('modalThemKhach')).show();
     }
-    function editKhach(id, ten, tk, sdt, dc, pass) {
+    function editKhach(id, ten, tk, sdt, dc, pass, nhom, note) {
         document.getElementById('modalTitle').innerText = "CẬP NHẬT HỒ SƠ KHÁCH";
         document.getElementById('edit_kh_id').value = id;
         document.querySelector('input[name="ho_ten"]').value = ten;
@@ -159,6 +185,8 @@
         document.querySelector('input[name="sdt"]').value = sdt;
         document.querySelector('textarea[name="dia_chi"]').value = dc;
         document.querySelector('input[name="mat_khau"]').value = pass;
+        document.querySelector('select[name="nhom_khach"]').value = nhom || 'Thường';
+        document.querySelector('input[name="ghi_chu"]').value = note || '';
         new bootstrap.Modal(document.getElementById('modalThemKhach')).show();
     }
 </script>

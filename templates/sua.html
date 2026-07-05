@@ -105,12 +105,6 @@
                         <input type="date" name="ngay_phat_hanh" class="form-control border-warning" value="{{ sp.ngay_phat_hanh }}">
                     </div>
                 </div>
-                <script>
-                    function togglePre() {
-                        var val = document.getElementById('kieuHangSelect').value;
-                        document.getElementById('preOrderFields').style.display = (val === 'Pre-order') ? 'flex' : 'none';
-                    }
-                </script>
             </div>
         </div>
 
@@ -118,12 +112,25 @@
             <div class="premium-card p-4 mb-4">
                 <h6 class="fw-bold mb-3 border-bottom pb-2">HÌNH ẢNH SẢN PHẨM</h6>
                 <div class="text-center mb-3">
-                    <img src="{{ sp.hinh_anh }}" class="img-thumbnail shadow-sm mb-2" style="max-height: 150px;">
+                    <img id="main_preview_img" src="{{ sp.hinh_anh }}" class="img-thumbnail shadow-sm mb-2" style="max-height: 150px;">
                     <input type="file" name="hinh_anh" class="form-control form-control-sm" accept="image/*">
                     <small class="text-muted">Bỏ trống nếu không đổi ảnh chính</small>
                 </div>
+                
                 <hr>
-                <label class="form-label text-muted small fw-bold">Upload thêm ảnh phụ</label>
+                
+                {% if anh_phu %}
+                <div class="mb-3 text-start" id="khu_vuc_anh_cu">
+                    <label class="form-label text-primary small fw-bold">Các ảnh phụ đã lưu:</label>
+                    <div class="d-flex flex-wrap gap-2 p-2 bg-light rounded border shadow-sm">
+                        {% for anh in anh_phu %}
+                        <img src="{{ anh.du_ong_dan }}" class="img-thumbnail border border-secondary" style="height: 60px; width: 60px; object-fit: cover;">
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <label class="form-label text-muted small fw-bold mt-2">Tải THÊM ảnh phụ</label>
                 <input type="file" name="hinh_anh_phu" class="form-control form-control-sm" multiple accept="image/*">
             </div>
 
@@ -145,7 +152,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label text-dark small fw-bold">Ngày hàng về (Dự kiến)</label>
-                    <input type="text" name="ngay_ve" class="form-control border-danger" placeholder="VD: T6/2026" value="{{ sp.ngay_du_kien_ve }}">
+                    <input type="date" name="ngay_ve" class="form-control border-danger" value="{{ sp.ngay_du_kien_ve }}">
                 </div>
                 <div class="mb-2">
                     <label class="form-label text-dark small fw-bold">Đã trả nguồn (VNĐ)</label>
@@ -155,4 +162,44 @@
         </div>
     </div>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePre() {
+        var val = document.getElementById('kieuHangSelect').value;
+        document.getElementById('preOrderFields').style.display = (val === 'Pre-order') ? 'flex' : 'none';
+    }
+
+    const hinhAnhInput = document.querySelector('input[name="hinh_anh"]');
+    hinhAnhInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById('main_preview_img').src = URL.createObjectURL(file);
+        }
+    });
+
+    const hinhAnhPhuInput = document.querySelector('input[name="hinh_anh_phu"]');
+    const phuContainer = document.createElement('div');
+    phuContainer.className = 'mt-3 d-flex flex-wrap gap-2';
+    hinhAnhPhuInput.parentElement.appendChild(phuContainer);
+
+    hinhAnhPhuInput.addEventListener('change', function(e) {
+        
+        // THÊM 2 DÒNG NÀY ĐỂ ẨN ẢNH CŨ ĐI
+        let khuVucAnhCu = document.getElementById('khu_vuc_anh_cu');
+        if (khuVucAnhCu) khuVucAnhCu.style.display = 'none';
+
+        phuContainer.innerHTML = '';
+        Array.from(e.target.files).forEach(file => {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.className = 'img-thumbnail shadow-sm border border-primary';
+            img.style.height = '60px';
+            img.style.width = '60px';
+            img.style.objectFit = 'cover';
+            phuContainer.appendChild(img);
+        });
+    });
+</script>
 {% endblock %}

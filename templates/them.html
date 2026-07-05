@@ -155,4 +155,44 @@
         </div>
     </div>
 </form>
+<script>
+    // Ép ô Ngày Dự Kiến Về và Ngày Phát Hành thành kiểu input date
+    document.querySelector('input[name="ngay_ve"]').type = 'date';
+    document.querySelector('input[name="ngay_phat_hanh"]').type = 'date';
+
+    // Tạo chức năng Xem trước ảnh chính (Main Image)
+    const hinhAnhInput = document.querySelector('input[name="hinh_anh"]');
+    hinhAnhInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            let oldPreview = document.getElementById('main_preview_img');
+            if(oldPreview) oldPreview.remove();
+            
+            const img = document.createElement('img');
+            img.id = 'main_preview_img';
+            img.src = URL.createObjectURL(file);
+            img.className = 'img-thumbnail mt-3 shadow-sm';
+            img.style.maxHeight = '150px';
+            hinhAnhInput.parentElement.appendChild(img);
+        }
+    });
+
+    // Tạo chức năng Xem trước ảnh phụ (Extra Images)
+    const hinhAnhPhuInput = document.querySelector('input[name="hinh_anh_phu"]');
+    const phuContainer = document.createElement('div');
+    phuContainer.className = 'mt-3 d-flex flex-wrap gap-2';
+    hinhAnhPhuInput.parentElement.appendChild(phuContainer);
+
+    hinhAnhPhuInput.addEventListener('change', function(e) {
+        phuContainer.innerHTML = ''; // Xóa ảnh cũ
+        Array.from(e.target.files).forEach(file => {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.className = 'img-thumbnail shadow-sm';
+            img.style.height = '80px';
+            img.style.objectFit = 'cover';
+            phuContainer.appendChild(img);
+        });
+    });
+</script>
 {% endblock %}
