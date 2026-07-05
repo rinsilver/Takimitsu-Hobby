@@ -1,0 +1,28 @@
+body {
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* KHÔI PHỤC CLASS GIAO DIỆN KHỐI (CARD) CHO ADMIN */
+.premium-card {
+    background: #fff;
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* CSS dùng chung cho bảng (Tables) Admin */
+.premium-table thead th {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+    padding: 15px 20px;
+    background-color: #212529 !important;
+    color: #ffffff !important;
+    border-bottom: 2px solid #373b3e;
+}
+.premium-table tbody td {
+    padding: 15px 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f2f2f2;
+}

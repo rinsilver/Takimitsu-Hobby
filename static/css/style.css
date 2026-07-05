@@ -376,3 +376,11 @@ footer {
 @media (max-width: 991px) {
     .nav-search-form { max-width: 100%; margin: 15px 0; padding: 0; }
 }
+
+/* CLASS GIAO DIỆN CHUNG CHO TOÀN HỆ THỐNG */
+.premium-card {
+    background: #fff;
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}

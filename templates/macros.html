@@ -1,0 +1,39 @@
+{% macro render_pagination(page, tong_trang, link_class='') %}
+{% if tong_trang and tong_trang > 1 %}
+
+{# Tự động thu thập tất cả các bộ lọc đang có trên thanh URL #}
+{% set query_list = [] %}
+{% for key, val in request.args.items() %}
+    {% if key != 'page' and key != 'ajax' %}
+        {% set _ = query_list.append(key ~ '=' ~ val) %}
+    {% endif %}
+{% endfor %}
+{% set extra_query = ('&' ~ query_list|join('&')) if query_list else '' %}
+
+<nav class="mt-4 mb-4">
+    <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto" style="width: fit-content;">
+        <li class="page-item {{ 'disabled' if page == 1 }}">
+            <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold {{ link_class }}" href="?page={{ page - 1 }}{{ extra_query }}">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+        </li>
+        
+        {% for p in range(1, tong_trang + 1) %}
+            {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
+            <li class="page-item {{ 'active' if p == page }}">
+                <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }} {{ link_class }}" href="?page={{ p }}{{ extra_query }}">{{ p }}</a>
+            </li>
+            {% elif p == page - 2 or p == page + 2 %}
+            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+            {% endif %}
+        {% endfor %}
+
+        <li class="page-item {{ 'disabled' if page == tong_trang }}">
+            <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold {{ link_class }}" href="?page={{ page + 1 }}{{ extra_query }}">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endmacro %}

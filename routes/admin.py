@@ -17,7 +17,6 @@ def admin_dashboard():
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
     
-    # Lấy các tham số từ bộ lọc
     tu_khoa = request.args.get('tu_khoa', '')
     danh_muc = request.args.get('danh_muc', '')
     hang_sx = request.args.get('hang_sx', '')
@@ -26,10 +25,7 @@ def admin_dashboard():
     page = request.args.get('page', 1, type=int)
     per_page = 10
     
-    # ĐÃ SỬA LỖI: Thêm bí danh 's' cho bảng san_pham
     query_count = "SELECT COUNT(*) FROM san_pham s WHERE 1=1"
-    
-    # Câu lệnh chính lấy giá nhập thực tế từ Lô Hàng
     query = """
         SELECT s.*, 
         IFNULL((SELECT gia_nhap FROM lo_hang_nhap WHERE san_pham_id = s.id ORDER BY id DESC LIMIT 1), s.gia_nhap) as gia_nhap_thuc_te
@@ -37,51 +33,71 @@ def admin_dashboard():
     """
     params = []
     
-    # Nối các điều kiện lọc vào câu SQL
     if tu_khoa:
         clause = " AND (s.ten LIKE ? OR s.id LIKE ?)"
         query_count += clause; query += clause
         params.extend([f'%{tu_khoa}%', f'%{tu_khoa}%'])
-        
     if danh_muc:
         clause = " AND s.the_loai = ?"
-        query_count += clause; query += clause
-        params.append(danh_muc)
-        
+        query_count += clause; query += clause; params.append(danh_muc)
     if hang_sx:
         clause = " AND s.hang_sx = ?"
-        query_count += clause; query += clause
-        params.append(hang_sx)
-        
+        query_count += clause; query += clause; params.append(hang_sx)
     if kieu_hang:
         clause = " AND s.kieu_hang = ?"
-        query_count += clause; query += clause
-        params.append(kieu_hang)
+        query_count += clause; query += clause; params.append(kieu_hang)
     
-    # Tính tổng trang
     tong_sp = conn.execute(query_count, params).fetchone()[0]
     tong_trang = (tong_sp + per_page - 1) // per_page
     
-    # Sắp xếp
     if sap_xep == 'moi_nhat': query += " ORDER BY s.id DESC"
     elif sap_xep == 'cu_nhat': query += " ORDER BY s.id ASC"
     elif sap_xep == 'ton_nhieu': query += " ORDER BY s.so_luong DESC"
     elif sap_xep == 'ton_it': query += " ORDER BY s.so_luong ASC"
     else: query += " ORDER BY s.id DESC"
     
-    # Phân trang
     query += " LIMIT ? OFFSET ?"
     params.extend([per_page, (page - 1) * per_page])
     sps = conn.execute(query, params).fetchall()
     
-    # Lấy dữ liệu cho các ô Select box
     dms = conn.execute('SELECT * FROM danh_muc').fetchall()
     hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
     
+    # --- THUẬT TOÁN TÍNH THỐNG KÊ ĐỘNG CHO 4 THẺ DASHBOARD ---
+    try:
+        # 1. Dòng hàng bán chạy nhất (Dựa trên số lượng đã bán trong đơn hoàn thành)
+        dong_bc_row = conn.execute('''
+            SELECT s.the_loai, SUM(c.so_luong) as sl 
+            FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id 
+            JOIN don_hang d ON c.don_hang_id = d.id
+            WHERE d.trang_thai = 'Hoàn thành' AND s.the_loai != '' 
+            GROUP BY s.the_loai ORDER BY sl DESC LIMIT 1
+        ''').fetchone()
+        dong_ban_chay = dong_bc_row['the_loai'] if dong_bc_row and dong_bc_row['the_loai'] else "Chưa có data"
+
+        # 2. Giá nhập trung bình của toàn bộ các Lô hàng
+        gia_tb_row = conn.execute('SELECT AVG(gia_nhap) FROM lo_hang_nhap WHERE gia_nhap > 0').fetchone()
+        gia_nhap_tb = gia_tb_row[0] if gia_tb_row and gia_tb_row[0] else 0
+
+        # 3. Hãng phổ biến nhất trong kho
+        hang_top_row = conn.execute('''
+            SELECT hang_sx, COUNT(id) as sl 
+            FROM san_pham WHERE hang_sx != '' AND hang_sx IS NOT NULL
+            GROUP BY hang_sx ORDER BY sl DESC LIMIT 1
+        ''').fetchone()
+        hang_nhieu_nhat = hang_top_row['hang_sx'] if hang_top_row and hang_top_row['hang_sx'] else "Chưa có data"
+    except:
+        dong_ban_chay = "N/A"
+        gia_nhap_tb = 0
+        hang_nhieu_nhat = "N/A"
+        
     conn.close()
+    
+    # Bơm thêm 4 biến thống kê ra ngoài HTML
     return render_template('admin.html', san_phams=sps, tu_khoa=tu_khoa, 
                            danh_muc=danh_muc, hang_sx=hang_sx, kieu_hang=kieu_hang, sap_xep=sap_xep,
-                           danh_mucs=dms, hangs=hgs, page=page, tong_trang=tong_trang)
+                           danh_mucs=dms, hangs=hgs, page=page, tong_trang=tong_trang,
+                           tong_sp=tong_sp, dong_ban_chay=dong_ban_chay, gia_nhap_tb=gia_nhap_tb, hang_nhieu_nhat=hang_nhieu_nhat)
 
 @admin_bp.route('/them', methods=['GET', 'POST'])
 def them_san_pham():

@@ -5,70 +5,74 @@
 
 {% block extra_css %}
 <style>
-    .stat-card-premium {
-        border-radius: 15px;
-        border: none;
-        padding: 20px;
-        transition: transform 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-        background: #fff;
+    .premium-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .stat-card-premium:hover { transform: translateY(-5px); }
+    .premium-card:hover { 
+        transform: translateY(-5px); 
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
-    <h3 class="fw-bold m-0"><i class="fas fa-chart-bar text-primary"></i> BÁO CÁO KINH DOANH</h3>
+    <h3 class="fw-bold m-0 text-dark"><i class="fas fa-chart-pie text-warning me-2"></i> BÁO CÁO KINH DOANH TOÀN TIỆM</h3>
 </div>
 
 <div class="row g-4 mb-4">
     <div class="col-md-3">
-        <div class="stat-card-premium border-start border-primary border-5">
-            <small class="text-muted fw-bold text-uppercase">Tổng Doanh Thu</small>
-            <h3 class="fw-bold text-dark mt-1 mb-0">{{ "{:,.0f}".format(doanh_thu) }}đ</h3>
+        <div class="premium-card border-start border-primary border-5 p-4 h-100 shadow-sm bg-white">
+            <small class="text-muted fw-bold text-uppercase d-block mb-1">Tổng Doanh Thu</small>
+            <h3 class="fw-black text-dark mt-1 mb-0">{{ "{:,.0f}".format(doanh_thu) }}đ</h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card-premium border-start border-success border-5">
-            <small class="text-muted fw-bold text-uppercase">Lợi Nhuận Ước Tính (30%)</small>
-            <h3 class="fw-bold text-success mt-1 mb-0">{{ "{:,.0f}".format(doanh_thu * 0.3) }}đ</h3>
+        <div class="premium-card border-start border-success border-5 p-4 h-100 shadow-sm bg-white">
+            <small class="text-muted fw-bold text-uppercase d-block mb-1">Lợi Nhuận Ước Tính (30%)</small>
+            <h3 class="fw-black text-success mt-1 mb-0">{{ "{:,.0f}".format(doanh_thu * 0.3) }}đ</h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card-premium border-start border-danger border-5">
-            <small class="text-muted fw-bold text-uppercase">Thuế Tạm Tính (3%)</small>
-            <h3 class="fw-bold text-danger mt-1 mb-0">{{ "{:,.0f}".format(thue_vat) }}đ</h3>
+        <div class="premium-card border-start border-danger border-5 p-4 h-100 shadow-sm bg-white">
+            <small class="text-muted fw-bold text-uppercase d-block mb-1">Thuế Ước Tính (3%)</small>
+            <h3 class="fw-black text-danger mt-1 mb-0">{{ "{:,.0f}".format(thue_vat) }}đ</h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card-premium border-start border-warning border-5">
-            <small class="text-muted fw-bold text-uppercase">Đơn Chờ Xử Lý</small>
-            <h3 class="fw-bold text-warning mt-1 mb-0">{{ so_don_moi }} Đơn</h3>
+        <div class="premium-card border-start border-warning border-5 p-4 h-100 shadow-sm bg-white">
+            <small class="text-muted fw-bold text-uppercase d-block mb-1">Đơn Hàng Chờ Xử Lý</small>
+            <h3 class="fw-black text-warning mt-1 mb-0">{{_don_moi if so_don_moi else 0}} đơn</h3>
         </div>
     </div>
 </div>
 
 <div class="row g-4">
-    <div class="col-lg-8">
-        <div class="premium-card p-4">
-            <h5 class="fw-bold mb-4"><i class="fas fa-chart-line text-primary me-2"></i> DOANH THU 7 NGÀY QUA</h5>
-            <div style="position: relative; height:320px;">
+    <div class="col-md-8">
+        <div class="premium-card p-4 shadow-sm bg-white">
+            <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-chart-line text-primary me-2"></i>Biểu đồ Doanh thu (7 ngày gần nhất)</h5>
+            <div style="height: 350px; position: relative;">
                 <canvas id="revenueChart"></canvas>
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="premium-card p-4 h-100">
-            <h5 class="fw-bold mb-4"><i class="fas fa-trophy text-warning me-2"></i> TOP 5 BÁN CHẠY</h5>
+
+    <div class="col-md-4">
+        <div class="premium-card p-4 shadow-sm bg-white h-100">
+            <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-trophy text-warning me-2"></i>Top 5 Sản Phẩm Bán Chạy</h5>
             <div class="list-group list-group-flush">
                 {% for sp in top_sps %}
-                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                    <span class="small fw-bold text-dark text-truncate" style="max-width: 70%;" title="{{ sp.ten }}">{{ sp.ten }}</span>
-                    <span class="badge bg-danger rounded-pill px-3 py-2">{{ sp.total_qty }} món</span>
+                <div class="list-group-item bg-transparent px-0 py-3 d-flex justify-content-between align-items-center border-bottom">
+                    <div class="text-truncate fw-bold text-dark" style="max-width: 220px;" title="{{ sp.ten }}">
+                        {{ loop.index }}. {{ sp.ten }}
+                    </div>
+                    <span class="badge bg-danger rounded-pill px-3 py-2 fw-black" style="font-size: 0.8rem;">x{{ sp.total_qty }}</span>
                 </div>
                 {% else %}
-                <div class="text-center py-5 text-muted small">Chưa có dữ liệu bán hàng hoàn thành sếp ơi!</div>
+                <div class="text-center py-5 text-muted small">
+                    <i class="fas fa-box-open fs-2 mb-2 opacity-25"></i><br>
+                    Chưa có dữ liệu bán hàng hoàn thành sếp ơi!
+                </div>
                 {% endfor %}
             </div>
         </div>
@@ -79,40 +83,44 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {{ labels | safe }}, 
-            datasets: [{
-                label: 'Doanh thu (VNĐ)',
-                data: {{ values | safe }},
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13, 110, 253, 0.04)',
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#0d6efd',
-                pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { 
-                y: { 
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString('vi-VN') + 'đ';
-                        }
-                    }
-                } 
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ labels | safe }}, 
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: {{ values | safe }},
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.04)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#0d6efd',
+                    pointRadius: 4
+                }]
             },
-            plugins: {
-                legend: { display: false }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + 'đ';
+                            }
+                        }
+                    } 
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
             }
-        }
+        });
     });
 </script>
 {% endblock %}
