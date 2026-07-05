@@ -852,12 +852,14 @@ def quan_ly_khach_hang():
             except: pass
         conn.commit(); return redirect(url_for('quan_ly_khach_hang'))
 
-    # CLEAN CODE: ĐÃ LOẠI BỎ ĐOẠN KHỐI CHỒNG CHÉO THỪA Ở ĐÂY
     tu_khoa = request.args.get('tu_khoa', '')
     page = request.args.get('page', 1, type=int)
     per_page = 10
+    
     query_count = "SELECT COUNT(*) FROM khach_hang k"
-    query = '''SELECT k.*, COUNT(d.id) as so_don, IFNULL(SUM(d.tong_tien), 0) as tong_mua, IFNULL(SUM(d.tien_da_tra), 0) as da_tra
+    query = '''SELECT k.*, COUNT(DISTINCT d.id) as so_don, 
+               IFNULL(SUM(CASE WHEN d.trang_thai != 'Đã hủy' THEN d.tong_tien ELSE 0 END), 0) as tong_mua, 
+               IFNULL(SUM(CASE WHEN d.trang_thai != 'Đã hủy' THEN d.tien_da_tra ELSE 0 END), 0) as da_tra
         FROM khach_hang k LEFT JOIN don_hang d ON k.id = d.khach_hang_id'''
     params = []
     if tu_khoa:
@@ -870,8 +872,19 @@ def quan_ly_khach_hang():
     query += " GROUP BY k.id ORDER BY k.id DESC LIMIT ? OFFSET ?"
     params.extend([per_page, (page - 1) * per_page])
     khachs = conn.execute(query, params).fetchall()
+    
+    # BỔ SUNG: TÍNH TOÁN SỐ LIỆU TỔNG HỢP TOÀN TIỆM (LOẠI TRỪ ĐƠN HỦY)
+    thong_ke_tong = conn.execute('''
+        SELECT 
+            COUNT(DISTINCT k.id) as total_khach,
+            IFNULL(SUM(CASE WHEN d.trang_thai != 'Đã hủy' THEN d.tong_tien ELSE 0 END), 0) as total_bill,
+            IFNULL(SUM(CASE WHEN d.trang_thai != 'Đã hủy' THEN d.tien_da_tra ELSE 0 END), 0) as total_paid
+        FROM khach_hang k
+        LEFT JOIN don_hang d ON k.id = d.khach_hang_id
+    ''').fetchone()
+    
     conn.close()
-    return render_template('quan_ly_khach.html', khachs=khachs, tu_khoa=tu_khoa, page=page, tong_trang=tong_trang)
+    return render_template('quan_ly_khach.html', khachs=khachs, tu_khoa=tu_khoa, page=page, tong_trang=tong_trang, thong_ke_tong=thong_ke_tong)
 
 @app.route('/admin/xoa-khach-hang/<int:id>')
 def xoa_khach_hang(id):
@@ -890,7 +903,14 @@ def chi_tiet_khach(id):
     if 'admin_id' not in session: return redirect(url_for('dang_nhap'))
     conn = ket_noi_db()
     khach = conn.execute('SELECT * FROM khach_hang WHERE id = ?', (id,)).fetchone()
-    thong_ke = conn.execute('SELECT COUNT(id) as so_don, SUM(tong_tien) as tong_mua, SUM(tien_da_tra) as tong_tra FROM don_hang WHERE khach_hang_id = ?', (id,)).fetchone()
+    
+    thong_ke = conn.execute('''
+        SELECT COUNT(id) as so_don, 
+               IFNULL(SUM(CASE WHEN trang_thai != 'Đã hủy' THEN tong_tien ELSE 0 END), 0) as tong_mua, 
+               IFNULL(SUM(CASE WHEN trang_thai != 'Đã hủy' THEN tien_da_tra ELSE 0 END), 0) as tong_tra 
+        FROM don_hang WHERE khach_hang_id = ?
+    ''', (id,)).fetchone()
+    
     don_hangs = conn.execute('SELECT * FROM don_hang WHERE khach_hang_id = ? ORDER BY id DESC', (id,)).fetchall()
     conn.close()
     return render_template('chi_tiet_khach.html', khach=khach, thong_ke=thong_ke, don_hangs=don_hangs)
@@ -1190,6 +1210,13 @@ def thanh_toan():
         ten_khach = request.form['ten']
         sdt = request.form['sdt']
         dia_chi = request.form['dia_chi']
+        
+        # BỔ SUNG: Bắt số tiền khách đã trả (Chỉ khi Admin lên đơn)
+        tien_da_tra = 0
+        if session.get('admin_id'):
+            try: tien_da_tra = float(request.form.get('tien_da_tra', 0))
+            except: tien_da_tra = 0
+            
         khach_id = session.get('khach_id')
         if session.get('admin_id'):
             kh_chon = request.form.get('khach_id_duoc_chon')
@@ -1201,7 +1228,13 @@ def thanh_toan():
             if kh_db: khach_id = kh_db['id']
             else: khach_id = 0
 
-        cur.execute('INSERT INTO don_hang (khach_hang_id, ten_khach, sdt, dia_chi, tong_tien, trang_thai) VALUES (?, ?, ?, ?, ?, ?)', (khach_id, ten_khach, sdt, dia_chi, tong_tien, 'Chờ xử lý'))
+        # TỰ ĐỘNG CHUYỂN TRẠNG THÁI NẾU CÓ ĐÓNG TIỀN
+        trang_thai = 'Hoàn thành' if tien_da_tra >= tong_tien and tong_tien > 0 else 'Chờ xử lý'
+        if tien_da_tra > 0 and trang_thai != 'Hoàn thành':
+            trang_thai = 'Đã cọc'
+
+        # Chèn thêm tien_da_tra vào Database
+        cur.execute('INSERT INTO don_hang (khach_hang_id, ten_khach, sdt, dia_chi, tong_tien, tien_da_tra, trang_thai) VALUES (?, ?, ?, ?, ?, ?, ?)', (khach_id, ten_khach, sdt, dia_chi, tong_tien, tien_da_tra, trang_thai))
         don_id = cur.lastrowid
         
         for item in gio_hang:
@@ -1212,10 +1245,10 @@ def thanh_toan():
         session['gio_hang'] = []; session.modified = True
         
         if session.get('admin_id'):
-            flash(f'Hệ thống Admin: Đã lên đơn hộ khách thành công! Mã đơn: #{don_id}', 'success')
+            flash(f'Đã lên đơn & Ghi nhận thanh toán thành công! Mã đơn: #{don_id}', 'success')
             return redirect(url_for('quan_ly_don_hang'))
         else:
-            flash(f'Tuyệt vời! Sếp đã đặt hàng thành công. Mã đơn: #{don_id}', 'success')
+            flash(f'Tuyệt vời! Bạn đã đặt hàng thành công. Mã đơn: #{don_id}', 'success')
             return redirect(url_for('ho_so_khach'))
 
     conn.close()

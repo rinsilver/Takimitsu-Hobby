@@ -4,34 +4,28 @@
 
 {% block extra_css %}
 <style>
-    /* GIỮ NGUYÊN CSS GỐC CỦA SẾP CHO TRANG THANH TOÁN */
     body {
         background-color: #f4f5f7;
     }
-
     .checkout-card {
         border-radius: 15px;
         border: none;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
         background: #fff;
     }
-
     .form-control {
         border-radius: 10px;
         padding: 12px 15px;
         border: 1px solid #ddd;
     }
-
     .form-control:focus {
         border-color: #111;
         box-shadow: none;
     }
-
     .customer-item:hover {
         background-color: #f8f9fa;
         color: var(--main-color);
     }
-
     .cursor-pointer {
         cursor: pointer;
     }
@@ -40,22 +34,22 @@
 
 {% block content %}
 <div class="container mt-5 mb-5">
-    <div class="row g-5">
-        <div class="col-md-7">
-            <div class="checkout-card p-5">
-                <h3 class="fw-bold border-bottom pb-3 mb-4"><i class="fas fa-shipping-fast text-danger"></i> THÔNG
-                    TIN GIAO HÀNG</h3>
+    <form method="POST" id="checkoutForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="khach_id_duoc_chon" id="khach_id_duoc_chon" value="">
 
-                <form method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="khach_id_duoc_chon" id="khach_id_duoc_chon" value="">
+        <div class="row g-5">
+            <div class="col-md-7">
+                <div class="checkout-card p-5">
+                    <h3 class="fw-bold border-bottom pb-3 mb-4"><i class="fas fa-shipping-fast text-danger"></i> THÔNG TIN GIAO HÀNG</h3>
+
                     {% if is_admin %}
                     <div class="mb-4 p-3 bg-light rounded-3 border position-relative">
                         <label class="small fw-bold text-primary mb-2 text-uppercase">
                             <i class="fas fa-search"></i> Tìm nhanh khách hàng cũ:
                         </label>
 
-                        <input type="text" id="customerSearchInput" class="form-control rounded-pill shadow-sm"
+                        <input type="text" id="customerSearchInput" class="form-control rounded-pill shadow-sm bg-white"
                             placeholder="Gõ tên hoặc số điện thoại để tìm..." oninput="filterCustomers(this.value)"
                             onfocus="showCustomerResults()" autocomplete="off">
 
@@ -74,8 +68,7 @@
                                 Không tìm thấy khách hàng này...
                             </div>
                         </div>
-                        <small class="text-muted mt-1 d-block">Sếp gõ từ khóa, chọn khách, hệ thống tự điền thông
-                            tin.</small>
+                        <small class="text-muted mt-2 d-block">Sếp gõ từ khóa, chọn khách, hệ thống tự điền thông tin.</small>
                     </div>
                     {% endif %}
 
@@ -97,58 +90,85 @@
                             placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố..." required></textarea>
                     </div>
 
-                    <div class="alert alert-warning border-0 rounded-3 text-dark">
-                        <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Với hàng Pre-order, shop sẽ liên
-                        hệ qua Zalo/SĐT để xác nhận tiền cọc trước khi chốt đơn chính thức.
+                    <div class="alert alert-warning border-0 rounded-3 text-dark mb-0">
+                        <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Với hàng Pre-order, shop sẽ liên hệ qua Zalo/SĐT để xác nhận tiền cọc trước khi chốt đơn chính thức.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="checkout-card p-5 border-top border-danger border-5 bg-light h-100">
+                    <h4 class="fw-bold mb-4">TÓM TẮT ĐƠN HÀNG</h4>
+
+                    <ul class="list-group list-group-flush mb-4 bg-transparent">
+                        {% for sp in gio_hang %}
+                        <li class="list-group-item bg-transparent px-0 py-3 d-flex justify-content-between lh-sm">
+                            <div class="d-flex gap-3">
+                                <img src="{{ sp.hinh_anh }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" class="shadow-sm">
+                                <div>
+                                    <h6 class="my-0 text-dark fw-bold">{{ sp.ten }}</h6>
+                                    <small class="text-muted">SL: {{ sp.so_luong }}</small>
+                                </div>
+                            </div>
+                            <span class="text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Tạm tính</span>
+                        <strong>{{ "{:,.0f}".format(tong_tien) }}đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
+                        <span class="text-muted">Phí ship</span>
+                        <span class="text-success fw-bold">Tính sau</span>
                     </div>
 
-                    <button type="submit" class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill mt-3 shadow">
+                    <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
+                        <span class="fw-bold fs-4">TỔNG CỘNG</span>
+                        <span class="text-danger fw-bold fs-3">{{ "{:,.0f}".format(tong_tien) }}đ</span>
+                    </div>
+
+                    {% if is_admin %}
+                    <div class="mb-3">
+                        <label class="fw-bold mb-2 text-success"><i class="fas fa-hand-holding-usd me-1"></i> Khách đã trả trước (Nếu có)</label>
+                        <input type="number" name="tien_da_tra" id="checkout_da_tra" class="form-control fw-bold text-success" value="0" min="0" placeholder="Nhập số tiền...">
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-4 text-danger fw-bold fs-5" id="checkout_con_no_row">
+                        <span>Còn lại cần thanh toán:</span>
+                        <span id="checkout_con_no_val">{{ "{:,.0f}".format(tong_tien) }}đ</span>
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-dark w-100 py-3 fw-bold fs-5 rounded-pill shadow">
                         XÁC NHẬN ĐẶT HÀNG <i class="fas fa-check-circle ms-2"></i>
                     </button>
-                </form>
-            </div>
-        </div>
-
-        <div class="col-md-5">
-            <div class="checkout-card p-5 border-top border-danger border-5 bg-light">
-                <h4 class="fw-bold mb-4">TÓM TẮT ĐƠN HÀNG</h4>
-
-                <ul class="list-group list-group-flush mb-4 bg-transparent">
-                    {% for sp in gio_hang %}
-                    <li class="list-group-item bg-transparent px-0 py-3 d-flex justify-content-between lh-sm">
-                        <div class="d-flex gap-3">
-                            <img src="{{ sp.hinh_anh }}"
-                                style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"
-                                class="shadow-sm">
-                            <div>
-                                <h6 class="my-0 text-dark fw-bold">{{ sp.ten }}</h6>
-                                <small class="text-muted">SL: {{ sp.so_luong }}</small>
-                            </div>
-                        </div>
-                        <span class="text-danger fw-bold">{{ "{:,.0f}".format(sp.gia * sp.so_luong) }}đ</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Tạm tính</span>
-                    <strong>{{ "{:,.0f}".format(tong_tien) }}đ</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
-                    <span class="text-muted">Phí ship</span>
-                    <span class="text-success fw-bold">Tính sau</span>
-                </div>
-
-                <div class="d-flex justify-content-between mt-3">
-                    <span class="fw-bold fs-4">TỔNG CỘNG</span>
-                    <span class="text-danger fw-bold fs-3">{{ "{:,.0f}".format(tong_tien) }}đ</span>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
 <script>
-    // HÀM TỰ ĐỘNG ĐIỀN THÔNG TIN
+    // TỰ ĐỘNG TÍNH TOÁN VÀ TRỪ TIỀN NỢ LIVE TRÊN HOÁ ĐƠN KHÔNG CẦN CHỚP WEB
+    document.addEventListener("DOMContentLoaded", function() {
+        const daTraInput = document.getElementById('checkout_da_tra');
+        if (daTraInput) {
+            daTraInput.addEventListener('input', function() {
+                let tongCong = Number('{{ tong_tien }}');
+                let daTra = Number(this.value) || 0;
+                let conNo = tongCong - daTra;
+                if (conNo < 0) conNo = 0;
+                
+                // Cập nhật số tiền nợ COD ngay lập tức khi Admin gõ phím
+                document.getElementById('checkout_con_no_val').innerText = new Intl.NumberFormat('vi-VN').format(conNo) + 'đ';
+            });
+        }
+    });
+
     // LOGIC LỌC KHÁCH HÀNG KHI GÕ PHÍM
     function filterCustomers(val) {
         const results = document.getElementById('customerResults');
@@ -157,7 +177,7 @@
         let hasMatch = false;
 
         val = val.toLowerCase().trim();
-        results.style.display = 'block'; // Hiện bảng kết quả khi gõ
+        results.style.display = 'block';
 
         items.forEach(item => {
             const text = item.innerText.toLowerCase();
@@ -172,18 +192,13 @@
         noFound.style.display = hasMatch ? 'none' : 'block';
     }
 
-    // KHI CHỌN MỘT KHÁCH TỪ DANH SÁCH
     function selectCustomer(id, name, phone) {
-        // 1. Điền tên vào ô search để sếp biết mình đã chọn ai
         document.getElementById('customerSearchInput').value = name + " - " + phone;
         document.getElementById('customerResults').style.display = 'none';
         document.getElementById('khach_id_duoc_chon').value = id;
-
-        // 2. Gọi hàm Autofill thần thánh từ app.py
         autoFillCustomer(id);
     }
 
-    // Hiện bảng khi focus vào ô input
     function showCustomerResults() {
         const val = document.getElementById('customerSearchInput').value;
         if (val.length >= 0) {
@@ -191,7 +206,6 @@
         }
     }
 
-    // Đóng bảng kết quả khi bấm ra ngoài
     document.addEventListener('click', function (e) {
         const searchArea = document.querySelector('.position-relative');
         const results = document.getElementById('customerResults');
@@ -200,8 +214,8 @@
         }
     });
 
-    // HÀM AUTOFILL (Giữ nguyên logic fetch từ Route /api/get-khach-info sếp đã viết)
     function autoFillCustomer(khId) {
+        if (!khId) return;
         fetch('/api/get-khach-info/' + khId)
             .then(response => response.json())
             .then(data => {
@@ -209,31 +223,8 @@
                 document.getElementById('input_ho_ten').value = data.ho_ten;
                 document.getElementById('input_sdt').value = data.sdt;
                 document.getElementById('input_dia_chi').value = data.dia_chi;
-            });
-    }
-    function autoFillCustomer(khId) {
-        if (!khId) return; // Nếu sếp chọn lại ô trống thì thôi
-
-        // "Hỏi" server thông tin của khách có ID này
-        fetch('/api/get-khach-info/' + khId)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) return;
-
-                // Tự động đổ dữ liệu vào các ô nhập liệu
-                document.getElementById('input_ho_ten').value = data.ho_ten;
-                document.getElementById('input_sdt').value = data.sdt;
-
-                // Nếu địa chỉ là textarea, nó vẫn hoạt động tốt
-                const addrInput = document.getElementById('input_dia_chi')
-                    || document.querySelector('textarea[name="dia_chi"]');
-                if (addrInput) addrInput.value = data.dia_chi;
-
-                // Hiệu ứng thông báo nhẹ cho sếp
-                console.log("Đã điền thông tin của: " + data.ho_ten);
             })
             .catch(err => console.error("Lỗi lấy thông tin khách:", err));
     }
 </script>
-
 {% endblock %}

@@ -4,26 +4,45 @@
 {% block title %}Hồ Sơ: {{ khach.ho_ten }}{% endblock %}
 
 {% block content %}
-<div class="mb-4 mt-2">
-    <a href="/admin/khach-hang" class="btn btn-outline-dark rounded-pill shadow-sm">
-        <i class="fas fa-arrow-left"></i> Quay lại Danh sách Khách
+<div class="mb-4 mt-2 d-flex justify-content-between align-items-center">
+    <a href="/admin/khach-hang" class="btn btn-outline-dark rounded-pill shadow-sm fw-bold">
+        <i class="fas fa-arrow-left me-1"></i> Quay lại Danh sách Khách
     </a>
 </div>
 
 <div class="row g-4 mb-5">
     <div class="col-md-4">
-        <div class="premium-card p-4 text-center h-100 border-top border-primary border-5">
+        <div class="premium-card p-4 text-center h-100 border-top border-primary border-5 position-relative">
             <div class="bg-primary text-white rounded-circle d-inline-flex justify-content-center align-items-center mb-3 shadow"
                 style="width: 80px; height: 80px; font-size: 2rem;">
                 <i class="fas fa-user"></i>
             </div>
-            <h4 class="fw-bold text-dark">{{ khach.ho_ten }}</h4>
-            <span class="badge bg-light text-dark border rounded-pill px-3 py-2 mb-3">@{{ khach.tai_khoan }}</span>
+            
+            <h4 class="fw-bold text-dark mb-1">{{ khach.ho_ten }}</h4>
+            <div class="mb-3">
+                <span class="badge bg-light text-muted border rounded-pill px-3 py-1">@{{ khach.tai_khoan }}</span>
+            </div>
 
-            <ul class="list-group list-group-flush text-start mt-3">
-                <li class="list-group-item bg-transparent px-0"><i class="fas fa-phone-alt text-muted me-2"></i> {{ khach.sdt }}</li>
-                <li class="list-group-item bg-transparent px-0"><i class="fas fa-map-marker-alt text-muted me-2"></i> {{ khach.dia_chi }}</li>
-                <li class="list-group-item bg-transparent px-0"><i class="fas fa-calendar-check text-muted me-2"></i> Khách hàng thân thiết V6</li>
+            <div class="mb-3">
+                {% if khach.nhom_khach == 'VIP' %}
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;"><i class="fas fa-crown me-1"></i> KHÁCH VIP</span>
+                {% elif khach.nhom_khach == 'Blacklist' %}
+                <span class="badge bg-danger px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;"><i class="fas fa-skull-crossbones me-1"></i> BLACKLIST (HAY BOM)</span>
+                {% else %}
+                <span class="badge bg-secondary px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;"><i class="fas fa-user me-1"></i> Khách hàng thường</span>
+                {% endif %}
+            </div>
+
+            <ul class="list-group list-group-flush text-start mt-4">
+                <li class="list-group-item bg-transparent px-0 text-dark fw-bold"><i class="fas fa-phone-alt text-muted me-3"></i> {{ khach.sdt }}</li>
+                <li class="list-group-item bg-transparent px-0 text-dark"><i class="fas fa-map-marker-alt text-muted me-3"></i> {{ khach.dia_chi if khach.dia_chi else 'Chưa cập nhật địa chỉ' }}</li>
+                
+                {% if khach.ghi_chu %}
+                <li class="list-group-item bg-warning bg-opacity-10 border-warning px-3 py-3 mt-3 rounded-3 text-dark" style="font-size: 0.9rem;">
+                    <i class="fas fa-sticky-note text-warning me-2"></i> <strong>Admin note:</strong><br>
+                    <span class="fst-italic">{{ khach.ghi_chu }}</span>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </div>
@@ -35,28 +54,28 @@
         
         <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="premium-card p-3 border-start border-dark border-4">
-                    <small class="text-muted fw-bold">TỔNG ĐƠN ĐÃ ĐẶT</small>
-                    <h3 class="fw-bold mb-0 mt-1">{{ thong_ke.so_don }} <small class="fs-6 fw-normal">đơn</small></h3>
+                <div class="premium-card p-3 border-start border-dark border-4 shadow-sm">
+                    <small class="text-muted fw-bold text-uppercase">Tổng Đơn Hợp Lệ</small>
+                    <h3 class="fw-bold mb-0 mt-1">{{ thong_ke.so_don }} <small class="fs-6 fw-normal text-muted">đơn</small></h3>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="premium-card p-3 border-start border-success border-4">
-                    <small class="text-muted fw-bold">ĐÃ THANH TOÁN</small>
+                <div class="premium-card p-3 border-start border-success border-4 shadow-sm">
+                    <small class="text-muted fw-bold text-uppercase">Đã Thanh Toán</small>
                     <h3 class="text-success fw-bold mb-0 mt-1">{{ "{:,.0f}".format(tong_tra) }}đ</h3>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="premium-card p-3 border-start border-danger border-4">
-                    <small class="text-muted fw-bold">CÔNG NỢ KHÁCH</small>
+                <div class="premium-card p-3 border-start border-danger border-4 shadow-sm">
+                    <small class="text-muted fw-bold text-uppercase">Công Nợ Khách</small>
                     <h3 class="text-danger fw-bold mb-0 mt-1">{{ "{:,.0f}".format(no_khach) }}đ</h3>
                 </div>
             </div>
         </div>
 
-        <div class="premium-card overflow-hidden">
-            <div class="p-3 bg-dark text-white">
-                <h6 class="mb-0 fw-bold"><i class="fas fa-history"></i> LỊCH SỬ ĐƠN HÀNG</h6>
+        <div class="premium-card overflow-hidden shadow-sm">
+            <div class="p-3 bg-dark text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-history me-2"></i> LỊCH SỬ ĐƠN HÀNG</h6>
             </div>
             <table class="table premium-table table-hover mb-0 align-middle">
                 <thead class="table-light">
@@ -71,24 +90,36 @@
                 </thead>
                 <tbody>
                     {% for dh in don_hangs %}
-                    <tr>
+                    <tr class="{{ 'opacity-50' if dh.trang_thai == 'Đã hủy' else '' }}">
                         <td class="fw-bold text-primary ps-4">#{{ dh.id }}</td>
                         <td class="text-muted small">{{ dh.ngay_dat[:16] }}</td>
-                        <td class="fw-bold">{{ "{:,.0f}".format(dh.tong_tien) }}đ</td>
-                        <td class="text-danger fw-bold">{{ "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</td>
+                        <td class="fw-bold text-dark">{{ "{:,.0f}".format(dh.tong_tien) }}đ</td>
+                        <td class="fw-bold {% if dh.trang_thai == 'Đã hủy' %}text-muted{% else %}text-danger{% endif %}">
+                            {% if dh.trang_thai == 'Đã hủy' %}0đ
+                            {% else %}{{ "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ{% endif %}
+                        </td>
                         <td>
-                            <span class="badge {{ 'bg-success' if dh.trang_thai == 'Hoàn thành' else 'bg-warning text-dark' }} rounded-pill">{{ dh.trang_thai }}</span>
+                            <span class="badge rounded-pill 
+                                {% if dh.trang_thai == 'Hoàn thành' %}bg-success
+                                {% elif dh.trang_thai == 'Đã hủy' %}bg-danger
+                                {% elif dh.trang_thai == 'Đang giao hàng' %}bg-info text-dark
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ dh.trang_thai }}
+                            </span>
                         </td>
                         <td class="text-end pe-4">
-                            <a href="/admin/don-hang/{{ dh.id }}" class="btn btn-sm btn-outline-dark rounded-pill fw-bold px-3 shadow-sm">
-                                <i class="fas fa-arrow-right"></i> Chi tiết
+                            <a href="/admin/don-hang/{{ dh.id }}" class="btn btn-sm btn-outline-dark rounded-pill fw-bold px-3">
+                                Chi tiết <i class="fas fa-arrow-right ms-1"></i>
                             </a>
                         </td>
                     </tr>
                     {% endfor %}
                     {% if not don_hangs %}
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">Khách này chưa có đơn hàng nào.</td>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fas fa-box-open fs-1 mb-3 opacity-25"></i><br>
+                            Khách này chưa có đơn hàng nào.
+                        </td>
                     </tr>
                     {% endif %}
                 </tbody>

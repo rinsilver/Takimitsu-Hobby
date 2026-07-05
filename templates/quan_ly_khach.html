@@ -3,16 +3,50 @@
 
 {% block title %}Quản lý Khách Hàng{% endblock %}
 
+{% block extra_css %}
+<style>
+    .stat-card-khach { border-left: 5px solid; transition: 0.3s; background: #fff; border-radius: 12px; padding: 18px; }
+    .stat-card-khach:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+<div class="row g-3 mb-4 mt-2">
+    <div class="col-md-3">
+        <div class="stat-card-khach border-primary shadow-sm">
+            <small class="text-muted fw-bold text-uppercase">Tổng Số Khách Hàng</small>
+            <h4 class="fw-black text-dark mt-1 mb-0">{{ thong_ke_tong.total_khach | default(0) }} Thành viên</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card-khach border-dark shadow-sm">
+            <small class="text-muted fw-bold text-uppercase">Tổng Tiền Khách Đặt</small>
+            <h4 class="fw-black text-dark mt-1 mb-0">{{ "{:,.0f}".format(thong_ke_tong.total_bill | default(0)) }}đ</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card-khach border-success shadow-sm">
+            <small class="text-muted fw-bold text-uppercase">Tổng Tiền Đã Thu</small>
+            <h4 class="fw-black text-success mt-1 mb-0">{{ "{:,.0f}".format(thong_ke_tong.total_paid | default(0)) }}đ</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card-khach border-danger shadow-sm">
+            <small class="text-muted fw-bold text-uppercase">Khách Còn Nợ (Cần thu)</small>
+            <h4 class="fw-black text-danger mt-1 mb-0">{{ "{:,.0f}".format(thong_ke_tong.total_bill - thong_ke_tong.total_paid) }}đ</h4>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold m-0"><i class="fas fa-address-book text-primary"></i> HỒ SƠ TÀI CHÍNH KHÁCH HÀNG</h4>
-    <button class="btn btn-dark fw-bold rounded-pill shadow-sm" onclick="showModalThem()">
+    <button class="btn btn-dark fw-bold rounded-pill shadow-sm py-2 px-4" onclick="showModalThem()">
         <i class="fas fa-plus-circle me-1"></i> TẠO KHÁCH HÀNG MỚI
     </button>
 </div>
 
 <div class="premium-card mb-4 p-4">
-    <form method="GET" class="row g-2">
+    <form method="GET" class="row g-2 m-0">
         <div class="col-md-10">
             <input type="text" name="tu_khoa" class="form-control rounded-pill px-4 bg-light border-0 shadow-sm"
                 placeholder="Tìm tên, SĐT, hoặc Tài khoản khách..." value="{{ tu_khoa }}">
@@ -25,81 +59,79 @@
 
 <div class="premium-card overflow-hidden">
     <table class="table premium-table table-hover mb-0 align-middle">
-        <thead>
+        <thead class="table-dark">
             <tr>
-                <th class="ps-4">Khách hàng</th>
-                <th>Thông tin liên hệ</th>
-                <th class="text-center">Mật khẩu</th>
-                <th class="text-center">Số đơn</th>
-                <th>Tổng mua</th>
-                <th class="text-end pe-4">Thao tác</th>
+                <th class="ps-4" style="width: 22%;">Khách hàng</th>
+                <th style="width: 22%;">Thông tin liên hệ</th>
+                <th class="text-center" style="width: 8%;">Số đơn</th>
+                <th class="text-end" style="width: 14%;">Tổng mua</th>
+                <th class="text-end" style="width: 14%;">Đã thanh toán</th>
+                <th class="text-end" style="width: 12%;">Còn Nợ COD</th>
+                <th class="text-center pe-4" style="width: 8%;">Thao tác</th>
             </tr>
         </thead>
         <tbody>
             {% for kh in khachs %}
+            {% set khach_no = kh.tong_mua - kh.da_tra %}
             <tr>
                 <td class="ps-4">
-                    <a href="/admin/khach-hang/{{ kh.id }}" class="fw-bold text-primary text-decoration-none fs-5">{{
-                        kh.ho_ten }}</a>
+                    <a href="/admin/khach-hang/{{ kh.id }}" class="fw-bold text-primary text-decoration-none fs-5">
+                        {{ kh.ho_ten }}
+                    </a>
                     {% if kh.nhom_khach == 'VIP' %}<i class="fas fa-crown text-warning ms-1" title="Khách VIP"></i>
-                    {% elif kh.nhom_khach == 'Blacklist' %}<i class="fas fa-skull-crossbones text-danger ms-1"
-                        title="Khách Bom Hàng"></i>{% endif %}<br>
+                    {% elif kh.nhom_khach == 'Blacklist' %}<i class="fas fa-skull-crossbones text-danger ms-1" title="Khách Bom Hàng"></i>{% endif %}<br>
                     <span class="badge bg-light text-muted border">@{{ kh.tai_khoan }}</span>
                 </td>
                 <td>
-                    <small class="d-block text-dark fw-bold"><i class="fas fa-phone me-1"></i> {{ kh.sdt }}</small>
-                    <small class="d-block text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ kh.dia_chi
-                        }}</small>
+                    <small class="d-block text-dark fw-bold"><i class="fas fa-phone me-1 text-muted"></i> {{ kh.sdt }}</small>
+                    <small class="d-block text-muted text-truncate" style="max-width: 200px;" title="{{ kh.dia_chi }}"><i class="fas fa-map-marker-alt me-1 opacity-50"></i> {{ kh.dia_chi if kh.dia_chi else 'Chưa có địa chỉ' }}</small>
                 </td>
-                <td class="text-center">
-                    <span class="badge bg-light text-dark border">********</span>
+                <td class="text-center fw-bold fs-5 text-muted">{{ kh.so_don }}</td>
+                <td class="fw-bold text-dark text-end">{{ "{:,.0f}".format(kh.tong_mua) }}đ</td>
+                
+                <td class="fw-bold text-success text-end">{{ "{:,.0f}".format(kh.da_tra) }}đ</td>
+                
+                <td class="fw-bold text-end">
+                    {% if khach_no > 0 %}
+                    <span class="text-danger">{{ "{:,.0f}".format(khach_no) }}đ</span>
+                    {% else %}
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill fw-bold" style="font-size: 0.75rem; padding: 4px 10px;">THU ĐỦ</span>
+                    {% endif %}
                 </td>
-                <td class="text-center fw-bold">{{ kh.so_don }}</td>
-                <td class="fw-bold text-success">{{ "{:,.0f}".format(kh.tong_mua) }}đ</td>
-                <td class="text-end pe-4">
-                    <div class="btn-group shadow-sm">
-                        <button class="btn btn-sm btn-white border"
+                
+                <td class="pe-4 text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                        <button class="btn btn-sm btn-outline-dark rounded-circle" style="width:32px; height:32px; padding:0;" title="Sửa thông tin"
                             onclick="editKhach('{{ kh.id }}', '{{ kh.ho_ten }}', '{{ kh.tai_khoan }}', '{{ kh.sdt }}', '{{ kh.dia_chi }}', '{{ kh.mat_khau }}', '{{ kh.nhom_khach }}', '{{ kh.ghi_chu }}')">
-                            <i class="fas fa-edit text-primary"></i>
+                            <i class="fas fa-edit"></i>
                         </button>
-                        <form action="/admin/xoa-khach-hang/{{ kh.id }}" method="POST" class="d-inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-outline-danger"
-                                onclick="return confirm('Sếp chắc chứ?')"><i class="fas fa-trash"></i></button>
-                        </form>
+                        <a href="/admin/khach-hang/{{ kh.id }}" class="btn btn-sm btn-outline-primary rounded-circle" style="width:32px; height:32px; padding:0; display: inline-flex; align-items: center; justify-content: center;" title="Xem hồ sơ">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="/admin/xoa-khach-hang/{{ kh.id }}" class="btn btn-sm btn-outline-danger rounded-circle" style="width:32px; height:32px; padding:0; display: inline-flex; align-items: center; justify-content: center;" title="Xóa tài khoản" onclick="return confirm('Sếp chắc chắn muốn xóa tài khoản khách này chứ?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
                     </div>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    
     {% if tong_trang and tong_trang > 1 %}
     <nav class="mt-4 mb-4">
-        <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto"
-            style="width: fit-content;">
-            <li class="page-item {{ 'disabled' if page == 1 }}">
-                <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold"
-                    href="?page=1&tu_khoa={{ tu_khoa }}">
-                    <i class="fas fa-angle-double-left"></i>
-                </a>
-            </li>
+        <ul class="pagination justify-content-center shadow-sm p-2 bg-white rounded-pill mx-auto" style="width: fit-content;">
+            <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold" href="?page=1&tu_khoa={{ tu_khoa }}"><i class="fas fa-angle-double-left"></i></a></li>
             {% for p in range(1, tong_trang + 1) %}
-            {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %} <li
-                class="page-item {{ 'active' if p == page }}">
-                <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}"
-                    href="?page={{ p }}&tu_khoa={{ tu_khoa }}">{{ p }}</a>
-                </li>
-                {% elif p == page - 2 or p == page + 2 %}
-                <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span>
-                </li>
-                {% endif %}
-                {% endfor %}
-                <li class="page-item {{ 'disabled' if page == tong_trang }}">
-                    <a class="page-link border-0 rounded-circle mx-1 text-dark fw-bold"
-                        href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}">
-                        <i class="fas fa-angle-double-right"></i>
-                    </a>
-                </li>
+            {% if p == 1 or p == tong_trang or (p >= page - 1 and p <= page + 1) %}
+            <li class="page-item {{ 'active' if p == page }}">
+                <a class="page-link fw-bold border-0 mx-1 rounded-circle {{ 'bg-dark text-white shadow' if p == page else 'text-dark bg-light' }}" href="?page={{ p }}&tu_khoa={{ tu_khoa }}">{{ p }}</a>
+            </li>
+            {% elif p == page - 2 or p == page + 2 %}
+            <li class="page-item disabled"><span class="page-link border-0 bg-transparent text-muted">...</span></li>
+            {% endif %}
+            {% endfor %}
+            <li class="page-item {{ 'disabled' if page == tong_trang }}"><a class="page-link border-0 rounded-circle mx-1 text-dark" href="?page={{ tong_trang }}&tu_khoa={{ tu_khoa }}"><i class="fas fa-angle-double-right"></i></a></li>
         </ul>
     </nav>
     {% endif %}
@@ -116,21 +148,21 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="small fw-bold">Họ tên khách:</label>
+                        <label class="small fw-bold">Họ tên khách *:</label>
                         <input type="text" name="ho_ten" class="form-control rounded-pill" required>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="small fw-bold">Tên tài khoản / Số ĐT:</label>
+                            <label class="small fw-bold">Tên tài khoản / Số ĐT *:</label>
                             <input type="text" name="tai_khoan" class="form-control rounded-pill" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="small fw-bold">Mật khẩu:</label>
+                            <label class="small fw-bold">Mật khẩu mới (Nếu đổi):</label>
                             <input type="text" name="mat_khau" class="form-control rounded-pill" required>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="small fw-bold">Số điện thoại:</label>
+                        <label class="small fw-bold">Số điện thoại *:</label>
                         <input type="text" name="sdt" class="form-control rounded-pill" required>
                     </div>
 
