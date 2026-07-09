@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, abort
 from database.db import ket_noi_db, get_settings, hashids
 
 client_bp = Blueprint('client', __name__)
@@ -38,7 +38,7 @@ def chi_tiet_sp(hash_id):
     conn = ket_noi_db()
     sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
     if not sp: 
-        conn.close(); return "Không tìm thấy sản phẩm", 404
+        conn.close(); abort(404)
     
     anh_phu = conn.execute('SELECT * FROM hinh_anh_sp WHERE san_pham_id = ?', (id,)).fetchall()
     san_pham_lien_quan = conn.execute('SELECT * FROM san_pham WHERE hang_sx = ? AND id != ? LIMIT 4', (sp['hang_sx'], id)).fetchall()
@@ -268,6 +268,9 @@ def ho_so_khach():
 
 @client_bp.route('/api/get-khach-info/<int:id>')
 def get_khach_info(id):
+    if 'admin_id' not in session: 
+        return {"error": "Không có quyền truy cập!"}, 403
+    
     conn = ket_noi_db()
     kh = conn.execute('SELECT ho_ten, sdt, dia_chi FROM khach_hang WHERE id = ?', (id,)).fetchone()
     conn.close()

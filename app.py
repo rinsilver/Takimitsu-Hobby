@@ -12,7 +12,8 @@ from routes.client import client_bp
 from routes.admin import admin_bp
 
 app = Flask(__name__)
-app.secret_key = 'wolves_master_system_ultimate_v7'
+# Tự động sinh một key mã hóa siêu mạnh mỗi khi web khởi động
+app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

@@ -6,7 +6,7 @@ import datetime
 from PIL import Image
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
-from flask import Blueprint, render_template, request, redirect, session, jsonify, flash, Response, current_app
+from flask import Blueprint, abort, render_template, request, redirect, session, jsonify, flash, Response, current_app
 
 from database.db import ket_noi_db, get_settings, save_settings
 
@@ -236,6 +236,7 @@ def sua_san_pham(id):
         return redirect('/admin') 
 
     sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
+    if not sp: conn.close(); abort(404)
     lo_hangs = conn.execute('SELECT l.*, n.ten_nguon FROM lo_hang_nhap l LEFT JOIN nguon_nhap n ON l.nguon_nhap_id = n.id WHERE l.san_pham_id = ? ORDER BY l.id DESC', (id,)).fetchall()
     anh_phu = conn.execute('SELECT * FROM hinh_anh_sp WHERE san_pham_id = ?', (id,)).fetchall()
     dms = conn.execute('SELECT * FROM danh_muc').fetchall()
@@ -579,6 +580,7 @@ def chi_tiet_khach(id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
     khach = conn.execute('SELECT * FROM khach_hang WHERE id = ?', (id,)).fetchone()
+    if not khach: conn.close(); abort(404)
     thong_ke = conn.execute("SELECT COUNT(id) as so_don, IFNULL(SUM(CASE WHEN trang_thai != 'Đã hủy' THEN tong_tien ELSE 0 END), 0) as tong_mua, IFNULL(SUM(CASE WHEN trang_thai != 'Đã hủy' THEN tien_da_tra ELSE 0 END), 0) as tong_tra FROM don_hang WHERE khach_hang_id = ?", (id,)).fetchone()
     don_hangs = conn.execute('SELECT * FROM don_hang WHERE khach_hang_id = ? ORDER BY id DESC', (id,)).fetchall()
     conn.close()
@@ -614,7 +616,7 @@ def xem_sua_don_hang(id):
     if not admin_id and not khach_id: return redirect('/dang-nhap')
     conn = ket_noi_db()
     dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
-    if not dh: conn.close(); return "Không tìm thấy đơn hàng!", 404
+    if not dh: conn.close(); abort(404)
     if not admin_id and dh['khach_hang_id'] != khach_id: conn.close(); return "<script>alert('Sếp không có quyền xem đơn của người khác!'); window.history.back();</script>"
 
     if request.method == 'POST' and admin_id:
@@ -636,6 +638,7 @@ def in_hoa_don(id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
     dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
+    if not dh: conn.close(); abort(404)
     items = conn.execute('SELECT c.*, s.ten FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id WHERE c.don_hang_id = ?', (id,)).fetchall()
     conn.close()
     return render_template('in_hoa_don.html', dh=dh, items=items)
