@@ -201,9 +201,10 @@
     }
 
     document.addEventListener('click', function (e) {
-        const searchArea = document.querySelector('.position-relative');
+        const searchInput = document.getElementById('customerSearchInput');
         const results = document.getElementById('customerResults');
-        if (searchArea && !searchArea.contains(e.target)) {
+        // Chỉ ẩn danh sách khi người dùng click ra ngoài CẢ ô nhập liệu VÀ bảng kết quả
+        if (searchInput && results && !searchInput.contains(e.target) && !results.contains(e.target)) {
             results.style.display = 'none';
         }
     });
