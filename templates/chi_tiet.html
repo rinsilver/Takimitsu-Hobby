@@ -4,6 +4,10 @@
 {% block title %}{{ sp.ten }} - {{ settings.ten_web }}{% endblock %}
 
 {% block extra_css %}
+<meta property="og:title" content="{{ sp.ten }} - {{ settings.ten_web }}">
+<meta property="og:description" content="{{ sp.mo_ta[:150] if sp.mo_ta else 'Mô hình chính hãng tại ' ~ settings.ten_web }}">
+<meta property="og:image" content="{{ request.url_root.rstrip('/') }}{{ sp.hinh_anh }}">
+<meta property="og:type" content="product">
 <style>
     .product-card { background: #fff; border: 1px solid #eef0f2; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); }
     .main-img-box { height: 480px; background-color: #fafafa; border: 1px solid #eef0f2; cursor: zoom-in; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 15px; position: relative; padding-bottom: 80px; }
@@ -31,7 +35,8 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-white p-3 rounded-pill shadow-sm border">
             <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted fw-bold"><i class="fas fa-home"></i> Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="/san-pham" class="text-decoration-none text-muted fw-bold">Sản phẩm</a></li>
+            <li class="breadcrumb-item"><a href="/san-pham?danh_muc={{ sp.the_loai }}" class="text-decoration-none text-muted fw-bold">{{ sp.the_loai }}</a></li>
+            <li class="breadcrumb-item"><a href="/san-pham?hang_sx={{ sp.hang_sx }}" class="text-decoration-none text-muted fw-bold">{{ sp.hang_sx }}</a></li>
             <li class="breadcrumb-item active fw-bold text-dark text-truncate" style="max-width: 200px;">{{ sp.ten }}</li>
         </ol>
     </nav>
@@ -114,13 +119,13 @@
                         </div>
                     </div>
 
-                    <form id="addCartForm" action="/them-vao-gio/{{ encode_id(sp.id) }}" method="GET" class="mt-4 mb-2">
+                    <form id="addCartForm" action="/them-vao-gio/{{ encode_id(sp.id) }}" method="GET" class="mt-4 mb-2" onsubmit="disableBtn()">
                         <input type="hidden" name="hinh_thuc" id="input_hinh_thuc" value="san">
                         <input type="hidden" name="loai" id="input_loai" value="new">
 
                         {% if is_admin %}
                         <button type="submit" id="btn_add_cart" class="btn btn-danger text-white w-100 py-2 fw-bold fs-6 rounded-pill shadow-sm mb-2" style="display: none;">
-                            <i class="fas fa-cart-plus me-2"></i> THÊM VÀO GIỎ (ADMIN)
+                            <span id="btn_text"><i class="fas fa-cart-plus me-2"></i> THÊM VÀO GIỎ (ADMIN)</span>
                         </button>
                         {% else %}
                         <a href="{{ settings.link_fb }}" target="_blank" id="btn_contact" class="btn btn-dark w-100 py-2 fw-bold fs-6 rounded-pill shadow-sm btn-contact-pulse" style="display: none;">
@@ -341,6 +346,13 @@
         const carousel = bootstrap.Carousel.getOrCreateInstance(carouselEl);
         carousel.to(currentSlideIndex);
         myModal.show();
+    }
+
+    function disableBtn() {
+        let btn = document.getElementById('btn_add_cart');
+        btn.classList.add('disabled');
+        btn.style.pointerEvents = 'none';
+        document.getElementById('btn_text').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> ĐANG XỬ LÝ...';
     }
 </script>
 {% endblock %}

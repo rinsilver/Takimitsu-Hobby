@@ -244,8 +244,18 @@ def sua_san_pham(id):
     dms = conn.execute('SELECT * FROM danh_muc').fetchall()
     hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
     ngs = conn.execute('SELECT * FROM nguon_nhap').fetchall()
+    
+    # --- ĐOẠN CODE LẤY DANH SÁCH KHÁCH CHỜ PRE-ORDER ---
+    khach_cho = conn.execute('''
+        SELECT d.id as don_id, d.ten_khach, d.sdt, d.ngay_dat, d.tien_da_tra, d.tong_tien, c.so_luong 
+        FROM chi_tiet_don c 
+        JOIN don_hang d ON c.don_hang_id = d.id 
+        WHERE c.san_pham_id = ? AND d.trang_thai IN ('Đã cọc', 'Chờ xử lý', 'Hàng về - Chờ TT') 
+        ORDER BY d.ngay_dat ASC
+    ''', (id,)).fetchall()
+    
     conn.close()
-    return render_template('sua.html', sp=sp, lo_hangs=lo_hangs, anh_phu=anh_phu, danh_mucs=dms, hangs=hgs, nguons=ngs)
+    return render_template('sua.html', sp=sp, lo_hangs=lo_hangs, anh_phu=anh_phu, danh_mucs=dms, hangs=hgs, nguons=ngs, khach_cho=khach_cho)
 
 @admin_bp.route('/admin/them-lo-hang', methods=['POST'])
 def them_lo_hang():
@@ -613,6 +623,7 @@ def huy_don(id):
     return redirect(request.referrer or '/admin/don-hang')
 
 @admin_bp.route('/admin/don-hang/<int:id>', methods=['GET', 'POST'])
+@admin_bp.route('/admin/don-hang/<int:id>', methods=['GET', 'POST'])
 def xem_sua_don_hang(id):
     khach_id = session.get('khach_id'); admin_id = session.get('admin_id')
     if not admin_id and not khach_id: return redirect('/dang-nhap')
@@ -622,9 +633,36 @@ def xem_sua_don_hang(id):
     if not admin_id and dh['khach_hang_id'] != khach_id: conn.close(); return "<script>alert('Sếp không có quyền xem đơn của người khác!'); window.history.back();</script>"
 
     if request.method == 'POST' and admin_id:
+        # --- LOGIC SANG TÊN ĐỔI CHỦ ---
+        if request.form.get('hanh_dong') == 'sang_ten':
+            khach_id_moi = request.form.get('khach_id_moi')
+            khach_moi = conn.execute('SELECT ho_ten, sdt, dia_chi FROM khach_hang WHERE id = ?', (khach_id_moi,)).fetchone()
+            if khach_moi:
+                conn.execute('UPDATE don_hang SET khach_hang_id = ?, ten_khach = ?, sdt = ?, dia_chi = ? WHERE id = ?', 
+                             (khach_id_moi, khach_moi['ho_ten'], khach_moi['sdt'], khach_moi['dia_chi'], id))
+                conn.commit()
+                flash(f'Đã sang tên đơn hàng #{id} thành công cho khách {khach_moi["ho_ten"]}!', 'success')
+            conn.close()
+            return redirect(f'/admin/don-hang/{id}')
+            
+        # --- LOGIC CẬP NHẬT TIỀN VÀ KHO NHƯ CŨ ---
         tong_tien_moi = float(request.form.get('tong_tien', 0))
         tien_da_tra_moi = float(request.form.get('tien_da_tra', 0))
-        trang_thai_moi = 'Hoàn thành' if tien_da_tra_moi >= tong_tien_moi and request.form['trang_thai'] in ['Chờ xử lý', 'Đang giao hàng'] else request.form['trang_thai']
+        trang_thai_moi = request.form['trang_thai']
+        
+        if tien_da_tra_moi >= tong_tien_moi and trang_thai_moi in ['Chờ xử lý', 'Đã cọc', 'Hàng về - Chờ TT', 'Đang giao hàng']:
+            trang_thai_moi = 'Hoàn thành'
+            
+        dh_old = conn.execute('SELECT trang_thai FROM don_hang WHERE id = ?', (id,)).fetchone()
+        
+        if dh_old['trang_thai'] not in ['Đã hủy', 'Hủy - Thu cọc'] and trang_thai_moi in ['Đã hủy', 'Hủy - Thu cọc']:
+            items = conn.execute('SELECT san_pham_id, so_luong FROM chi_tiet_don WHERE don_hang_id = ?', (id,)).fetchall()
+            for item in items: conn.execute('UPDATE san_pham SET so_luong = so_luong + ? WHERE id = ?', (item['so_luong'], item['san_pham_id']))
+            
+        elif dh_old['trang_thai'] in ['Đã hủy', 'Hủy - Thu cọc'] and trang_thai_moi not in ['Đã hủy', 'Hủy - Thu cọc']:
+            items = conn.execute('SELECT san_pham_id, so_luong FROM chi_tiet_don WHERE don_hang_id = ?', (id,)).fetchall()
+            for item in items: conn.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (item['so_luong'], item['san_pham_id']))
+
         conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ?, tong_tien = ? WHERE id = ?', (trang_thai_moi, tien_da_tra_moi, tong_tien_moi, id))
         conn.commit(); conn.close()
         flash(f'Đã cập nhật tài chính đơn hàng #{id} thành công!', 'success')
@@ -632,8 +670,12 @@ def xem_sua_don_hang(id):
 
     items = conn.execute('SELECT c.*, s.ten, s.hinh_anh, s.hang_sx FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id WHERE c.don_hang_id = ?', (id,)).fetchall()
     khach_info = conn.execute('SELECT nhom_khach, ghi_chu FROM khach_hang WHERE id = ?', (dh['khach_hang_id'],)).fetchone()
+    
+    # Truyền thêm danh sách toàn bộ khách hàng để làm Menu chọn lúc Sang Tên
+    khachs_all = conn.execute('SELECT id, ho_ten, sdt FROM khach_hang ORDER BY ho_ten ASC').fetchall()
     conn.close()
-    return render_template('chi_tiet_don.html', dh=dh, items=items, khach_info=khach_info)
+    
+    return render_template('chi_tiet_don.html', dh=dh, items=items, khach_info=khach_info, khachs_all=khachs_all)
 
 @admin_bp.route('/admin/in-hoa-don/<int:id>')
 def in_hoa_don(id):

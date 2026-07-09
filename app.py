@@ -6,7 +6,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-from database.db import tao_bang_va_cap_nhat, get_settings, get_mega_menu, hashids
+from database.db import tao_bang_va_cap_nhat, get_settings, get_mega_menu, hashids, tao_slug
 from routes.auth import auth_bp
 from routes.client import client_bp
 from routes.admin import admin_bp
@@ -56,7 +56,8 @@ def inject_data():
         khach_ten=session.get('khach_ten', ''),
         settings=get_settings(),
         mega_menu=get_mega_menu(),
-        encode_id=lambda id: hashids.encode(id)
+        encode_id=lambda id: hashids.encode(id),
+        tao_slug=tao_slug
     )
 
 @app.errorhandler(404)

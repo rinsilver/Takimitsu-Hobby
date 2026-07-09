@@ -4,12 +4,13 @@
 
 {% block content %}
 <div class="anime-fade-in mt-3">
-    
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold"><i class="fas fa-edit text-primary"></i> Sửa SP: #{{ sp.id }}</h4>
         <div>
             <a href="/admin" class="btn btn-light border fw-bold px-4 me-2">QUAY LẠI KHO</a>
-            <button type="submit" form="formSuaSP" class="btn btn-dark fw-bold px-5 shadow"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
+            <button type="submit" form="formSuaSP" class="btn btn-dark fw-bold px-5 shadow"><i class="fas fa-save"></i>
+                LƯU THAY ĐỔI</button>
         </div>
     </div>
 
@@ -17,7 +18,7 @@
         <div class="col-lg-8">
             <form method="POST" enctype="multipart/form-data" id="formSuaSP">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                
+
                 <div class="premium-card p-4 mb-4">
                     <h6 class="fw-bold mb-3 border-bottom pb-2">THÔNG TIN CHUNG</h6>
                     <div class="mb-3">
@@ -28,13 +29,16 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted small fw-bold">Danh mục</label>
                             <select name="the_loai" class="form-select">
-                                {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if sp.the_loai==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{% endfor %}
+                                {% for dm in danh_mucs %}<option value="{{ dm.ten_danh_muc }}" {% if
+                                    sp.the_loai==dm.ten_danh_muc %}selected{% endif %}>{{ dm.ten_danh_muc }}</option>{%
+                                endfor %}
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-muted small fw-bold">Hãng sản xuất</label>
                             <select name="hang_sx" class="form-select">
-                                {% for h in hangs %}<option value="{{ h.ten_hang }}" {% if sp.hang_sx==h.ten_hang %}selected{% endif %}>{{ h.ten_hang }}</option>{% endfor %}
+                                {% for h in hangs %}<option value="{{ h.ten_hang }}" {% if sp.hang_sx==h.ten_hang
+                                    %}selected{% endif %}>{{ h.ten_hang }}</option>{% endfor %}
                             </select>
                         </div>
                     </div>
@@ -53,28 +57,34 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-danger small fw-bold">Giá Bán Thực tế *</label>
-                            <input type="number" name="gia_ban" class="form-control fw-bold text-danger" value="{{ sp.gia_ban }}" required>
+                            <input type="number" name="gia_ban" class="form-control fw-bold text-danger"
+                                value="{{ sp.gia_ban }}" required>
                         </div>
                     </div>
 
                     <div class="bg-light p-3 rounded mb-3 border shadow-sm">
-                        <h6 class="fw-bold mb-3"><i class="fas fa-tags text-primary"></i> Bảng giá Phân loại (Nhập 0 nếu hết hàng)</h6>
+                        <h6 class="fw-bold mb-3"><i class="fas fa-tags text-primary"></i> Bảng giá Phân loại (Nhập 0 nếu
+                            hết hàng)</h6>
                         <div class="row g-2">
                             <div class="col-md-3">
                                 <label class="small fw-bold text-success">Có sẵn - New</label>
-                                <input type="number" name="gia_san_new" class="form-control border-success" value="{{ sp.gia_san_new }}">
+                                <input type="number" name="gia_san_new" class="form-control border-success"
+                                    value="{{ sp.gia_san_new }}">
                             </div>
                             <div class="col-md-3">
                                 <label class="small fw-bold text-success">Có sẵn - LikeNew</label>
-                                <input type="number" name="gia_san_likenew" class="form-control" value="{{ sp.gia_san_likenew }}">
+                                <input type="number" name="gia_san_likenew" class="form-control"
+                                    value="{{ sp.gia_san_likenew }}">
                             </div>
                             <div class="col-md-3">
                                 <label class="small fw-bold text-warning">Order - New</label>
-                                <input type="number" name="gia_order_new" class="form-control border-warning" value="{{ sp.gia_order_new }}">
+                                <input type="number" name="gia_order_new" class="form-control border-warning"
+                                    value="{{ sp.gia_order_new }}">
                             </div>
                             <div class="col-md-3">
                                 <label class="small fw-bold text-warning">Order - LikeNew</label>
-                                <input type="number" name="gia_order_likenew" class="form-control" value="{{ sp.gia_order_likenew }}">
+                                <input type="number" name="gia_order_likenew" class="form-control"
+                                    value="{{ sp.gia_order_likenew }}">
                             </div>
                         </div>
                     </div>
@@ -82,65 +92,123 @@
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label text-muted small fw-bold">Kiểu Hàng (Mặc định)</label>
-                            <select name="kieu_hang" id="kieuHangSelect" class="form-select fw-bold" onchange="togglePre()">
-                                <option value="Co san" {% if sp.kieu_hang=='Co san' %}selected{% endif %}>🟢 Hàng Có Sẵn</option>
-                                <option value="Pre-order" {% if sp.kieu_hang=='Pre-order' %}selected{% endif %}>⏳ Pre-Order</option>
+                            <select name="kieu_hang" id="kieuHangSelect" class="form-select fw-bold"
+                                onchange="togglePre()">
+                                <option value="Co san" {% if sp.kieu_hang=='Co san' %}selected{% endif %}>🟢 Hàng Có Sẵn
+                                </option>
+                                <option value="Pre-order" {% if sp.kieu_hang=='Pre-order' %}selected{% endif %}>⏳
+                                    Pre-Order</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-primary small fw-bold">TỔNG TỒN KHO (Chỉnh tay để sửa lỗi) *</label>
+                            <label class="form-label text-primary small fw-bold">TỔNG TỒN KHO (Chỉnh tay để sửa lỗi)
+                                *</label>
                             <div class="input-group shadow-sm">
-                                <input type="number" name="so_luong" class="form-control fw-black fs-5 text-primary border-primary" value="{{ sp.so_luong }}" required>
+                                <input type="number" name="so_luong"
+                                    class="form-control fw-black fs-5 text-primary border-primary"
+                                    value="{{ sp.so_luong }}" required>
                                 <span class="input-group-text bg-light text-muted small fw-bold">Hộp</span>
                             </div>
-                            <small class="text-muted d-block mt-1">Hệ thống tự cộng khi nhập lô, nhưng Sếp có thể sửa tay nếu bị lệch số.</small>
+                            <small class="text-muted d-block mt-1">Hệ thống tự cộng khi nhập lô, nhưng Sếp có thể sửa
+                                tay nếu bị lệch số.</small>
                         </div>
                     </div>
 
-                    <div id="preOrderFields" class="row mt-3" style="display: {% if sp.kieu_hang == 'Pre-order' %}flex{% else %}none{% endif %};">
+                    <div id="preOrderFields" class="row mt-3"
+                        style="display: {% if sp.kieu_hang == 'Pre-order' %}flex{% else %}none{% endif %};">
                         <div class="col-md-6">
                             <label class="form-label text-warning small fw-bold">Tiền cọc (VNĐ)</label>
-                            <input type="number" name="tien_coc" class="form-control border-warning" value="{{ sp.tien_coc }}">
+                            <input type="number" name="tien_coc" class="form-control border-warning"
+                                value="{{ sp.tien_coc }}">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-warning small fw-bold">Ngày phát hành dự kiến</label>
-                            <input type="date" name="ngay_phat_hanh" class="form-control border-warning" value="{{ sp.ngay_phat_hanh }}">
+                            <input type="date" name="ngay_phat_hanh" class="form-control border-warning"
+                                value="{{ sp.ngay_phat_hanh }}">
                         </div>
                     </div>
                 </div>
             </form>
+            <div class="premium-card p-4 mb-4 border-top border-warning border-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold m-0"><i class="fas fa-list-ol text-warning me-2"></i>THỨ TỰ KHÁCH CHỜ HÀNG (PRE-ORDER)</h6>
+                    <span class="badge bg-dark rounded-pill">{{ khach_cho|length }} khách đang đợi</span>
+                </div>
+                
+                <div class="table-responsive border rounded-3 shadow-sm" style="max-height: 350px; overflow-y: auto;">
+                    <table class="table premium-table align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead class="table-light position-sticky top-0" style="z-index: 10;">
+                            <tr>
+                                <th>STT</th>
+                                <th>Khách hàng</th>
+                                <th class="text-center">SL</th>
+                                <th>Tài chính</th>
+                                <th class="text-center">Zalo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for kc in khach_cho %}
+                            <tr>
+                                <td class="fw-bold text-muted">#{{ loop.index }}</td>
+                                <td>
+                                    <a href="/admin/don-hang/{{ kc.don_id }}" class="fw-bold text-primary text-decoration-none d-block">{{ kc.ten_khach }}</a>
+                                    <small class="text-muted"><i class="fas fa-clock"></i> {{ kc.ngay_dat[:16] }}</small>
+                                </td>
+                                <td class="text-center fw-black text-danger fs-6">x{{ kc.so_luong }}</td>
+                                <td>
+                                    <div class="small">Cọc: <strong class="text-success">{{ "{:,.0f}".format(kc.tien_da_tra) }}đ</strong></div>
+                                    <div class="small">Cần thu: <strong class="text-danger">{{ "{:,.0f}".format(kc.tong_tien - kc.tien_da_tra) }}đ</strong></div>
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-success rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0; line-height: 30px;" title="Copy mẫu tin nhắn báo Zalo cho khách này" onclick="copyZalo(`{{ kc.ten_khach }}`, `{{ kc.sdt }}`, `{{ kc.tong_tien - kc.tien_da_tra }}`, `{{ sp.ten }}`)">
+                                        <i class="fas fa-comment-dots"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">Hiện không có đơn nào đang treo (chờ nhận) sản phẩm này.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <div class="col-lg-4">
             <div class="premium-card p-4 mb-4">
                 <h6 class="fw-bold mb-3 border-bottom pb-2">HÌNH ẢNH SẢN PHẨM</h6>
                 <div class="text-center mb-3">
-                    <img id="main_preview_img" src="{{ sp.hinh_anh }}" class="img-thumbnail shadow-sm mb-2" style="max-height: 150px;">
-                    <input type="file" name="hinh_anh" form="formSuaSP" class="form-control form-control-sm" accept="image/*">
+                    <img id="main_preview_img" src="{{ sp.hinh_anh }}" class="img-thumbnail shadow-sm mb-2"
+                        style="max-height: 150px;">
+                    <input type="file" name="hinh_anh" form="formSuaSP" class="form-control form-control-sm"
+                        accept="image/*">
                     <small class="text-muted">Bỏ trống nếu không đổi ảnh chính</small>
                 </div>
-                
+
                 <hr>
-                
+
                 {% if anh_phu %}
                 <div class="mb-3 text-start" id="khu_vuc_anh_cu">
                     <label class="form-label text-primary small fw-bold">Các ảnh phụ đã lưu:</label>
                     <div class="d-flex flex-wrap gap-2 p-2 bg-light rounded border shadow-sm">
                         {% for anh in anh_phu %}
-                        <img src="{{ anh.du_ong_dan }}" class="img-thumbnail border border-secondary" style="height: 60px; width: 60px; object-fit: cover;">
+                        <img src="{{ anh.du_ong_dan }}" class="img-thumbnail border border-secondary"
+                            style="height: 60px; width: 60px; object-fit: cover;">
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
 
                 <label class="form-label text-muted small fw-bold mt-2">Tải THÊM ảnh phụ</label>
-                <input type="file" name="hinh_anh_phu" form="formSuaSP" class="form-control form-control-sm" multiple accept="image/*">
+                <input type="file" name="hinh_anh_phu" form="formSuaSP" class="form-control form-control-sm" multiple
+                    accept="image/*">
             </div>
 
             <div class="premium-card p-4 mb-4 border-top border-primary border-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="fw-bold m-0"><i class="fas fa-boxes text-primary me-2"></i>QUẢN LÝ LÔ NHẬP</h6>
-                    <button type="button" class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalThemLo">
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill fw-bold shadow-sm"
+                        data-bs-toggle="modal" data-bs-target="#modalThemLo">
                         <i class="fas fa-plus"></i> Nhập Lô Mới
                     </button>
                 </div>
@@ -158,23 +226,31 @@
                             {% for lo in lo_hangs %}
                             <tr>
                                 <td class="fw-bold text-dark">
-                                    <div class="text-truncate" style="max-width: 100px;">{{ lo.ten_nguon if lo.ten_nguon else 'Không rõ' }}</div>
-                                    <small class="text-muted fw-normal"><i class="fas fa-calendar-alt"></i> {{ lo.ngay_tao[:10] }}</small>
+                                    <div class="text-truncate" style="max-width: 100px;">{{ lo.ten_nguon if lo.ten_nguon
+                                        else 'Không rõ' }}</div>
+                                    <small class="text-muted fw-normal"><i class="fas fa-calendar-alt"></i> {{
+                                        lo.ngay_tao[:10] }}</small>
                                 </td>
-                                <td class="text-center fw-black text-danger fs-6">{{ lo.so_luong_nhap }}<br><small class="text-muted fw-normal">hộp</small></td>
+                                <td class="text-center fw-black text-danger fs-6">{{ lo.so_luong_nhap }}<br><small
+                                        class="text-muted fw-normal">hộp</small></td>
                                 <td class="text-end fw-bold">
                                     Nhập: {{ "{:,.0f}".format(lo.gia_nhap) }}đ<br>
                                     <span class="text-success">Trả: {{ "{:,.0f}".format(lo.tien_da_tra_nguon) }}đ</span>
                                 </td>
                                 <td class="text-end pe-2">
-                                    <form action="/admin/xoa-lo-hang/{{ lo.id }}" method="POST" class="d-inline ms-1" onsubmit="return confirm('Xóa lô hàng này sẽ Trừ thẳng vào Tồn kho đang có. Chắc chắn chứ?')">
+                                    <form action="/admin/xoa-lo-hang/{{ lo.id }}" method="POST" class="d-inline ms-1"
+                                        onsubmit="return confirm('Xóa lô hàng này sẽ Trừ thẳng vào Tồn kho đang có. Chắc chắn chứ?')">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger p-1 px-2 rounded-circle"><i class="fas fa-trash"></i></button>
+                                        <button type="submit"
+                                            class="btn btn-sm btn-outline-danger p-1 px-2 rounded-circle"><i
+                                                class="fas fa-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
                             {% else %}
-                            <tr><td colspan="4" class="text-center text-muted py-4">Chưa có lô hàng nào.</td></tr>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">Chưa có lô hàng nào.</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -206,16 +282,19 @@
                     <div class="row">
                         <div class="col-6 mb-3">
                             <label class="small fw-bold text-danger">Số lượng nhập *:</label>
-                            <input type="number" name="so_luong_nhap" class="form-control rounded-pill fw-bold text-danger" required min="1">
+                            <input type="number" name="so_luong_nhap"
+                                class="form-control rounded-pill fw-bold text-danger" required min="1">
                         </div>
                         <div class="col-6 mb-3">
                             <label class="small fw-bold">Giá nhập / hộp (VNĐ) *:</label>
-                            <input type="number" name="gia_nhap" class="form-control rounded-pill fw-bold" required min="0">
+                            <input type="number" name="gia_nhap" class="form-control rounded-pill fw-bold" required
+                                min="0">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="small fw-bold text-success">Đã thanh toán trước cho Nguồn (VNĐ):</label>
-                        <input type="number" name="tien_da_tra_nguon" class="form-control rounded-pill fw-bold text-success" value="0" min="0">
+                        <input type="number" name="tien_da_tra_nguon"
+                            class="form-control rounded-pill fw-bold text-success" value="0" min="0">
                     </div>
                     <div class="mb-3">
                         <label class="small fw-bold">Ngày hàng về (Dự kiến):</label>
@@ -224,7 +303,8 @@
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">LƯU LÔ HÀNG</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">LƯU LÔ
+                        HÀNG</button>
                 </div>
             </form>
         </div>
@@ -240,7 +320,7 @@
     }
 
     const hinhAnhInput = document.querySelector('input[name="hinh_anh"]');
-    hinhAnhInput.addEventListener('change', function(e) {
+    hinhAnhInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (file) {
             document.getElementById('main_preview_img').src = URL.createObjectURL(file);
@@ -252,7 +332,7 @@
     phuContainer.className = 'mt-3 d-flex flex-wrap gap-2';
     hinhAnhPhuInput.parentElement.appendChild(phuContainer);
 
-    hinhAnhPhuInput.addEventListener('change', function(e) {
+    hinhAnhPhuInput.addEventListener('change', function (e) {
         let khuVucAnhCu = document.getElementById('khu_vuc_anh_cu');
         if (khuVucAnhCu) khuVucAnhCu.style.display = 'none';
 
@@ -267,5 +347,16 @@
             phuContainer.appendChild(img);
         });
     });
+
+    function copyZalo(tenKhach, sdt, tienThu, tenSp) {
+        let tienFormat = new Intl.NumberFormat('vi-VN').format(tienThu) + 'đ';
+        let msg = `Dạ Takimitsu Hobby chào ${tenKhach} ạ! 🥳\n\nKiện hàng có sản phẩm [${tenSp}] của bạn đã cập bến rồi nè!\n\nSố tiền COD (cần thanh toán phần còn lại) của bạn là: ${tienFormat}.\nBạn phản hồi lại tin nhắn này kèm thông tin nhận hàng để shop lên đơn ship cho bạn nha! Cảm ơn bạn rất nhiều! ❤️`;
+
+        navigator.clipboard.writeText(msg).then(() => {
+            alert('Đã COPY lời nhắn! Bạn chỉ cần mở Zalo số 0' + sdt.replace(/^0+/, '') + ' và dán (Ctrl+V) để gửi thôi nhé!');
+        }).catch(err => {
+            alert('Lỗi Copy. Bạn thử lại nhé!');
+        });
+    }
 </script>
 {% endblock %}

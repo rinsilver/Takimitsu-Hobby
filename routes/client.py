@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, abort
-from database.db import ket_noi_db, get_settings, hashids
+from database.db import ket_noi_db, get_settings, hashids,tao_slug
 
 client_bp = Blueprint('client', __name__)
 
@@ -29,10 +29,13 @@ def trang_thong_tin(slug):
     if not noi_dung: noi_dung = "Nội dung đang được cập nhật."
     return render_template('trang_thong_tin.html', tieu_de=thong_tin_trang['title'], noi_dung=noi_dung, settings=settings)
 
-@client_bp.route('/san-pham/<string:hash_id>')
-def chi_tiet_sp(hash_id):
+@client_bp.route('/san-pham/<string:slug_id>')
+def chi_tiet_sp(slug_id):
+    # Trích xuất mã ID ở cuối URL (VD: mo-hinh-luffy-8L -> lấy 8L)
+    hash_id = slug_id.split('-')[-1]
+    
     decoded = hashids.decode(hash_id)
-    if not decoded: return "Đường dẫn không hợp lệ sếp ơi!", 404
+    if not decoded: abort(404)
     id = decoded[0]
     
     conn = ket_noi_db()
@@ -213,6 +216,16 @@ def thanh_toan():
             if kh_chon: khach_id = kh_chon
             
         cur = conn.cursor()
+        # --- THÊM CHỐT CHẶN KIỂM TRA LẠI KHO TRƯỚC KHI LÊN ĐƠN ---
+        for item in gio_hang:
+            # Kiểm tra xem mặt hàng này là Hàng Sẵn hay Order (Dựa vào cart_id)
+            if '_san_' in item.get('cart_id', ''):
+                sp_db = cur.execute("SELECT so_luong, ten FROM san_pham WHERE id=?", (item['id'],)).fetchone()
+                if not sp_db or sp_db['so_luong'] < item['so_luong']:
+                    flash(f"Mặt hàng {item['ten']} vừa có người mua, kho chỉ còn {sp_db['so_luong'] if sp_db else 0} hộp. Vui lòng cập nhật lại giỏ hàng!", "danger")
+                    conn.close()
+                    return redirect(url_for('client.xem_gio_hang'))
+                
         if not khach_id:
             kh_db = cur.execute('SELECT id FROM khach_hang WHERE sdt = ?', (sdt,)).fetchone()
             if kh_db: khach_id = kh_db['id']
@@ -287,5 +300,12 @@ def search_products_api():
     
     ket_qua = []
     for sp in sps:
-        ket_qua.append({"id": hashids.encode(sp['id']), "ten": sp['ten'], "hinh_anh": sp['hinh_anh'], "gia": "{:,.0f}".format(sp['gia_ban']), "status": sp['kieu_hang']})
+        ket_qua.append({
+            "id": hashids.encode(sp['id']), 
+            "ten": sp['ten'], 
+            "hinh_anh": sp['hinh_anh'], 
+            "gia": "{:,.0f}".format(sp['gia_ban']), 
+            "status": sp['kieu_hang'],
+            "slug": tao_slug(sp['ten'])
+        })
     return jsonify(ket_qua)

@@ -82,8 +82,13 @@
                 <option value="">-- Tất cả trạng thái --</option>
                 <option value="Chờ xử lý" {{ 'selected' if trang_thai_chon=='Chờ xử lý' }}>⏳ Chờ xử lý</option>
                 <option value="Đã cọc" {{ 'selected' if trang_thai_chon=='Đã cọc' }}>💰 Đã cọc</option>
-                <option value="Đang giao" {{ 'selected' if trang_thai_chon=='Đang giao' }}>🚚 Đang giao</option>
+                <option value="Hàng về - Chờ TT" {{ 'selected' if trang_thai_chon=='Hàng về - Chờ TT' }}>📦 Hàng về -
+                    Chờ TT</option>
+                <option value="Đang giao hàng" {{ 'selected' if trang_thai_chon=='Đang giao hàng' }}>🚚 Đang giao hàng
+                </option>
                 <option value="Hoàn thành" {{ 'selected' if trang_thai_chon=='Hoàn thành' }}>✅ Hoàn thành</option>
+                <option value="Hủy - Thu cọc" {{ 'selected' if trang_thai_chon=='Hủy - Thu cọc' }}>☠️ Hủy ngang - Thu cọc
+                </option>
                 <option value="Đã hủy" {{ 'selected' if trang_thai_chon=='Đã hủy' }}>❌ Đã hủy</option>
             </select>
         </div>
@@ -164,17 +169,22 @@
                                 placeholder="Đã trả">
                         </div>
                         <div class="input-group input-group-sm">
-                            <select name="trang_thai" class="form-select fw-bold border-primary">
-                                <option value="Chờ xử lý" {% if dh.trang_thai=='Chờ xử lý' %}selected{% endif %}>Chờ xử
-                                    lý</option>
-                                <option value="Đã cọc" {% if dh.trang_thai=='Đã cọc' %}selected{% endif %}>Đã cọc
+                            <select name="trang_thai"
+                                class="form-select fw-bold border-2 rounded-pill px-3 py-2 bg-light shadow-sm">
+                                <option value="Chờ xử lý" {% if dh.trang_thai=='Chờ xử lý' %}selected{% endif %}>⏳ Chờ
+                                    xử lý</option>
+                                <option value="Đã cọc" {% if dh.trang_thai=='Đã cọc' %}selected{% endif %}>💰 Đã cọc
                                 </option>
-                                <option value="Đang giao" {% if dh.trang_thai=='Đang giao' %}selected{% endif %}>Đang
-                                    giao</option>
-                                <option value="Hoàn thành" {% if dh.trang_thai=='Hoàn thành' %}selected{% endif %}>Hoàn
-                                    thành</option>
-                                <option value="Đã hủy" {% if dh.trang_thai=='Đã hủy' %}selected{% endif %}>Đã hủy
-                                </option>
+                                <option value="Hàng về - Chờ TT" {% if dh.trang_thai=='Hàng về - Chờ TT' %}selected{%
+                                    endif %}>📦 Hàng về - Chờ TT</option>
+                                <option value="Đang giao hàng" {% if dh.trang_thai=='Đang giao hàng' %}selected{% endif
+                                    %}>🚚 Đang giao hàng</option>
+                                <option value="Hoàn thành" {% if dh.trang_thai=='Hoàn thành' %}selected{% endif %}>✅
+                                    Hoàn thành</option>
+                                <option value="Hủy - Thu cọc" {% if dh.trang_thai=='Hủy - Thu cọc' %}selected{% endif
+                                    %}>☠️ Hủy ngang - Tịch thu cọc</option>
+                                <option value="Đã hủy" {% if dh.trang_thai=='Đã hủy' %}selected{% endif %}>❌ Đã hủy
+                                    (Hoàn tiền)</option>
                             </select>
                             <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i></button>
                         </div>

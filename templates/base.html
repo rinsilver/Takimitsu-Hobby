@@ -236,8 +236,8 @@
                                 let safeName = escapeHTML(sp.ten);
 
                                 html += `
-            <a href="/san-pham/${sp.id}" class="search-result-item">
-                <img src="${sp.hinh_anh}" onerror="this.src='/static/uploads/Logo.jpg'">
+            <a href="/san-pham/${sp.slug}-${sp.id}" class="search-result-item">
+                <img src="${sp.hinh_anh}" alt="${safeName} mô hình" onerror="this.src='/static/uploads/Logo.jpg'">
                 <div class="flex-grow-1 overflow-hidden">
                     <div class="fw-bold text-dark text-truncate mb-1" style="font-size: 0.85rem; max-width: 95%;">${safeName}</div>
                     <div class="d-flex align-items-center gap-2">

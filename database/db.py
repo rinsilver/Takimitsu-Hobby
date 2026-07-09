@@ -1,11 +1,20 @@
 import sqlite3
 import json
 import os
+import re
+import unicodedata
 from werkzeug.security import generate_password_hash
 from hashids import Hashids
 
 SETTINGS_FILE = 'settings.json'
 hashids = Hashids(salt="takimitsu_hobby_sieu_bao_mat", min_length=8)
+
+def tao_slug(text):
+    if not text: return ""
+    text = str(text)
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8')
+    text = re.sub(r'[^\w\s-]', '', text).strip().lower()
+    return re.sub(r'[-\s]+', '-', text)
 
 def ket_noi_db():
     conn = sqlite3.connect('database_v5.db')

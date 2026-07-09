@@ -1,8 +1,7 @@
 {% macro render_card(sp) %}
 {% set het_hang = true if (sp.kieu_hang == 'Co san' and sp.so_luong <= 0) else false %}
 
-<a href="/san-pham/{{ encode_id(sp.id) }}" class="tms-card shadow-sm h-100 text-decoration-none {{ 'opacity-75' if het_hang else '' }}" style="position: relative;">
-    
+<a href="/san-pham/{{ tao_slug(sp.ten) }}-{{ encode_id(sp.id) }}" class="tms-card shadow-sm h-100 text-decoration-none {{ 'opacity-75' if het_hang else '' }}" style="position: relative;">    
     {% if sp.gia_goc and sp.gia_goc > sp.gia_ban and not het_hang %}
         {% set percent = ((sp.gia_goc - sp.gia_ban) / sp.gia_goc * 100)|round|int %}
         <div class="discount-badge">-{{ percent }}%</div>
@@ -13,7 +12,7 @@
             {% if sp.kieu_hang == 'Co san' %}<i class="fas fa-check-circle me-1"></i> CÓ SẴN{% else %}<i class="fas fa-clock me-1"></i> ORDER{% endif %}
         </span>
         
-        <img src="{{ sp.hinh_anh }}" loading="lazy" style="{{ 'filter: grayscale(100%); opacity: 0.6;' if het_hang else '' }}">
+        <img src="{{ sp.hinh_anh }}" alt="{{ sp.ten }} chính hãng" loading="lazy" style="{{ 'filter: grayscale(100%); opacity: 0.6;' if het_hang else '' }}">
         
         {% if het_hang %}
         <div class="position-absolute top-50 start-50 translate-middle w-100 text-center z-3" style="transform: translate(-50%, -50%) rotate(-15deg) !important;">
