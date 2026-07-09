@@ -28,7 +28,9 @@ def admin_dashboard():
     query_count = "SELECT COUNT(*) FROM san_pham s WHERE 1=1"
     query = """
         SELECT s.*, 
-        IFNULL((SELECT gia_nhap FROM lo_hang_nhap WHERE san_pham_id = s.id ORDER BY id DESC LIMIT 1), s.gia_nhap) as gia_nhap_thuc_te
+        IFNULL((SELECT gia_nhap FROM lo_hang_nhap WHERE san_pham_id = s.id ORDER BY id DESC LIMIT 1), s.gia_nhap) as gia_nhap_thuc_te,
+        IFNULL((SELECT SUM(c.so_luong) FROM chi_tiet_don c JOIN don_hang d ON c.don_hang_id = d.id WHERE c.san_pham_id = s.id AND d.trang_thai = 'Hoàn thành'), 0) as luong_giao_thanh_cong,
+        IFNULL((SELECT SUM(c.so_luong) FROM chi_tiet_don c JOIN don_hang d ON c.don_hang_id = d.id WHERE c.san_pham_id = s.id AND d.trang_thai NOT IN ('Hoàn thành', 'Đã hủy')), 0) as luong_dang_giao
         FROM san_pham s WHERE 1=1
     """
     params = []

@@ -209,12 +209,24 @@
                                 {{ sp.kieu_hang }}
                             </span>
                         </td>
-                        <td class="text-center">
-                            <div
-                                class="fw-black fs-5 {% if sp.so_luong <= 0 %}text-danger{% elif sp.so_luong < 5 %}text-warning{% else %}text-success{% endif %}">
-                                {{ sp.so_luong }}
+                        <td class="text-center align-middle" style="white-space: nowrap;">
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <div class="fw-black fs-5 lh-1 {% if sp.so_luong <= 0 %}text-danger{% elif sp.so_luong < 5 %}text-warning{% else %}text-success{% endif %}" title="Tồn kho hiện tại">
+                                        {{ sp.so_luong }}
+                                    </div>
+                                    <small class="text-muted fw-bold mt-1" style="font-size: 0.7rem; letter-spacing: 0.7px;">HỘP</small>
+                                </div>
+                                
+                                <div class="d-flex flex-column gap-1 text-start">
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1" title="Đang chờ xử lý / đang giao: {{ sp.luong_dang_giao }} hộp" style="font-size: 0.7rem;">
+                                        <i class="fas fa-truck fa-fw"></i> {{ sp.luong_dang_giao }}
+                                    </span>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1" title="Đã giao thành công: {{ sp.luong_giao_thanh_cong }} hộp" style="font-size: 0.7rem;">
+                                        <i class="fas fa-check-circle fa-fw"></i> {{ sp.luong_giao_thanh_cong }}
+                                    </span>
+                                </div>
                             </div>
-                            <small class="text-muted fw-bold" style="font-size: 0.65rem;">HỘP</small>
                         </td>
                         <td class="text-end fw-bold text-secondary">{{ "{:,.0f}".format(sp.gia_nhap_thuc_te) }}đ</td>
                         <td class="text-end fw-bold text-danger fs-6">{{ "{:,.0f}".format(sp.gia_ban) }}đ</td>
