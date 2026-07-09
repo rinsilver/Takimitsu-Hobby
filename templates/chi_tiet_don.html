@@ -5,11 +5,14 @@
 {% block content %}
 <div class="container{% if session.get('admin_id') %}-fluid{% endif %} mt-4 mb-5 anime-fade-in">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold m-0 text-dark"><i class="fas fa-file-invoice-dollar text-primary me-2"></i>CHI TIẾT ĐƠN HÀNG #{{ dh.id }}</h3>
+        <h3 class="fw-bold m-0 text-dark"><i class="fas fa-file-invoice-dollar text-primary me-2"></i>CHI TIẾT ĐƠN HÀNG
+            #{{ dh.id }}</h3>
         <div>
-            <a href="javascript:history.back()" class="btn btn-outline-dark fw-bold rounded-pill me-2 shadow-sm"><i class="fas fa-arrow-left"></i> Quay lại</a>
+            <a href="javascript:history.back()" class="btn btn-outline-dark fw-bold rounded-pill me-2 shadow-sm"><i
+                    class="fas fa-arrow-left"></i> Quay lại</a>
             {% if session.get('admin_id') %}
-            <a href="/admin/in-hoa-don/{{ dh.id }}" target="_blank" class="btn btn-dark fw-bold rounded-pill shadow-sm"><i class="fas fa-print"></i> IN HÓA ĐƠN</a>
+            <a href="/admin/in-hoa-don/{{ dh.id }}" target="_blank"
+                class="btn btn-dark fw-bold rounded-pill shadow-sm"><i class="fas fa-print"></i> IN HÓA ĐƠN</a>
             {% endif %}
         </div>
     </div>
@@ -51,7 +54,7 @@
 
     <div class="row g-4">
         <div class="col-md-{{ '8' if session.get('admin_id') else '12' }}">
-            
+
             <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
                 <div class="bg-dark text-white p-3 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold"><i class="fas fa-box-open me-2 text-warning"></i>SẢN PHẨM ĐÃ ĐẶT</h6>
@@ -71,18 +74,24 @@
                             <tr>
                                 <td class="ps-4 py-3">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div style="width: 65px; height: 65px; border-radius: 10px; overflow: hidden; background: #fff;" class="border shadow-sm flex-shrink-0">
-                                            <img src="{{ item.hinh_anh }}" style="width:100%; height:100%; object-fit:cover;">
+                                        <div style="width: 65px; height: 65px; border-radius: 10px; overflow: hidden; background: #fff;"
+                                            class="border shadow-sm flex-shrink-0">
+                                            <img src="{{ item.hinh_anh }}"
+                                                style="width:100%; height:100%; object-fit:cover;">
                                         </div>
                                         <div>
-                                            <a href="/san-pham/{{ encode_id(item.san_pham_id) }}" target="_blank" class="fw-bold d-block text-dark text-decoration-none fs-6">{{ item.ten }}</a>
-                                            <span class="badge bg-secondary mt-1" style="font-size: 0.7rem;">{{ item.hang_sx }}</span>
+                                            <a href="/san-pham/{{ tao_slug(item.ten) }}-{{ encode_id(item.san_pham_id) }}"
+                                                target="_blank"
+                                                class="fw-bold d-block text-dark text-decoration-none fs-6">{{ item.ten
+                                                }}</a> <span class="badge bg-secondary mt-1"
+                                                style="font-size: 0.7rem;">{{ item.hang_sx }}</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="text-center fw-black fs-5 text-danger">x{{ item.so_luong }}</td>
                                 <td class="text-end fw-bold text-muted">{{ "{:,.0f}".format(item.gia) }}đ</td>
-                                <td class="text-end fw-black text-danger pe-4 fs-6">{{ "{:,.0f}".format(item.gia * item.so_luong) }}đ</td>
+                                <td class="text-end fw-black text-danger pe-4 fs-6">{{ "{:,.0f}".format(item.gia *
+                                    item.so_luong) }}đ</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -92,28 +101,38 @@
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
                 <div class="bg-light border-bottom p-3 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-map-marked-alt text-danger me-2"></i>THÔNG TIN GIAO HÀNG</h6>
+                    <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-map-marked-alt text-danger me-2"></i>THÔNG TIN
+                        GIAO HÀNG</h6>
                     {% if session.get('admin_id') and dh.trang_thai in ['Chờ xử lý', 'Đã cọc', 'Hàng về - Chờ TT'] %}
-                    <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSangTen"><i class="fas fa-exchange-alt me-1"></i> Sang Tên Đổi Chủ</button>
+                    <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold shadow-sm" data-bs-toggle="modal"
+                        data-bs-target="#modalSangTen"><i class="fas fa-exchange-alt me-1"></i> Sang Tên Đổi
+                        Chủ</button>
                     {% endif %}
                 </div>
                 <div class="p-4">
                     <div class="row g-4">
                         <div class="col-sm-6 border-end">
                             <label class="small text-muted fw-bold text-uppercase d-block mb-1">Người nhận:</label>
-                            <div class="fw-bold fs-5 text-dark"><i class="fas fa-user-circle text-primary me-2"></i>{{ dh.ten_khach }}</div>
+                            <div class="fw-bold fs-5 text-dark"><i class="fas fa-user-circle text-primary me-2"></i>{{
+                                dh.ten_khach }}</div>
                         </div>
                         <div class="col-sm-6">
-                            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Số điện thoại liên hệ:</label>
-                            <div class="fw-bold fs-5 text-dark"><i class="fas fa-phone-alt text-success me-2"></i>{{ dh.sdt }}</div>
+                            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Số điện thoại liên
+                                hệ:</label>
+                            <div class="fw-bold fs-5 text-dark"><i class="fas fa-phone-alt text-success me-2"></i>{{
+                                dh.sdt }}</div>
                         </div>
                         <div class="col-12 mt-3 pt-3 border-top">
-                            <label class="small text-muted fw-bold text-uppercase d-block mb-2">Địa chỉ giao hàng chi tiết:</label>
-                            <div class="fw-bold text-dark" style="font-size: 1.1rem;"><i class="fas fa-map-marker-alt text-danger me-2"></i>{{ dh.dia_chi }}</div>
+                            <label class="small text-muted fw-bold text-uppercase d-block mb-2">Địa chỉ giao hàng chi
+                                tiết:</label>
+                            <div class="fw-bold text-dark" style="font-size: 1.1rem;"><i
+                                    class="fas fa-map-marker-alt text-danger me-2"></i>{{ dh.dia_chi }}</div>
                         </div>
                         <div class="col-12 mt-3 pt-3 border-top">
-                            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Thời gian đặt hàng:</label>
-                            <div class="text-dark fw-bold"><i class="fas fa-clock text-warning me-2"></i>{{ dh.ngay_dat }}</div>
+                            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Thời gian đặt
+                                hàng:</label>
+                            <div class="text-dark fw-bold"><i class="fas fa-clock text-warning me-2"></i>{{ dh.ngay_dat
+                                }}</div>
                         </div>
                     </div>
                 </div>
@@ -124,12 +143,14 @@
         <div class="col-md-4">
             {% if khach_info %}
             {% if khach_info.nhom_khach != 'Thường' %}
-            <div class="alert {% if khach_info.nhom_khach == 'VIP' %}alert-warning border-warning{% else %}alert-danger border-danger{% endif %} rounded-4 shadow-sm p-3 mb-4 bg-white">
+            <div
+                class="alert {% if khach_info.nhom_khach == 'VIP' %}alert-warning border-warning{% else %}alert-danger border-danger{% endif %} rounded-4 shadow-sm p-3 mb-4 bg-white">
                 <h5 class="fw-black mb-1">
                     {% if khach_info.nhom_khach == 'VIP' %}<i class="fas fa-crown text-warning me-1"></i> KHÁCH VIP
                     {% else %}<i class="fas fa-skull-crossbones text-danger me-1"></i> KHÁCH BOM HÀNG{% endif %}
                 </h5>
-                {% if khach_info.ghi_chu %}<div class="fw-bold text-dark mt-2" style="font-size: 0.9rem;"><i class="fas fa-comment-dots text-muted me-1"></i> {{ khach_info.ghi_chu }}</div>{% endif %}
+                {% if khach_info.ghi_chu %}<div class="fw-bold text-dark mt-2" style="font-size: 0.9rem;"><i
+                        class="fas fa-comment-dots text-muted me-1"></i> {{ khach_info.ghi_chu }}</div>{% endif %}
             </div>
             {% elif khach_info.ghi_chu %}
             <div class="alert alert-info border-info rounded-4 shadow-sm p-3 mb-4 bg-white">
@@ -146,31 +167,47 @@
 
                     <div class="mb-4">
                         <label class="fw-bold small text-muted mb-2 text-uppercase">Trạng thái hiện tại</label>
-                        <select name="trang_thai" class="form-select fw-bold border-2 rounded-pill px-3 py-2 bg-light shadow-sm">
-                            <option value="Chờ xử lý" {% if dh.trang_thai=='Chờ xử lý' %}selected{% endif %}>⏳ Chờ xử lý</option>
-                            <option value="Đã cọc" {% if dh.trang_thai=='Đã cọc' %}selected{% endif %}>💰 Đã cọc</option>
-                            <option value="Hàng về - Chờ TT" {% if dh.trang_thai=='Hàng về - Chờ TT' %}selected{% endif %}>📦 Hàng về - Chờ TT</option>
-                            <option value="Đang giao hàng" {% if dh.trang_thai=='Đang giao hàng' %}selected{% endif %}>🚚 Đang giao hàng</option>
-                            <option value="Hoàn thành" {% if dh.trang_thai=='Hoàn thành' %}selected{% endif %}>✅ Hoàn thành</option>
-                            <option value="Hủy - Thu cọc" {% if dh.trang_thai=='Hủy - Thu cọc' %}selected{% endif %}>☠️ Hủy ngang - Tịch thu cọc</option>
-                            <option value="Đã hủy" {% if dh.trang_thai=='Đã hủy' %}selected{% endif %}>❌ Đã hủy (Hoàn tiền)</option>
+                        <select name="trang_thai"
+                            class="form-select fw-bold border-2 rounded-pill px-3 py-2 bg-light shadow-sm">
+                            <option value="Chờ xử lý" {% if dh.trang_thai=='Chờ xử lý' %}selected{% endif %}>⏳ Chờ xử lý
+                            </option>
+                            <option value="Đã cọc" {% if dh.trang_thai=='Đã cọc' %}selected{% endif %}>💰 Đã cọc
+                            </option>
+                            <option value="Hàng về - Chờ TT" {% if dh.trang_thai=='Hàng về - Chờ TT' %}selected{% endif
+                                %}>📦 Hàng về - Chờ TT</option>
+                            <option value="Đang giao hàng" {% if dh.trang_thai=='Đang giao hàng' %}selected{% endif %}>
+                                🚚 Đang giao hàng</option>
+                            <option value="Hoàn thành" {% if dh.trang_thai=='Hoàn thành' %}selected{% endif %}>✅ Hoàn
+                                thành</option>
+                            <option value="Hủy - Thu cọc" {% if dh.trang_thai=='Hủy - Thu cọc' %}selected{% endif %}>☠️
+                                Hủy ngang - Tịch thu cọc</option>
+                            <option value="Đã hủy" {% if dh.trang_thai=='Đã hủy' %}selected{% endif %}>❌ Đã hủy (Hoàn
+                                tiền)</option>
                         </select>
                     </div>
 
                     <div class="p-3 bg-light rounded-4 border mb-4 shadow-sm">
                         <div class="mb-3">
-                            <label class="fw-bold small text-muted mb-2 text-uppercase"><i class="fas fa-calculator text-dark me-1"></i> Tổng Bill (VNĐ)</label>
-                            <input type="number" name="tong_tien" class="form-control text-dark fw-black fs-5 border-2 rounded-pill px-3" value="{{ dh.tong_tien }}" required>
+                            <label class="fw-bold small text-muted mb-2 text-uppercase"><i
+                                    class="fas fa-calculator text-dark me-1"></i> Tổng Bill (VNĐ)</label>
+                            <input type="number" name="tong_tien"
+                                class="form-control text-dark fw-black fs-5 border-2 rounded-pill px-3"
+                                value="{{ dh.tong_tien }}" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="fw-bold small text-muted mb-2 text-uppercase"><i class="fas fa-money-bill-wave text-success me-1"></i> Khách đã thanh toán</label>
-                            <input type="number" name="tien_da_tra" class="form-control text-success fw-black fs-5 border-2 border-success rounded-pill px-3" value="{{ dh.tien_da_tra }}" required id="input_da_tra" oninput="tinhTienNo()">
+                            <label class="fw-bold small text-muted mb-2 text-uppercase"><i
+                                    class="fas fa-money-bill-wave text-success me-1"></i> Khách đã thanh toán</label>
+                            <input type="number" name="tien_da_tra"
+                                class="form-control text-success fw-black fs-5 border-2 border-success rounded-pill px-3"
+                                value="{{ dh.tien_da_tra }}" required id="input_da_tra" oninput="tinhTienNo()">
                         </div>
 
-                        <div class="d-flex justify-content-between mt-3 pt-3 border-top border-secondary border-opacity-25 align-items-center">
+                        <div
+                            class="d-flex justify-content-between mt-3 pt-3 border-top border-secondary border-opacity-25 align-items-center">
                             <span class="text-danger fw-bold">Còn nợ (Thu COD):</span>
-                            <span class="text-danger fw-black fs-4" id="con_no_hien_thi">{{ "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</span>
+                            <span class="text-danger fw-black fs-4" id="con_no_hien_thi">{{
+                                "{:,.0f}".format(dh.tong_tien - dh.tien_da_tra) }}đ</span>
                         </div>
                     </div>
 
@@ -197,10 +234,12 @@
                 <input type="hidden" name="hanh_dong" value="sang_ten">
                 <div class="modal-body">
                     <div class="alert alert-warning border-0 rounded-3 small shadow-sm mb-4">
-                        <i class="fas fa-info-circle"></i> Chuyển nhượng toàn bộ quyền sở hữu đơn hàng (bao gồm tiền đã cọc) sang cho khách hàng mới.
+                        <i class="fas fa-info-circle"></i> Chuyển nhượng toàn bộ quyền sở hữu đơn hàng (bao gồm tiền đã
+                        cọc) sang cho khách hàng mới.
                     </div>
                     <label class="fw-bold small mb-2 text-muted">Chọn khách hàng nhận chuyển nhượng:</label>
-                    <select name="khach_id_moi" class="form-select rounded-pill fw-bold bg-light border-primary shadow-sm" required>
+                    <select name="khach_id_moi"
+                        class="form-select rounded-pill fw-bold bg-light border-primary shadow-sm" required>
                         <option value="">-- Vui lòng chọn khách hàng --</option>
                         {% for kh in khachs_all %}
                         {% if kh.id != dh.khach_hang_id %}
@@ -210,8 +249,10 @@
                     </select>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy bỏ</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">XÁC NHẬN SANG TÊN</button>
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy
+                        bỏ</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">XÁC NHẬN SANG
+                        TÊN</button>
                 </div>
             </form>
         </div>

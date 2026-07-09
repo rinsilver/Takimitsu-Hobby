@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, abort
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, abort, Response
 from database.db import ket_noi_db, get_settings, hashids,tao_slug
 
 client_bp = Blueprint('client', __name__)
@@ -309,3 +309,37 @@ def search_products_api():
             "slug": tao_slug(sp['ten'])
         })
     return jsonify(ket_qua)
+
+# --- VŨ KHÍ SEO: TỰ ĐỘNG TẠO SITEMAP.XML CHO GOOGLE BOT ---
+@client_bp.route('/sitemap.xml')
+def sitemap():
+    conn = ket_noi_db()
+    sps = conn.execute("SELECT id, ten FROM san_pham ORDER BY id DESC").fetchall()
+    conn.close()
+    
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    base_url = request.url_root.rstrip('/')
+    
+    # Khai báo các trang tĩnh quan trọng
+    pages = ['/', '/san-pham', '/thong-tin/chinh-sach-cua-hang', '/thong-tin/chinh-sach-doi-tra', '/thong-tin/chinh-sach-van-chuyen', '/thong-tin/huong-dan-mua-hang']
+    for p in pages:
+        xml += f'  <url>\n    <loc>{base_url}{p}</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.9</priority>\n  </url>\n'
+        
+    # Khai báo toàn bộ link Sản phẩm
+    for sp in sps:
+        slug = tao_slug(sp['ten'])
+        hash_id = hashids.encode(sp['id'])
+        xml += f'  <url>\n    <loc>{base_url}/san-pham/{slug}-{hash_id}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n'
+        
+    xml += '</urlset>'
+    return Response(xml, mimetype='application/xml')
+
+# --- CHỈ ĐƯỜNG CHO GOOGLE BOT (ROBOTS.TXT) ---
+@client_bp.route('/robots.txt')
+def robots():
+    base_url = request.url_root.rstrip('/')
+    # Chặn Bot mò vào các trang Admin bảo mật, chỉ đường đến file Sitemap
+    txt = f"User-agent: *\nDisallow: /admin/\nDisallow: /thanh-toan\nDisallow: /dang-nhap\n\nSitemap: {base_url}/sitemap.xml"
+    return Response(txt, mimetype='text/plain')
