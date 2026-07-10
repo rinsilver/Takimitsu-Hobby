@@ -11,8 +11,11 @@ def index():
     danh_sach_hang = [h['hang_sx'] for h in hang_sxs_raw]
     hang_co_san = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Co san' ORDER BY id DESC LIMIT 12").fetchall()
     hang_order = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Pre-order' ORDER BY id DESC LIMIT 12").fetchall()
-    
-    return render_template('index.html', san_phams=san_phams, hang_sxs=danh_sach_hang, hang_co_san=hang_co_san, hang_order=hang_order)
+
+    # Lấy các mặt hàng Pre-order có ngày phát hành, sắp xếp ngày gần nhất lên trước
+    lich_phat_hanh = conn.execute("SELECT id, ten, hinh_anh, ngay_phat_hanh, hang_sx FROM san_pham WHERE kieu_hang = 'Pre-order' AND ngay_phat_hanh != '' AND ngay_phat_hanh IS NOT NULL ORDER BY ngay_phat_hanh ASC LIMIT 5").fetchall()
+
+    return render_template('index.html', san_phams=san_phams, hang_sxs=danh_sach_hang, hang_co_san=hang_co_san, hang_order=hang_order, lich_phat_hanh=lich_phat_hanh)
 
 @client_bp.route('/thong-tin/<slug>')
 def trang_thong_tin(slug):

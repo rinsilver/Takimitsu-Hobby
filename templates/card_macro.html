@@ -30,13 +30,18 @@
     </div>
     
     <div class="tms-info bg-white d-flex flex-column">
-        <div class="mb-2 d-flex flex-wrap gap-2 align-items-center">
-            <span class="badge rounded-pill bg-dark fw-bold shadow-sm" style="font-size: 0.65rem; padding: 4px 10px; letter-spacing: 0.5px;">
-                <i class="fas fa-tag text-warning me-1"></i>{{ sp.hang_sx }}
+        <div class="mb-2 d-flex flex-wrap gap-1 align-items-center">
+            {% if sp.hang_sx %}
+            <span class="badge" style="background-color: #111; color: #fff; font-size: 0.6rem; border-radius: 4px; padding: 4px 6px; border-left: 3px solid #e60012; letter-spacing: 0.5px;">
+                {{ sp.hang_sx | upper }}
             </span>
-            <span class="badge rounded-pill bg-white text-secondary fw-bold shadow-sm" style="font-size: 0.65rem; padding: 4px 10px; border: 1px solid #eef2ee; letter-spacing: 0.5px;">
-                <i class="fas fa-tag text-muted opacity-50 me-1"></i>{{ sp.the_loai if sp.the_loai else 'Mô Hình' }}
+            {% endif %}
+            
+            {% if sp.the_loai %}
+            <span class="badge bg-light text-dark" style="font-size: 0.6rem; border-radius: 4px; padding: 4px 6px; border: 1px solid #ddd;">
+                {{ sp.the_loai | upper }}
             </span>
+            {% endif %}
         </div>
 
         <h6 class="tms-name flex-grow-1 {{ 'text-muted' if het_hang else '' }}">{{ sp.ten }}</h6>
