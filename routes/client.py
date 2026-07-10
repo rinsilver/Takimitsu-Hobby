@@ -11,7 +11,7 @@ def index():
     danh_sach_hang = [h['hang_sx'] for h in hang_sxs_raw]
     hang_co_san = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Co san' ORDER BY id DESC LIMIT 12").fetchall()
     hang_order = conn.execute("SELECT * FROM san_pham WHERE kieu_hang = 'Pre-order' ORDER BY id DESC LIMIT 12").fetchall()
-    conn.close()
+    
     return render_template('index.html', san_phams=san_phams, hang_sxs=danh_sach_hang, hang_co_san=hang_co_san, hang_order=hang_order)
 
 @client_bp.route('/thong-tin/<slug>')
@@ -41,7 +41,7 @@ def chi_tiet_sp(slug_id):
     conn = ket_noi_db()
     sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
     if not sp: 
-        conn.close(); abort(404)
+        abort(404)
     # Lấy số lượng đã bán thực tế (Loại trừ đơn Đã hủy)
     da_ban = conn.execute("SELECT SUM(c.so_luong) FROM chi_tiet_don c JOIN don_hang d ON c.don_hang_id = d.id WHERE c.san_pham_id = ? AND d.trang_thai != 'Đã hủy'", (id,)).fetchone()[0] or 0
     
@@ -69,7 +69,7 @@ def chi_tiet_sp(slug_id):
     if len(da_xem_ids) > 11: da_xem_ids.pop()
         
     session['da_xem'] = da_xem_ids; session.modified = True
-    conn.close()
+    
     
     return render_template('chi_tiet.html', sp=sp, anh_phu=anh_phu, san_pham_lien_quan=san_pham_lien_quan, tieu_de_goi_y=tieu_de_goi_y, san_pham_da_xem=san_pham_da_xem, da_ban=da_ban)
 
@@ -81,7 +81,7 @@ def them_vao_gio(hash_id):
 
     conn = ket_noi_db()
     sp = conn.execute('SELECT * FROM san_pham WHERE id=?', (id,)).fetchone()
-    conn.close()
+    
     if not sp: return redirect(url_for('client.index'))
 
     hinh_thuc = request.args.get('hinh_thuc', 'san')
@@ -133,7 +133,7 @@ def cap_nhat_gio(cart_id, hanh_dong):
     real_id = int(str(cart_id).split('_')[0]) if '_' in str(cart_id) else int(cart_id)
     conn = ket_noi_db()
     sp = conn.execute('SELECT so_luong FROM san_pham WHERE id=?', (real_id,)).fetchone()
-    conn.close()
+    
     
     for item in gio:
         if item.get('cart_id', str(item['id'])) == cart_id:
@@ -187,7 +187,7 @@ def tat_ca_san_pham():
     san_phams = conn.execute(cau_lenh, dk).fetchall()
     danh_mucs = conn.execute('SELECT DISTINCT the_loai as ten_danh_muc FROM san_pham').fetchall()
     hangs = conn.execute('SELECT DISTINCT hang_sx as ten_hang FROM san_pham').fetchall()
-    conn.close()
+    
 
     if request.args.get('ajax') == '1':
         return render_template('partials_san_pham.html', san_phams=san_phams, page=page, tong_trang=tong_trang, dm_chon=danh_muc_loc, hang_chon=hang_loc, kieu_chon=kieu_loc, tu_khoa=tu_khoa, ton_kho_chon=ton_kho, sap_xep_chon=sap_xep)
@@ -220,14 +220,17 @@ def thanh_toan():
         cur = conn.cursor()
         # --- THÊM CHỐT CHẶN KIỂM TRA LẠI KHO TRƯỚC KHI LÊN ĐƠN ---
         for item in gio_hang:
-            # Kiểm tra xem mặt hàng này là Hàng Sẵn hay Order (Dựa vào cart_id)
             if '_san_' in item.get('cart_id', ''):
-                sp_db = cur.execute("SELECT so_luong, ten FROM san_pham WHERE id=?", (item['id'],)).fetchone()
-                if not sp_db or sp_db['so_luong'] < item['so_luong']:
-                    flash(f"Mặt hàng {item['ten']} vừa có người mua, kho chỉ còn {sp_db['so_luong'] if sp_db else 0} hộp. Vui lòng cập nhật lại giỏ hàng!", "danger")
-                    conn.close()
+                # Ép DB trừ kho ngay lập tức VÀ phải đảm bảo kho >= số lượng mua
+                cur.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ? AND so_luong >= ?', (item['so_luong'], item['id'], item['so_luong']))
+                
+                # Nếu lệnh Update thất bại (Rowcount = 0) nghĩa là kho không đủ!
+                if cur.rowcount == 0:
+                    conn.rollback() # Hủy bỏ toàn bộ giao dịch, không tạo đơn
+                    flash(f"Mặt hàng {item['ten']} vừa bị khách khác chốt mất tích tắc! Kho không đủ số lượng. Vui lòng kiểm tra lại giỏ hàng.", "danger")
                     return redirect(url_for('client.xem_gio_hang'))
                 
+        # Nếu vượt qua hết vòng lặp trên thì kho đủ, bắt đầu tạo hóa đơn
         if not khach_id:
             kh_db = cur.execute('SELECT id FROM khach_hang WHERE sdt = ?', (sdt,)).fetchone()
             if kh_db: khach_id = kh_db['id']
@@ -243,10 +246,10 @@ def thanh_toan():
         don_id = cur.lastrowid
         
         for item in gio_hang:
-            cur.execute('INSERT INTO chi_tiet_don (don_hang_id, san_pham_id, so_luong, gia) VALUES (?, ?, ?, ?)', (don_id, item['id'], item['so_luong'], item['gia']))
+            cur.execute('INSERT INTO chi_tiet_don (don_hang_id, san_pham_id, ten_sp, hinh_anh_sp, so_luong, gia) VALUES (?, ?, ?, ?, ?, ?)', (don_id, item['id'], item['ten'], item['hinh_anh'], item['so_luong'], item['gia']))
             cur.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (item['so_luong'], item['id']))
             
-        conn.commit(); conn.close()
+        conn.commit(); 
         session['gio_hang'] = []; session.modified = True
         
         if session.get('admin_id'):
@@ -256,7 +259,7 @@ def thanh_toan():
             flash(f'Tuyệt vời! Bạn đã đặt hàng thành công. Mã đơn: #{don_id}', 'success')
             return redirect(url_for('client.ho_so_khach'))
 
-    conn.close()
+    
     return render_template('thanh_toan.html', gio_hang=gio_hang, tong_tien=tong_tien, khachs=danh_sach_khach)
 
 @client_bp.route('/ho-so')
@@ -280,7 +283,7 @@ def ho_so_khach():
         items = conn.execute('SELECT c.*, s.ten, s.hinh_anh FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id WHERE c.don_hang_id = ?', (dh['id'],)).fetchall()
         dh_dict['items'] = items
         don_hangs_full.append(dh_dict)
-    conn.close()
+    
     return render_template('ho_so.html', khach=khach, don_hangs=don_hangs_full, page=page, tong_trang=tong_trang)
 
 @client_bp.route('/api/get-khach-info/<int:id>')
@@ -290,7 +293,7 @@ def get_khach_info(id):
     
     conn = ket_noi_db()
     kh = conn.execute('SELECT ho_ten, sdt, dia_chi FROM khach_hang WHERE id = ?', (id,)).fetchone()
-    conn.close()
+    
     if kh: return {"ho_ten": kh['ho_ten'], "sdt": kh['sdt'], "dia_chi": kh['dia_chi']}
     return {"error": "Không tìm thấy"}, 404
 
@@ -306,7 +309,7 @@ def search_products_api():
 
     # 2. Tìm danh sách sản phẩm hiển thị
     sps = conn.execute("SELECT id, ten, hinh_anh, gia_ban, kieu_hang FROM san_pham WHERE ten LIKE ? LIMIT 5", (f'%{tu_khoa}%',)).fetchall()
-    conn.close()
+    
     
     ket_qua = []
     for sp in sps:
@@ -325,7 +328,7 @@ def search_products_api():
 def sitemap():
     conn = ket_noi_db()
     sps = conn.execute("SELECT id, ten FROM san_pham ORDER BY id DESC").fetchall()
-    conn.close()
+    
     
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -354,12 +357,12 @@ def tra_cuu():
         conn = ket_noi_db()
         dh = conn.execute('SELECT * FROM don_hang WHERE id = ? AND sdt = ?', (ma_don, sdt)).fetchone()
         if not dh:
-            conn.close()
+            
             flash('Không tìm thấy đơn hàng! Vui lòng kiểm tra lại Mã đơn và SĐT.', 'danger')
             return redirect('/tra-cuu')
         
         items = conn.execute('SELECT c.*, s.ten, s.hinh_anh, s.hang_sx FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id WHERE c.don_hang_id = ?', (ma_don,)).fetchall()
-        conn.close()
+        
         return render_template('tra_cuu.html', dh=dh, items=items)
         
     return render_template('tra_cuu.html')

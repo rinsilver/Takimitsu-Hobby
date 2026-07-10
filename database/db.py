@@ -5,6 +5,7 @@ import re
 import unicodedata
 from werkzeug.security import generate_password_hash
 from hashids import Hashids
+from flask import g
 
 SETTINGS_FILE = 'settings.json'
 hashids = Hashids(salt="takimitsu_hobby_sieu_bao_mat", min_length=8)
@@ -17,9 +18,15 @@ def tao_slug(text):
     return re.sub(r'[-\s]+', '-', text)
 
 def ket_noi_db():
-    conn = sqlite3.connect('database_v5.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+    if 'db' not in g:
+        g.db = sqlite3.connect('database_v5.db')
+        g.db.row_factory = sqlite3.Row
+    return g.db
+
+def dong_db(e=None):
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
 
 def save_settings(settings_data):
     with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
@@ -85,7 +92,7 @@ def tao_bang_va_cap_nhat():
         id INTEGER PRIMARY KEY AUTOINCREMENT, khach_hang_id INTEGER, ten_khach TEXT, 
         sdt TEXT, dia_chi TEXT, tong_tien REAL, tien_da_tra REAL DEFAULT 0, 
         ngay_dat DATETIME DEFAULT CURRENT_TIMESTAMP, trang_thai TEXT DEFAULT "Chờ xử lý")''')
-    conn.execute('CREATE TABLE IF NOT EXISTS chi_tiet_don (id INTEGER PRIMARY KEY AUTOINCREMENT, don_hang_id INTEGER, san_pham_id INTEGER, so_luong INTEGER, gia REAL)')
+    conn.execute('CREATE TABLE IF NOT EXISTS chi_tiet_don (id INTEGER PRIMARY KEY AUTOINCREMENT, don_hang_id INTEGER, san_pham_id INTEGER, ten_sp TEXT, hinh_anh_sp TEXT, so_luong INTEGER, gia REAL)')
     conn.execute('CREATE TABLE IF NOT EXISTS menu_item (id INTEGER PRIMARY KEY AUTOINCREMENT, cot INTEGER, nhom TEXT, icon_nhom TEXT, ten_link TEXT, url TEXT, badge_html TEXT)')
     conn.execute('CREATE TABLE IF NOT EXISTS lich_su_tra_nguon (id INTEGER PRIMARY KEY AUTOINCREMENT, san_pham_id INTEGER, so_tien REAL, ngay_tra DATETIME DEFAULT CURRENT_TIMESTAMP)')
     
@@ -114,7 +121,7 @@ def tao_bang_va_cap_nhat():
     conn.execute('CREATE INDEX IF NOT EXISTS idx_sp_ten ON san_pham(ten)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_sp_hang ON san_pham(hang_sx)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_kh_sdt ON khach_hang(sdt)')
-    
+
     try: conn.execute("ALTER TABLE don_hang ADD COLUMN ghi_chu TEXT DEFAULT ''")
     except: pass
 

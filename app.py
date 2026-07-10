@@ -6,7 +6,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-from database.db import tao_bang_va_cap_nhat, get_settings, get_mega_menu, hashids, tao_slug
+from database.db import tao_bang_va_cap_nhat, get_settings, get_mega_menu, hashids, tao_slug, dong_db
 from routes.auth import auth_bp
 from routes.client import client_bp
 from routes.admin import admin_bp
@@ -35,7 +35,8 @@ limiter = Limiter(
 )
 
 # Tự động khởi tạo và cập nhật CSDL
-tao_bang_va_cap_nhat()
+with app.app_context():
+    tao_bang_va_cap_nhat()
 
 # ĐĂNG KÝ CÁC BLUEPRINTS
 app.register_blueprint(auth_bp)
@@ -64,6 +65,8 @@ def inject_data():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+app.teardown_appcontext(dong_db)
 
 if __name__ == '__main__':
     Timer(1.5, lambda: webbrowser.open_new('http://127.0.0.1:5000/')).start()

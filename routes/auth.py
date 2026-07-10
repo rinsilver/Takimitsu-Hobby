@@ -27,10 +27,8 @@ def dang_nhap():
                 if u['vai_tro'] == 'admin': session['admin_id'] = u['id']
                 else: session['khach_id'] = u['id']
                 session['khach_ten'] = u['ho_ten']
-                conn.close()
                 return redirect(url_for('client.index')) # Trỏ về blueprint client
                 
-        conn.close()
         flash('Sai tài khoản, số điện thoại hoặc mật khẩu rồi bẹn ơi!', 'danger')
         return redirect(url_for('auth.dang_nhap'))
     return render_template('dang_nhap_chung.html')
@@ -47,8 +45,6 @@ def dang_ky():
             return redirect(url_for('auth.dang_nhap'))
         except: 
             return "Lỗi: Tài khoản đã tồn tại!"
-        finally: 
-            conn.close()
     return render_template('dang_ky_khach.html')
 
 @auth_bp.route('/dang-xuat')

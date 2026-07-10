@@ -12,6 +12,18 @@ from database.db import ket_noi_db, get_settings, save_settings
 
 admin_bp = Blueprint('admin', __name__)
 
+# --- HÀM TẠO THƯ MỤC ẢNH THEO THÁNG ---
+def lay_duong_dan_luu_anh(filename_goc):
+    now = datetime.datetime.now()
+    thu_muc_thang = f"{now.year}/{now.month:02d}" # VD: 2026/07
+    full_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], thu_muc_thang)
+    os.makedirs(full_dir, exist_ok=True)
+    
+    filename_an_toan = secure_filename(filename_goc)
+    base_name = os.path.splitext(filename_an_toan)[0]
+    
+    return full_dir, thu_muc_thang, base_name
+
 @admin_bp.route('/admin')
 def admin_dashboard():
     if 'admin_id' not in session: return redirect('/dang-nhap')
@@ -92,9 +104,7 @@ def admin_dashboard():
         dong_ban_chay = "N/A"
         gia_nhap_tb = 0
         hang_nhieu_nhat = "N/A"
-        
-    conn.close()
-    
+            
     # Bơm thêm 4 biến thống kê ra ngoài HTML
     return render_template('admin.html', san_phams=sps, tu_khoa=tu_khoa, 
                            danh_muc=danh_muc, hang_sx=hang_sx, kieu_hang=kieu_hang, sap_xep=sap_xep,
@@ -109,13 +119,12 @@ def them_san_pham():
         f = request.files['hinh_anh']
         img = ''
         if f and f.filename != '':
-            filename = secure_filename(f.filename)
-            base_name = os.path.splitext(filename)[0]
+            full_dir, thu_muc_thang, base_name = lay_duong_dan_luu_anh(f.filename)
             webp_name = base_name + ".webp"
-            save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], webp_name)
+            save_path = os.path.join(full_dir, webp_name)
             img_raw = Image.open(f)
             img_raw.convert("RGB").save(save_path, "WEBP", quality=80) 
-            img = '/static/uploads/' + webp_name
+            img = f'/static/uploads/{thu_muc_thang}/{webp_name}'
 
         cur = conn.cursor()
         gia_san_new = float(request.form.get('gia_san_new', 0) or 0)
@@ -149,20 +158,18 @@ def them_san_pham():
         
         for pf in request.files.getlist('hinh_anh_phu'):
             if pf and pf.filename != '':
-                filename_phu = secure_filename(pf.filename)
-                base_name_phu = os.path.splitext(filename_phu)[0]
+                full_dir, thu_muc_thang, base_name_phu = lay_duong_dan_luu_anh(pf.filename)
                 import time
                 webp_name_phu = f"{base_name_phu}_{sid}_{int(time.time())}.webp"
-                save_path_phu = os.path.join(current_app.config['UPLOAD_FOLDER'], webp_name_phu)
+                save_path_phu = os.path.join(full_dir, webp_name_phu)
                 img_phu_raw = Image.open(pf)
                 img_phu_raw.convert("RGB").save(save_path_phu, "WEBP", quality=80)
-                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (sid, '/static/uploads/' + webp_name_phu))
-        conn.commit(); conn.close(); return redirect('/admin')
+                conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (sid, f'/static/uploads/{thu_muc_thang}/{webp_name_phu}'))
+        conn.commit(); return redirect('/admin')
     
     dms = conn.execute('SELECT * FROM danh_muc').fetchall()
     hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall()
     ngs = conn.execute('SELECT * FROM nguon_nhap').fetchall()
-    conn.close()
     return render_template('them.html', danh_mucs=dms, hangs=hgs, nguons=ngs)
 
 @admin_bp.route('/sua/<int:id>', methods=['GET', 'POST'])
@@ -199,14 +206,16 @@ def sua_san_pham(id):
                 try: os.remove(os.path.join(current_app.root_path, sp['hinh_anh'].lstrip('/')))
                 except: pass
             filename = secure_filename(f.filename)
-            base_name = os.path.splitext(filename)[0]
+            
+            # --- ĐÃ FIX LỖI TẠO ĐƯỜNG DẪN TẠI ĐÂY ---
+            full_dir, thu_muc_thang, base_name = lay_duong_dan_luu_anh(f.filename)
             import time
             webp_name = f"{base_name}_{id}_{int(time.time())}_main.webp"
-            save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], webp_name)
+            save_path = os.path.join(full_dir, webp_name)
             img_raw = Image.open(f)
             img_raw.convert("RGB").save(save_path, "WEBP", quality=80)
             img_sql = ", hinh_anh = ?"
-            tham_so.append('/static/uploads/' + webp_name)
+            tham_so.append(f'/static/uploads/{thu_muc_thang}/{webp_name}')
         
         tham_so.append(id)
 
@@ -224,21 +233,21 @@ def sua_san_pham(id):
             conn.execute('DELETE FROM hinh_anh_sp WHERE san_pham_id=?', (id,))
             for pf in files_phu:
                 if pf and pf.filename != '':
-                    filename_phu = secure_filename(pf.filename)
-                    base_name_phu = os.path.splitext(filename_phu)[0]
+                    # --- ĐÃ FIX ÁP DỤNG CHIA THƯ MỤC CHO ẢNH PHỤ TẠI ĐÂY ---
+                    full_dir, thu_muc_thang, base_name_phu = lay_duong_dan_luu_anh(pf.filename)
                     import time
                     webp_name_phu = f"{base_name_phu}_{id}_{int(time.time())}.webp"
-                    save_path_phu = os.path.join(current_app.config['UPLOAD_FOLDER'], webp_name_phu)
+                    save_path_phu = os.path.join(full_dir, webp_name_phu)
                     img_phu_raw = Image.open(pf)
                     img_phu_raw.convert("RGB").save(save_path_phu, "WEBP", quality=80)
-                    conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (id, '/static/uploads/' + webp_name_phu))
+                    conn.execute('INSERT INTO hinh_anh_sp (san_pham_id, du_ong_dan) VALUES (?,?)', (id, f'/static/uploads/{thu_muc_thang}/{webp_name_phu}'))
         
-        conn.commit(); conn.close()
+        conn.commit(); 
         flash('Đã lưu thông tin Sản phẩm thành công!', 'success')
         return redirect('/admin') 
 
     sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
-    if not sp: conn.close(); abort(404)
+    if not sp: abort(404)
     lo_hangs = conn.execute('SELECT l.*, n.ten_nguon FROM lo_hang_nhap l LEFT JOIN nguon_nhap n ON l.nguon_nhap_id = n.id WHERE l.san_pham_id = ? ORDER BY l.id DESC', (id,)).fetchall()
     anh_phu = conn.execute('SELECT * FROM hinh_anh_sp WHERE san_pham_id = ?', (id,)).fetchall()
     dms = conn.execute('SELECT * FROM danh_muc').fetchall()
@@ -254,7 +263,7 @@ def sua_san_pham(id):
         ORDER BY d.ngay_dat ASC
     ''', (id,)).fetchall()
     
-    conn.close()
+    
     return render_template('sua.html', sp=sp, lo_hangs=lo_hangs, anh_phu=anh_phu, danh_mucs=dms, hangs=hgs, nguons=ngs, khach_cho=khach_cho)
 
 @admin_bp.route('/admin/them-lo-hang', methods=['POST'])
@@ -277,7 +286,7 @@ def them_lo_hang():
     conn.execute('UPDATE san_pham SET so_luong = so_luong + ? WHERE id = ?', (sl, sp_id))
     if tra > 0: conn.execute('INSERT INTO lich_su_tra_nguon (san_pham_id, lo_hang_id, so_tien) VALUES (?, ?, ?)', (sp_id, lo_id, tra))
         
-    conn.commit(); conn.close()
+    conn.commit(); 
     flash('Đã nhập lô hàng mới thành công!', 'success')
     return redirect(f'/sua/{sp_id}')
 
@@ -291,7 +300,7 @@ def xoa_lo_hang(lo_id):
         conn.execute('DELETE FROM lo_hang_nhap WHERE id = ?', (lo_id,))
         conn.execute('DELETE FROM lich_su_tra_nguon WHERE lo_hang_id = ?', (lo_id,))
         conn.commit()
-    conn.close()
+    
     flash('Đã xóa lô hàng!', 'success')
     return redirect(request.referrer or '/admin')
 
@@ -301,7 +310,7 @@ def xoa_san_pham(id):
     conn = ket_noi_db()
     don_hang_dang_chua = conn.execute('''SELECT d.id, d.trang_thai FROM chi_tiet_don c JOIN don_hang d ON c.don_hang_id = d.id WHERE c.san_pham_id = ? AND d.trang_thai NOT IN ('Hoàn thành', 'Đã hủy')''', (id,)).fetchone()
     if don_hang_dang_chua:
-        conn.close()
+        
         return f"<script>alert('SẾP KHOAN XÓA! Sản phẩm này đang nằm trong Đơn hàng #{don_hang_dang_chua['id']}. Vui lòng Hủy đơn hoặc Hoàn thành đơn trước khi xóa.'); window.location.href='/admin';</script>"
 
     sp = conn.execute('SELECT hinh_anh FROM san_pham WHERE id=?', (id,)).fetchone()
@@ -316,7 +325,7 @@ def xoa_san_pham(id):
     conn.execute('DELETE FROM san_pham WHERE id=?', (id,))
     conn.execute('DELETE FROM hinh_anh_sp WHERE san_pham_id=?', (id,))
     conn.execute('DELETE FROM lo_hang_nhap WHERE san_pham_id=?', (id,))
-    conn.commit(); conn.close()
+    conn.commit(); 
     return redirect('/admin')
 
 @admin_bp.route('/admin/cong-no-nguon')
@@ -369,7 +378,7 @@ def cong_no_nguon():
         
     tong_no_result = conn.execute(tong_no_query, tong_no_params).fetchone()[0]
     tong_no = tong_no_result if tong_no_result else 0
-    conn.close()
+    
     return render_template('cong_no_nguon.html', items=items, nguons=nguons, tong_no=tong_no, page=page, tong_trang=total_pages, nguon_chon=nguon_id, kieu_chon=kieu_hang, trang_thai_loc=trang_thai_loc, sap_xep_chon=sap_xep, tu_khoa=tu_khoa)
 
 @admin_bp.route('/admin/xuat-excel-nguon/<int:nguon_id>')
@@ -384,7 +393,7 @@ def xuat_excel_nguon(nguon_id):
         WHERE lo.nguon_nhap_id = ? ORDER BY l.id DESC
     ''', (nguon_id,)).fetchall()
     ten_nguon = conn.execute("SELECT ten_nguon FROM nguon_nhap WHERE id = ?", (nguon_id,)).fetchone()
-    conn.close()
+    
     if not ten_nguon: return "Không tìm thấy nguồn", 404
     output = io.StringIO(); output.write('\ufeff')
     writer = csv.writer(output)
@@ -416,7 +425,7 @@ def cap_nhat_tra_tien(lo_id):
     if tien_moi >= tong_nhap: trang_thai = 'Đã thanh toán'
         
     conn.execute('UPDATE lo_hang_nhap SET tien_da_tra_nguon=?, trang_thai_nhap=?, ngay_du_kien_ve=? WHERE id=?', (tien_moi, trang_thai, request.form.get('ngay_ve', ''), lo_id))
-    conn.commit(); conn.close()
+    conn.commit(); 
     return redirect(request.referrer or '/admin/cong-no-nguon')
 
 @admin_bp.route('/api/lich-su-tra-nguon/<int:lo_id>')
@@ -424,7 +433,7 @@ def api_lich_su_tra_nguon(lo_id):
     if 'admin_id' not in session: return jsonify([])
     conn = ket_noi_db()
     logs = conn.execute('SELECT so_tien, ngay_tra FROM lich_su_tra_nguon WHERE lo_hang_id = ? ORDER BY id DESC', (lo_id,)).fetchall()
-    conn.close()
+    
     return jsonify([{'so_tien': "{:,.0f}".format(l['so_tien']), 'ngay_tra': l['ngay_tra']} for l in logs])
 
 @admin_bp.route('/api/lich-su-nguon/<int:nguon_id>')
@@ -437,7 +446,7 @@ def api_lich_su_nguon(nguon_id):
         JOIN san_pham s ON lo.san_pham_id = s.id 
         WHERE lo.nguon_nhap_id = ? ORDER BY l.id DESC
     ''', (nguon_id,)).fetchall()
-    conn.close()
+    
     return jsonify([{'so_tien': "{:,.0f}".format(l['so_tien']), 'ngay_tra': l['ngay_tra'], 'ten_sp': l['ten_sp']} for l in logs])
 
 @admin_bp.route('/admin/nguon-nhap', methods=['GET', 'POST'])
@@ -446,7 +455,7 @@ def quan_ly_nguon_nhap():
     conn = ket_noi_db()
     if request.method == 'POST':
         conn.execute('INSERT INTO nguon_nhap (ten_nguon) VALUES (?)', (request.form['ten_nguon'],)); conn.commit()
-    ngs = conn.execute('SELECT * FROM nguon_nhap').fetchall(); conn.close()
+    ngs = conn.execute('SELECT * FROM nguon_nhap').fetchall(); 
     return render_template('quan_ly_nguon.html', nguons=ngs)
 
 @admin_bp.route('/admin/hang-sx', methods=['GET', 'POST'])
@@ -455,7 +464,7 @@ def quan_ly_hang_sx():
     conn = ket_noi_db()
     if request.method == 'POST':
         conn.execute('INSERT INTO hang_sx_list (ten_hang) VALUES (?)', (request.form['ten_hang'],)); conn.commit()
-    hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall(); conn.close()
+    hgs = conn.execute('SELECT * FROM hang_sx_list').fetchall(); 
     return render_template('quan_ly_hang.html', hangs=hgs)
 
 @admin_bp.route('/danh-muc', methods=['GET', 'POST'])
@@ -464,25 +473,25 @@ def quan_ly_danh_muc():
     conn = ket_noi_db()
     if request.method == 'POST':
         conn.execute('INSERT INTO danh_muc (ten_danh_muc) VALUES (?)', (request.form['ten_danh_muc'],)); conn.commit()
-    dms = conn.execute('SELECT * FROM danh_muc').fetchall(); conn.close()
+    dms = conn.execute('SELECT * FROM danh_muc').fetchall(); 
     return render_template('danh_muc.html', danh_mucs=dms)
 
 @admin_bp.route('/xoa-danh-muc/<int:id>', methods=['POST'])
 def xoa_danh_muc(id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
-    conn = ket_noi_db(); conn.execute('DELETE FROM danh_muc WHERE id=?', (id,)); conn.commit(); conn.close()
+    conn = ket_noi_db(); conn.execute('DELETE FROM danh_muc WHERE id=?', (id,)); conn.commit(); 
     return redirect('/danh-muc')
 
 @admin_bp.route('/xoa-hang/<int:id>', methods=['POST'])
 def xoa_hang(id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
-    conn = ket_noi_db(); conn.execute('DELETE FROM hang_sx_list WHERE id=?', (id,)); conn.commit(); conn.close()
+    conn = ket_noi_db(); conn.execute('DELETE FROM hang_sx_list WHERE id=?', (id,)); conn.commit(); 
     return redirect('/admin/hang-sx')
 
 @admin_bp.route('/xoa-nguon/<int:id>', methods=['POST'])
 def xoa_nguon(id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
-    conn = ket_noi_db(); conn.execute('DELETE FROM nguon_nhap WHERE id=?', (id,)); conn.commit(); conn.close()
+    conn = ket_noi_db(); conn.execute('DELETE FROM nguon_nhap WHERE id=?', (id,)); conn.commit(); 
     return redirect('/admin/nguon-nhap')
 
 @admin_bp.route('/admin/xuat-excel-don-hang')
@@ -490,7 +499,7 @@ def xuat_excel_don_hang():
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
     dhs = conn.execute("SELECT id, ten_khach, sdt, dia_chi, tong_tien, tien_da_tra, ngay_dat, trang_thai FROM don_hang ORDER BY id DESC").fetchall()
-    conn.close()
+    
     output = io.StringIO(); output.write('\ufeff')
     writer = csv.writer(output)
     writer.writerow(['Mã Đơn', 'Tên Khách', 'Số Điện Thoại', 'Địa Chỉ', 'Tổng Bill (VNĐ)', 'Đã Thu (VNĐ)', 'Khách Còn Nợ (VNĐ)', 'Ngày Đặt', 'Trạng Thái'])
@@ -538,7 +547,6 @@ def quan_ly_don_hang():
         dh_dict = dict(dh)
         dh_dict['ds_mat_hang'] = conn.execute('SELECT c.*, s.ten, s.hinh_anh, s.kieu_hang, s.ngay_phat_hanh FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id WHERE c.don_hang_id = ?', (dh['id'],)).fetchall()
         don_hangs_full.append(dh_dict)
-    conn.close()
     return render_template('quan_ly_don.html', don_hangs=don_hangs_full, trang_thai_chon=trang_thai_loc, sap_xep_chon=sap_xep, tu_khoa=tu_khoa, page=page, tong_trang=tong_trang, total_rev=total_rev, total_debt=total_debt, pending_count=pending_count)
 
 @admin_bp.route('/admin/khach-hang', methods=['GET', 'POST'])
@@ -574,7 +582,6 @@ def quan_ly_khach_hang():
     khachs = conn.execute(query, params).fetchall()
     
     thong_ke_tong = conn.execute("SELECT COUNT(DISTINCT k.id) as total_khach, IFNULL(SUM(CASE WHEN d.trang_thai != 'Đã hủy' THEN d.tong_tien ELSE 0 END), 0) as total_bill, IFNULL(SUM(CASE WHEN d.trang_thai != 'Đã hủy' THEN d.tien_da_tra ELSE 0 END), 0) as total_paid FROM khach_hang k LEFT JOIN don_hang d ON k.id = d.khach_hang_id").fetchone()
-    conn.close()
     return render_template('quan_ly_khach.html', khachs=khachs, tu_khoa=tu_khoa, page=page, tong_trang=tong_trang, thong_ke_tong=thong_ke_tong)
 
 @admin_bp.route('/admin/xoa-khach-hang/<int:id>')
@@ -583,8 +590,8 @@ def xoa_khach_hang(id):
     conn = ket_noi_db()
     kh = conn.execute('SELECT vai_tro FROM khach_hang WHERE id = ?', (id,)).fetchone()
     if kh and kh['vai_tro'] == 'admin':
-        conn.close(); return "<script>alert('Sếp không thể xóa tài khoản Admin ở đây!'); window.location.href='/admin/khach-hang';</script>"
-    conn.execute('DELETE FROM khach_hang WHERE id = ?', (id,)); conn.commit(); conn.close()
+      return "<script>alert('Sếp không thể xóa tài khoản Admin ở đây!'); window.location.href='/admin/khach-hang';</script>"
+    conn.execute('DELETE FROM khach_hang WHERE id = ?', (id,)); conn.commit(); 
     return redirect('/admin/khach-hang')
 
 @admin_bp.route('/admin/khach-hang/<int:id>')
@@ -592,10 +599,9 @@ def chi_tiet_khach(id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
     khach = conn.execute('SELECT * FROM khach_hang WHERE id = ?', (id,)).fetchone()
-    if not khach: conn.close(); abort(404)
+    if not khach: abort(404)
     thong_ke = conn.execute("SELECT COUNT(id) as so_don, IFNULL(SUM(CASE WHEN trang_thai != 'Đã hủy' THEN tong_tien ELSE 0 END), 0) as tong_mua, IFNULL(SUM(CASE WHEN trang_thai != 'Đã hủy' THEN tien_da_tra ELSE 0 END), 0) as tong_tra FROM don_hang WHERE khach_hang_id = ?", (id,)).fetchone()
     don_hangs = conn.execute('SELECT * FROM don_hang WHERE khach_hang_id = ? ORDER BY id DESC', (id,)).fetchall()
-    conn.close()
     return render_template('chi_tiet_khach.html', khach=khach, thong_ke=thong_ke, don_hangs=don_hangs)
 
 @admin_bp.route('/admin/cap-nhat-don/<int:id>', methods=['POST'])
@@ -607,7 +613,7 @@ def cap_nhat_don(id):
     tien_moi = dh['tien_da_tra'] + so_tien_nhap if request.form.get('hanh_dong', 'cong') == 'cong' else so_tien_nhap
     trang_thai = 'Hoàn thành' if tien_moi >= dh['tong_tien'] else request.form.get('trang_thai')
     conn.execute('UPDATE don_hang SET trang_thai=?, tien_da_tra=? WHERE id=?', (trang_thai, tien_moi, id))
-    conn.commit(); conn.close()
+    conn.commit(); 
     return redirect('/admin/don-hang')
 
 @admin_bp.route('/admin/huy-don/<int:id>')
@@ -619,7 +625,6 @@ def huy_don(id):
         items = conn.execute('SELECT san_pham_id, so_luong FROM chi_tiet_don WHERE don_hang_id = ?', (id,)).fetchall()
         for item in items: conn.execute('UPDATE san_pham SET so_luong = so_luong + ? WHERE id = ?', (item['so_luong'], item['san_pham_id']))
         conn.execute('UPDATE don_hang SET trang_thai = "Đã hủy" WHERE id = ?', (id,)); conn.commit()
-    conn.close()
     return redirect(request.referrer or '/admin/don-hang')
 
 @admin_bp.route('/admin/don-hang/<int:id>', methods=['GET', 'POST'])
@@ -629,8 +634,8 @@ def xem_sua_don_hang(id):
     if not admin_id and not khach_id: return redirect('/dang-nhap')
     conn = ket_noi_db()
     dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
-    if not dh: conn.close(); abort(404)
-    if not admin_id and dh['khach_hang_id'] != khach_id: conn.close(); return "<script>alert('Sếp không có quyền xem đơn của người khác!'); window.history.back();</script>"
+    if not dh: abort(404)
+    if not admin_id and dh['khach_hang_id'] != khach_id: return "<script>alert('Sếp không có quyền xem đơn của người khác!'); window.history.back();</script>"
 
     if request.method == 'POST' and admin_id:
         # --- LOGIC SANG TÊN ĐỔI CHỦ ---
@@ -642,7 +647,6 @@ def xem_sua_don_hang(id):
                              (khach_id_moi, khach_moi['ho_ten'], khach_moi['sdt'], khach_moi['dia_chi'], id))
                 conn.commit()
                 flash(f'Đã sang tên đơn hàng #{id} thành công cho khách {khach_moi["ho_ten"]}!', 'success')
-            conn.close()
             return redirect(f'/admin/don-hang/{id}')
             
         # --- LOGIC CẬP NHẬT TIỀN VÀ KHO NHƯ CŨ ---
@@ -665,7 +669,7 @@ def xem_sua_don_hang(id):
             for item in items: conn.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (item['so_luong'], item['san_pham_id']))
 
         conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ?, tong_tien = ?, ghi_chu = ? WHERE id = ?', (trang_thai_moi, tien_da_tra_moi, tong_tien_moi, ghi_chu_moi, id))
-        conn.commit(); conn.close()
+        conn.commit(); 
         flash(f'Đã cập nhật tài chính đơn hàng #{id} thành công!', 'success')
         return redirect('/admin/don-hang')
 
@@ -674,7 +678,6 @@ def xem_sua_don_hang(id):
     
     # Truyền thêm danh sách toàn bộ khách hàng để làm Menu chọn lúc Sang Tên
     khachs_all = conn.execute('SELECT id, ho_ten, sdt FROM khach_hang ORDER BY ho_ten ASC').fetchall()
-    conn.close()
     
     return render_template('chi_tiet_don.html', dh=dh, items=items, khach_info=khach_info, khachs_all=khachs_all)
 
@@ -683,9 +686,8 @@ def in_hoa_don(id):
     if 'admin_id' not in session: return redirect('/dang-nhap')
     conn = ket_noi_db()
     dh = conn.execute('SELECT * FROM don_hang WHERE id = ?', (id,)).fetchone()
-    if not dh: conn.close(); abort(404)
+    if not dh: abort(404)
     items = conn.execute('SELECT c.*, s.ten FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id WHERE c.don_hang_id = ?', (id,)).fetchall()
-    conn.close()
     return render_template('in_hoa_don.html', dh=dh, items=items)
 
 @admin_bp.route('/admin/thong-ke')
@@ -775,7 +777,7 @@ def thong_ke():
     top_products = conn.execute(top_query, params).fetchall()
     years_list = conn.execute("SELECT DISTINCT strftime('%Y', ngay_dat) as y FROM don_hang WHERE ngay_dat IS NOT NULL ORDER BY y DESC").fetchall()
     
-    conn.close()
+    
     return render_template('thong_ke.html', 
                            doanh_thu=doanh_thu, gia_von=gia_von, loi_nhuan_gop=loi_nhuan_gop,
                            thue_vat=thue_phai_tra, loi_nhuan_rong=loi_nhuan_rong, so_don_moi=sd,
@@ -812,7 +814,6 @@ def xuat_excel_thong_ke():
         ORDER BY d.id DESC
     """
     orders = conn.execute(query, params).fetchall()
-    conn.close()
     
     output = io.StringIO()
     output.write('\ufeff')
@@ -905,10 +906,8 @@ def cai_dat_giao_dien():
             conn.execute('DELETE FROM menu_item WHERE id=?', (request.form['id'],))
             conn.commit(); flash('Đã xóa link khỏi Menu!', 'success')
             
-        conn.close()
         return redirect('/admin/cai-dat')
         
     try: items = conn.execute('SELECT * FROM menu_item ORDER BY cot ASC, id ASC').fetchall()
     except: items = []
-    conn.close()
     return render_template('cai_dat.html', settings=settings, items=items)
