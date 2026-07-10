@@ -42,6 +42,8 @@ def chi_tiet_sp(slug_id):
     sp = conn.execute('SELECT * FROM san_pham WHERE id = ?', (id,)).fetchone()
     if not sp: 
         conn.close(); abort(404)
+    # Lấy số lượng đã bán thực tế (Loại trừ đơn Đã hủy)
+    da_ban = conn.execute("SELECT SUM(c.so_luong) FROM chi_tiet_don c JOIN don_hang d ON c.don_hang_id = d.id WHERE c.san_pham_id = ? AND d.trang_thai != 'Đã hủy'", (id,)).fetchone()[0] or 0
     
     anh_phu = conn.execute('SELECT * FROM hinh_anh_sp WHERE san_pham_id = ?', (id,)).fetchall()
     san_pham_lien_quan = conn.execute('SELECT * FROM san_pham WHERE hang_sx = ? AND id != ? LIMIT 4', (sp['hang_sx'], id)).fetchall()
@@ -69,7 +71,7 @@ def chi_tiet_sp(slug_id):
     session['da_xem'] = da_xem_ids; session.modified = True
     conn.close()
     
-    return render_template('chi_tiet.html', sp=sp, anh_phu=anh_phu, san_pham_lien_quan=san_pham_lien_quan, tieu_de_goi_y=tieu_de_goi_y, san_pham_da_xem=san_pham_da_xem)
+    return render_template('chi_tiet.html', sp=sp, anh_phu=anh_phu, san_pham_lien_quan=san_pham_lien_quan, tieu_de_goi_y=tieu_de_goi_y, san_pham_da_xem=san_pham_da_xem, da_ban=da_ban)
 
 @client_bp.route('/them-vao-gio/<string:hash_id>')
 def them_vao_gio(hash_id):
@@ -235,7 +237,9 @@ def thanh_toan():
         if tien_da_tra > 0 and trang_thai != 'Hoàn thành':
             trang_thai = 'Đã cọc'
 
-        cur.execute('INSERT INTO don_hang (khach_hang_id, ten_khach, sdt, dia_chi, tong_tien, tien_da_tra, trang_thai) VALUES (?, ?, ?, ?, ?, ?, ?)', (khach_id, ten_khach, sdt, dia_chi, tong_tien, tien_da_tra, trang_thai))
+        ghi_chu = request.form.get('ghi_chu', '')
+        
+        cur.execute('INSERT INTO don_hang (khach_hang_id, ten_khach, sdt, dia_chi, tong_tien, tien_da_tra, trang_thai, ghi_chu) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (khach_id, ten_khach, sdt, dia_chi, tong_tien, tien_da_tra, trang_thai, ghi_chu))
         don_id = cur.lastrowid
         
         for item in gio_hang:
@@ -293,8 +297,14 @@ def get_khach_info(id):
 @client_bp.route('/api/search-products')
 def search_products_api():
     tu_khoa = request.args.get('tu_khoa', '').strip()
-    if len(tu_khoa) < 1: return jsonify([])
+    if len(tu_khoa) < 1: return jsonify({"keywords": [], "products": []})
+    
     conn = ket_noi_db()
+    # 1. Tìm các từ khóa gợi ý (Lấy tên gốc của sản phẩm)
+    kw_rows = conn.execute("SELECT DISTINCT ten FROM san_pham WHERE ten LIKE ? LIMIT 3", (f'%{tu_khoa}%',)).fetchall()
+    keywords = [row['ten'] for row in kw_rows]
+
+    # 2. Tìm danh sách sản phẩm hiển thị
     sps = conn.execute("SELECT id, ten, hinh_anh, gia_ban, kieu_hang FROM san_pham WHERE ten LIKE ? LIMIT 5", (f'%{tu_khoa}%',)).fetchall()
     conn.close()
     
@@ -308,7 +318,7 @@ def search_products_api():
             "status": sp['kieu_hang'],
             "slug": tao_slug(sp['ten'])
         })
-    return jsonify(ket_qua)
+    return jsonify({"keywords": keywords, "products": ket_qua})
 
 # --- VŨ KHÍ SEO: TỰ ĐỘNG TẠO SITEMAP.XML CHO GOOGLE BOT ---
 @client_bp.route('/sitemap.xml')
@@ -336,6 +346,24 @@ def sitemap():
     xml += '</urlset>'
     return Response(xml, mimetype='application/xml')
 
+@client_bp.route('/tra-cuu', methods=['GET', 'POST'])
+def tra_cuu():
+    if request.method == 'POST':
+        sdt = request.form.get('sdt', '').strip()
+        ma_don = request.form.get('ma_don', '').strip()
+        conn = ket_noi_db()
+        dh = conn.execute('SELECT * FROM don_hang WHERE id = ? AND sdt = ?', (ma_don, sdt)).fetchone()
+        if not dh:
+            conn.close()
+            flash('Không tìm thấy đơn hàng! Vui lòng kiểm tra lại Mã đơn và SĐT.', 'danger')
+            return redirect('/tra-cuu')
+        
+        items = conn.execute('SELECT c.*, s.ten, s.hinh_anh, s.hang_sx FROM chi_tiet_don c JOIN san_pham s ON c.san_pham_id = s.id WHERE c.don_hang_id = ?', (ma_don,)).fetchall()
+        conn.close()
+        return render_template('tra_cuu.html', dh=dh, items=items)
+        
+    return render_template('tra_cuu.html')
+
 # --- CHỈ ĐƯỜNG CHO GOOGLE BOT (ROBOTS.TXT) ---
 @client_bp.route('/robots.txt')
 def robots():
@@ -343,3 +371,4 @@ def robots():
     # Chặn Bot mò vào các trang Admin bảo mật, chỉ đường đến file Sitemap
     txt = f"User-agent: *\nDisallow: /admin/\nDisallow: /thanh-toan\nDisallow: /dang-nhap\n\nSitemap: {base_url}/sitemap.xml"
     return Response(txt, mimetype='text/plain')
+    

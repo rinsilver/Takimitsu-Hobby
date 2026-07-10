@@ -110,5 +110,12 @@ def tao_bang_va_cap_nhat():
             cur.execute('''INSERT INTO lo_hang_nhap (san_pham_id, nguon_nhap_id, so_luong_nhap, gia_nhap, tien_da_tra_nguon, trang_thai_nhap, ngay_du_kien_ve) VALUES (?, ?, ?, ?, ?, ?, ?)''', (sp['id'], sp['nguon_nhap_id'], sp['so_luong_nhap'], sp['gia_nhap'], sp['tien_da_tra_nguon'], sp['trang_thai_nhap'], sp['ngay_du_kien_ve']))
             new_lo_id = cur.lastrowid
             conn.execute("UPDATE lich_su_tra_nguon SET lo_hang_id = ? WHERE san_pham_id = ?", (new_lo_id, sp['id']))
-            
+
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_sp_ten ON san_pham(ten)')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_sp_hang ON san_pham(hang_sx)')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_kh_sdt ON khach_hang(sdt)')
+    
+    try: conn.execute("ALTER TABLE don_hang ADD COLUMN ghi_chu TEXT DEFAULT ''")
+    except: pass
+
     conn.commit(); conn.close()

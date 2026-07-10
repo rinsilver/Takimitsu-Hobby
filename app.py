@@ -16,6 +16,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 2592000  # Trình duyệt khách tự động lưu Cache ảnh 30 ngày (Siêu nhẹ Server)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # --- BẢO MẬT COOKIE & SESSION ---

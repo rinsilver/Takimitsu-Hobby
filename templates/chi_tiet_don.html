@@ -129,11 +129,17 @@
                                     class="fas fa-map-marker-alt text-danger me-2"></i>{{ dh.dia_chi }}</div>
                         </div>
                         <div class="col-12 mt-3 pt-3 border-top">
-                            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Thời gian đặt
-                                hàng:</label>
-                            <div class="text-dark fw-bold"><i class="fas fa-clock text-warning me-2"></i>{{ dh.ngay_dat
-                                }}</div>
+                            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Thời gian đặt hàng:</label>
+                            <div class="text-dark fw-bold"><i class="fas fa-clock text-warning me-2"></i>{{ dh.ngay_dat }}</div>
                         </div>
+                        {% if dh.ghi_chu %}
+                        <div class="col-12 mt-3 pt-3 border-top">
+                            <label class="small text-muted fw-bold text-uppercase d-block mb-2">Ghi chú đơn hàng:</label>
+                            <div class="fw-bold text-dark p-3 bg-white border rounded-3 shadow-sm" style="font-size: 0.95rem;">
+                                <i class="fas fa-comment-dots text-muted me-2"></i>{{ dh.ghi_chu }}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -201,6 +207,11 @@
                             <input type="number" name="tien_da_tra"
                                 class="form-control text-success fw-black fs-5 border-2 border-success rounded-pill px-3"
                                 value="{{ dh.tien_da_tra }}" required id="input_da_tra" oninput="tinhTienNo()">
+                        </div>
+
+                        <div class="mb-3 mt-3 border-top pt-3">
+                            <label class="fw-bold small text-muted mb-2 text-uppercase"><i class="fas fa-comment-dots text-info me-1"></i> Ghi chú đơn hàng</label>
+                            <textarea name="ghi_chu" class="form-control fw-bold border-2 rounded-3 px-3 py-2 bg-light shadow-sm" rows="3" placeholder="Ghi chú của khách hoặc Admin tự note vào đây...">{{ dh.ghi_chu }}</textarea>
                         </div>
 
                         <div

@@ -46,12 +46,11 @@
                     <table class="table align-middle table-hover">
                         <thead class="table-dark">
                             <tr>
-                                <th>Mã Đơn</th>
-                                <th>Ngày đặt</th>
-                                <th>Tổng Tiền</th>
-                                <th>Còn Nợ</th>
+                                <th>Đơn hàng</th>
+                                <th>Sản phẩm</th>
+                                <th>Tài chính</th>
                                 <th>Trạng Thái</th>
-                                <th class="text-end">Thao tác</th>
+                                <th class="text-end">Chi tiết</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -59,16 +58,37 @@
                             <tr>
                                 <td>
                                     <a href="/admin/don-hang/{{ dh['id'] }}" class="fw-bold text-primary text-decoration-none">#{{ dh['id'] }}</a>
+                                    <br><small class="text-muted">{{ dh['ngay_dat'][:10] }}</small>
                                 </td>
-                                <td><small class="text-muted">{{ dh['ngay_dat'][:16] }}</small></td>
-                                <td class="fw-bold">{{ "{:,.0f}".format(dh['tong_tien']) }}đ</td>
-                                <td class="fw-bold text-danger">{{ "{:,.0f}".format(dh['tong_tien'] - dh['tien_da_tra']) }}đ</td>
                                 <td>
-                                    <span class="badge bg-success px-2 py-1 rounded-pill">{{ dh['trang_thai'] }}</span>
+                                    {% if dh['items'] %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width: 45px; height: 45px; flex-shrink: 0; background: #fff;" class="border rounded-2 shadow-sm overflow-hidden">
+                                                <img src="{{ dh['items'][0].hinh_anh }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            </div>
+                                            <div class="overflow-hidden">
+                                                <div class="fw-bold text-dark text-truncate" style="max-width: 180px; font-size: 0.85rem;" title="{{ dh['items'][0].ten }}">{{ dh['items'][0].ten }}</div>
+                                                {% if dh['items']|length > 1 %}
+                                                <small class="text-danger fw-bold" style="font-size: 0.75rem;">+{{ dh['items']|length - 1 }} sản phẩm khác</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ "{:,.0f}".format(dh['tong_tien']) }}đ</div>
+                                    {% if dh['tong_tien'] - dh['tien_da_tra'] > 0 %}
+                                    <small class="text-danger fw-bold">Nợ: {{ "{:,.0f}".format(dh['tong_tien'] - dh['tien_da_tra']) }}đ</small>
+                                    {% else %}
+                                    <small class="text-success fw-bold">Đã thu đủ</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if dh['trang_thai'] == 'Hoàn thành' %}bg-success{% elif dh['trang_thai'] == 'Đã hủy' %}bg-danger{% else %}bg-warning text-dark{% endif %} px-2 py-1 rounded-pill">{{ dh['trang_thai'] }}</span>
                                 </td>
                                 <td class="text-end">
-                                    <a href="/admin/don-hang/{{ dh['id'] }}" class="btn btn-sm btn-outline-dark rounded-pill fw-bold px-3 shadow-sm">
-                                        Xem chi tiết <i class="fas fa-arrow-right"></i>
+                                    <a href="/admin/don-hang/{{ dh['id'] }}" class="btn btn-sm btn-outline-dark rounded-circle shadow-sm" style="width: 35px; height: 35px; line-height: 33px; padding: 0;" title="Xem chi tiết">
+                                        <i class="fas fa-arrow-right"></i>
                                     </a>
                                 </td>
                             </tr>

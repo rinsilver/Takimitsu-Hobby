@@ -14,6 +14,10 @@
             --bg-dark: #121212;
             --bg-card: #0a0a0a;
         }
+
+        .search-result-item { white-space: normal !important; }
+        .search-result-item .text-truncate { white-space: nowrap !important; }
+        #navSearchResults { max-height: 70vh !important; overflow-x: hidden; }
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.1">
     {% block extra_css %}{% endblock %}
@@ -53,10 +57,12 @@
                                 <div class="row g-4 p-3 py-4">
                                     {% for cot, data in mega_menu.items() %}
                                     <div class="col-md-3 border-end">
-                                        <div class="mega-menu-title"><i class="{{ data.icon }}"></i> {{ data.nhom }}</div>
+                                        <div class="mega-menu-title"><i class="{{ data.icon }}"></i> {{ data.nhom }}
+                                        </div>
                                         <ul class="mega-menu-list">
                                             {% for link in data.links %}
-                                            <li><a href="{{ link.url }}" class="mega-menu-link">{{ link.badge_html|safe }} {{ link.ten_link }}</a></li>
+                                            <li><a href="{{ link.url }}" class="mega-menu-link">{{ link.badge_html|safe
+                                                    }} {{ link.ten_link }}</a></li>
                                             {% endfor %}
                                         </ul>
                                     </div>
@@ -65,8 +71,11 @@
                                     <div class="col-md-3 ps-lg-4">
                                         <div class="search-cta-box shadow-sm">
                                             <h6 class="fw-bold text-dark mb-3">TAKIMITSU HOBBY</h6>
-                                            <p class="small text-muted mb-4">Khám phá hàng ngàn mẫu mô hình chính hãng tại đây.</p>
-                                            <a href="/san-pham" class="btn text-white fw-bold w-100 rounded-pill py-2 shadow-sm" style="background:var(--main-color)">XEM TẤT CẢ</a>
+                                            <p class="small text-muted mb-4">Khám phá hàng ngàn mẫu mô hình chính hãng
+                                                tại đây.</p>
+                                            <a href="/san-pham"
+                                                class="btn text-white fw-bold w-100 rounded-pill py-2 shadow-sm"
+                                                style="background:var(--main-color)">XEM TẤT CẢ</a>
                                         </div>
                                     </div>
                                 </div>
@@ -75,7 +84,8 @@
                     </li>
 
                     <li class="nav-item me-3"><a class="nav-link fw-bold text-white" href="/san-pham">SẢN PHẨM</a></li>
-
+                    <li class="nav-item me-3"><a class="nav-link fw-bold text-white" href="/tra-cuu">TRA CỨU ĐƠN</a></li>
+                    
                     {% if is_admin or is_khach %}
                     <li class="nav-item me-3"><a href="/ho-so"
                             class="text-decoration-none text-light fw-bold small">Chào, <span
@@ -159,7 +169,8 @@
                         <p class="mb-2"><i class="fas fa-phone-alt text-danger me-2"></i> {{ settings.dien_thoai }}</p>
                         <p class="mb-2"><i class="fas fa-envelope text-danger me-2"></i> {{ settings.email }}</p>
                         {% if settings.ma_so_thue %}
-                        <p class="mb-0"><i class="fas fa-file-invoice-dollar text-danger me-2"></i> Hộ kinh doanh: <strong>{{
+                        <p class="mb-0"><i class="fas fa-file-invoice-dollar text-danger me-2"></i> Hộ kinh doanh:
+                            <strong>{{
                                 settings.ma_so_thue }}</strong></p>
                         {% endif %}
                     </div>
@@ -225,19 +236,27 @@
                 fetch('/api/search-products?tu_khoa=' + val)
                     .then(res => res.json())
                     .then(data => {
-                        if (data.length > 0) {
-                            let html = '';
-                            data.forEach(sp => {
-                                // TAG ĐỒNG BỘ: Bo tròn, có shadow và icon y hệt thẻ sản phẩm
+                        let html = '';
+                        // Render Gợi ý từ khóa
+                        if (data.keywords && data.keywords.length > 0) {
+                            html += '<div class="p-2 border-bottom bg-light"><small class="text-muted fw-bold ms-2 text-uppercase" style="font-size: 0.65rem;"><i class="fas fa-magic text-warning me-1"></i> Ý bạn là:</small><div class="d-flex flex-wrap gap-1 mt-1 px-2">';
+                            data.keywords.forEach(kw => {
+                                html += `<a href="/san-pham?tu_khoa=${encodeURIComponent(kw)}" class="badge bg-secondary text-white text-decoration-none shadow-sm px-2 py-1"><i class="fas fa-search me-1 opacity-50"></i>${escapeHTML(kw)}</a>`;
+                            });
+                            html += '</div></div>';
+                        }
+
+                        // Render Danh sách sản phẩm
+                        if (data.products && data.products.length > 0) {
+                            data.products.forEach(sp => {
                                 let badge = sp.status === 'Co san'
-                                    ? `<span class="badge rounded-pill bg-success shadow-sm" style="font-size:0.65rem; padding: 3px 8px; letter-spacing: 0.5px;"><i class="fas fa-check-circle me-1"></i>SẴN</span>`
-                                    : `<span class="badge rounded-pill bg-warning text-dark shadow-sm" style="font-size:0.65rem; padding: 3px 8px; letter-spacing: 0.5px;"><i class="fas fa-clock me-1"></i>ORDER</span>`;
+                                    ? `<span class="badge rounded-pill bg-success shadow-sm" style="font-size:0.65rem; padding: 3px 8px;"><i class="fas fa-check-circle me-1"></i>SẴN</span>`
+                                    : `<span class="badge rounded-pill bg-warning text-dark shadow-sm" style="font-size:0.65rem; padding: 3px 8px;"><i class="fas fa-clock me-1"></i>ORDER</span>`;
 
                                 let safeName = escapeHTML(sp.ten);
-
                                 html += `
             <a href="/san-pham/${sp.slug}-${sp.id}" class="search-result-item">
-                <img src="${sp.hinh_anh}" alt="${safeName} mô hình" onerror="this.src='/static/uploads/Logo.jpg'">
+                <img src="${sp.hinh_anh}" alt="${safeName}" onerror="this.src='/static/uploads/Logo.jpg'">
                 <div class="flex-grow-1 overflow-hidden">
                     <div class="fw-bold text-dark text-truncate mb-1" style="font-size: 0.85rem; max-width: 95%;">${safeName}</div>
                     <div class="d-flex align-items-center gap-2">
@@ -247,11 +266,11 @@
                 </div>
             </a>`;
                             });
-                            html += `<a href="/san-pham?tu_khoa=${val}" class="search-footer-link">Xem tất cả kết quả cho "${val}" <i class="fas fa-chevron-right ms-1"></i></a>`;
+                            html += `<a href="/san-pham?tu_khoa=${val}" class="search-footer-link">Xem tất cả kết quả cho "${escapeHTML(val)}" <i class="fas fa-chevron-right ms-1"></i></a>`;
 
                             resultsBox.innerHTML = html;
                             resultsBox.style.display = 'block';
-                        } else {
+                        } else if (!data.keywords || data.keywords.length === 0) {
                             resultsBox.innerHTML = '<div class="p-3 text-center text-muted small">Không tìm thấy mô hình này...</div>';
                             resultsBox.style.display = 'block';
                         }

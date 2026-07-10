@@ -649,6 +649,7 @@ def xem_sua_don_hang(id):
         tong_tien_moi = float(request.form.get('tong_tien', 0))
         tien_da_tra_moi = float(request.form.get('tien_da_tra', 0))
         trang_thai_moi = request.form['trang_thai']
+        ghi_chu_moi = request.form.get('ghi_chu', '')
         
         if tien_da_tra_moi >= tong_tien_moi and trang_thai_moi in ['Chờ xử lý', 'Đã cọc', 'Hàng về - Chờ TT', 'Đang giao hàng']:
             trang_thai_moi = 'Hoàn thành'
@@ -663,7 +664,7 @@ def xem_sua_don_hang(id):
             items = conn.execute('SELECT san_pham_id, so_luong FROM chi_tiet_don WHERE don_hang_id = ?', (id,)).fetchall()
             for item in items: conn.execute('UPDATE san_pham SET so_luong = so_luong - ? WHERE id = ?', (item['so_luong'], item['san_pham_id']))
 
-        conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ?, tong_tien = ? WHERE id = ?', (trang_thai_moi, tien_da_tra_moi, tong_tien_moi, id))
+        conn.execute('UPDATE don_hang SET trang_thai = ?, tien_da_tra = ?, tong_tien = ?, ghi_chu = ? WHERE id = ?', (trang_thai_moi, tien_da_tra_moi, tong_tien_moi, ghi_chu_moi, id))
         conn.commit(); conn.close()
         flash(f'Đã cập nhật tài chính đơn hàng #{id} thành công!', 'success')
         return redirect('/admin/don-hang')
